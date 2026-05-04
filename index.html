@@ -2,602 +2,359 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>ENRG – Comprehensive Whitepaper</title>
+  <title>ENRG – DePIN Energy Command Center</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    :root {
-      --bg-main: #0B0F19;
-      --bg-card: rgba(15, 23, 42, 0.7);
-      --border-card: rgba(148, 163, 184, 0.4);
-      --accent-cyan: #00E5FF;
-      --accent-orange: #FF6B00;
-      --text-main: #E5E7EB;
-      --text-muted: #9CA3AF;
-      --radius-lg: 18px;
-      --radius-md: 12px;
-      --shadow-soft: 0 24px 60px rgba(0, 0, 0, 0.65);
-      --transition-fast: 200ms ease-out;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
-      background: radial-gradient(circle at top, #111827 0, #020617 45%, #000 100%);
-      color: var(--text-main);
-      min-height: 100vh;
-      position: relative;
-      overflow-x: hidden;
-    }
-    #particle-canvas {
-      position: fixed;
-      inset: 0;
-      z-index: -2;
-      background: radial-gradient(circle at top, #020617 0, #020617 40%, #000 100%);
-    }
-    .bg-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      background:
-        radial-gradient(circle at 10% 0%, rgba(0, 229, 255, 0.18) 0, transparent 55%),
-        radial-gradient(circle at 90% 20%, rgba(255, 107, 0, 0.18) 0, transparent 55%),
-        radial-gradient(circle at 50% 100%, rgba(56, 189, 248, 0.12) 0, transparent 60%);
-      mix-blend-mode: screen;
-      pointer-events: none;
-    }
-    .page-shell { max-width: 1120px; margin: 0 auto; padding: 32px 20px 64px; }
-    @media (min-width: 1024px) { .page-shell { padding: 40px 12px 80px; } }
-    .top-nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 32px; }
-    .brand { display: flex; align-items: center; gap: 12px; }
-    .brand-mark {
-      width: 40px; height: 40px; border-radius: 999px;
-      background: conic-gradient(from 180deg, var(--accent-cyan), var(--accent-orange), var(--accent-cyan));
-      padding: 3px;
-      box-shadow: 0 0 28px rgba(0, 229, 255, 0.7), 0 0 44px rgba(255, 107, 0, 0.5);
-    }
-    .brand-mark-inner {
-      width: 100%; height: 100%; border-radius: inherit;
-      background: radial-gradient(circle at 30% 0%, #0f172a 0, #020617 55%, #000 100%);
-      display: flex; align-items: center; justify-content: center;
-      color: var(--accent-cyan); font-weight: 800; font-size: 1rem; letter-spacing: 0.12em;
-    }
-    .brand-text { display: flex; flex-direction: column; gap: 2px; }
-    .brand-title { font-size: 1.05rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-cyan); }
-    .brand-subtitle { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.16em; }
-    .top-nav-cta { display: flex; gap: 10px; align-items: center; }
-    .pill {
-      border-radius: 999px; border: 1px solid rgba(148, 163, 184, 0.4);
-      padding: 6px 12px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.16em;
-      color: var(--text-muted);
-      background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.4));
-      backdrop-filter: blur(18px); display: inline-flex; align-items: center; gap: 8px;
-      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.8);
-    }
-    .pill-dot {
-      width: 7px; height: 7px; border-radius: 999px;
-      background: radial-gradient(circle, var(--accent-orange), #f97316);
-      box-shadow: 0 0 12px rgba(248, 113, 113, 0.9);
-    }
-    .doc-shell {
-      border-radius: 26px;
-      background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.96), rgba(2, 6, 23, 0.96));
-      border: 1px solid rgba(148, 163, 184, 0.35);
-      box-shadow: var(--shadow-soft);
-      padding: 26px 18px 32px;
-      backdrop-filter: blur(26px);
-      position: relative; overflow: hidden;
-    }
-    @media (min-width: 768px) { .doc-shell { padding: 32px 28px 40px; } }
-    .doc-shell::before {
-      content: ""; position: absolute; inset: -40%;
-      background:
-        radial-gradient(circle at 0% 0%, rgba(0, 229, 255, 0.12) 0, transparent 55%),
-        radial-gradient(circle at 100% 0%, rgba(255, 107, 0, 0.12) 0, transparent 55%);
-      opacity: 0.6; mix-blend-mode: soft-light; pointer-events: none;
-    }
-    .doc-shell-inner { position: relative; z-index: 1; }
-    h1, h2, h3, h4, h5, h6 {
-      color: var(--accent-cyan); letter-spacing: 0.04em; text-transform: none;
-      position: relative; display: flex; align-items: center; gap: 10px;
-    }
-    h1 { font-size: clamp(2.2rem, 3vw, 2.8rem); margin-bottom: 10px; }
-    h2 { font-size: clamp(1.4rem, 2vw, 1.8rem); margin-top: 28px; margin-bottom: 10px; }
-    h3 { font-size: 1.1rem; margin-top: 22px; margin-bottom: 8px; }
-    h4, h5, h6 { font-size: 0.95rem; margin-top: 18px; margin-bottom: 6px; }
-    p { margin-bottom: 10px; line-height: 1.6; color: var(--text-main); font-size: 0.94rem; }
-    ul, ol { margin-left: 1.2rem; margin-bottom: 10px; color: var(--text-main); font-size: 0.94rem; }
-    li { margin-bottom: 4px; }
-    a { color: var(--accent-cyan); text-decoration: none; position: relative; transition: color var(--transition-fast); }
-    a::after {
-      content: ""; position: absolute; left: 0; bottom: -2px;
-      width: 0; height: 1px;
-      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-orange));
-      transition: width var(--transition-fast);
-    }
-    a:hover { color: #7dd3fc; }
-    a:hover::after { width: 100%; }
-    code, pre { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.85rem; }
-    pre {
-      background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.9));
-      border-radius: var(--radius-md); border: 1px solid rgba(148, 163, 184, 0.4);
-      padding: 14px 16px; margin-bottom: 14px; overflow-x: auto;
-      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.9); position: relative;
-    }
-    pre::before {
-      content: ""; position: absolute; inset: 0;
-      border-radius: inherit; border: 1px solid rgba(0, 229, 255, 0.12); pointer-events: none;
-    }
-    h1::before, h2::before, h3::before, h4::before, h5::before, h6::before {
-      content: ""; width: 18px; height: 18px; border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.7);
-      box-shadow: 0 0 12px rgba(0, 229, 255, 0.6), 0 0 18px rgba(255, 107, 0, 0.4);
-      background: radial-gradient(circle at 30% 0%, rgba(0, 229, 255, 0.9), rgba(15, 23, 42, 1));
-      position: relative; flex-shrink: 0;
-    }
-    h1::after, h2::after, h3::after, h4::after, h5::after, h6::after {
-      content: ""; position: absolute; left: 9px; top: 50%;
-      width: 8px; height: 8px; border-radius: 2px;
-      border: 1px solid rgba(15, 23, 42, 0.9);
-      transform: translate(-50%, -50%) rotate(45deg);
-      background: radial-gradient(circle, var(--accent-orange), #f97316);
-      box-shadow: 0 0 10px rgba(248, 113, 113, 0.9);
-    }
-    .glass-section {
-      border-radius: var(--radius-lg);
-      background: linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.7));
-      border: 1px solid var(--border-card);
-      box-shadow: var(--shadow-soft);
-      padding: 18px 16px 20px; margin: 18px 0;
-      backdrop-filter: blur(26px); position: relative; overflow: hidden;
-      transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
-    }
-    .glass-section:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 26px 70px rgba(15, 23, 42, 1), 0 0 30px rgba(0, 229, 255, 0.35);
-      border-color: rgba(0, 229, 255, 0.7);
-    }
-    .fade-up { opacity: 0; transform: translateY(16px); transition: opacity 500ms ease-out, transform 500ms ease-out; }
-    .fade-up.visible { opacity: 1; transform: translateY(0); }
-    .hero-title { font-size: clamp(2.6rem, 4vw, 3.2rem); line-height: 1.1; }
-    .hero-tagline { font-size: 1.1rem; color: var(--accent-cyan); margin-bottom: 12px; }
-    .hero-quote { font-style: italic; color: var(--text-muted); margin-bottom: 12px; }
-    .hero-contact { font-size: 0.9rem; color: var(--text-muted); }
-    table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.9rem; }
-    th, td { padding: 6px 8px; border-bottom: 1px solid rgba(148, 163, 184, 0.4); }
-    th { text-align: left; }
-    td:last-child, th:last-child { text-align: right; }
-    .comparison-table th, .comparison-table td { text-align: center; }
-    .comparison-table th:first-child, .comparison-table td:first-child { text-align: left; }
-    .slogan { font-weight: 700; color: var(--accent-orange); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.8rem; margin-bottom: 6px; }
-    .roadmap-wrapper { margin: 18px 0 10px; }
-    .roadmap-timeline { position: relative; padding-left: 0; margin: 0; list-style: none; }
-    @media (min-width: 768px) { .roadmap-timeline { display: flex; gap: 32px; overflow-x: auto; } }
-    .roadmap-item { position: relative; padding-left: 26px; margin-bottom: 18px; }
-    @media (min-width: 768px) { .roadmap-item { min-width: 220px; padding-left: 0; } }
-    .roadmap-node {
-      position: absolute; left: 0; top: 4px; width: 14px; height: 14px; border-radius: 999px;
-      background: radial-gradient(circle, var(--accent-cyan), var(--accent-orange));
-      box-shadow: 0 0 16px rgba(0, 229, 255, 0.9), 0 0 26px rgba(255, 107, 0, 0.7);
-    }
-    @media (min-width: 768px) { .roadmap-node { position: static; margin-bottom: 10px; } }
-    .roadmap-card {
-      border-radius: var(--radius-md);
-      background: linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.8));
-      border: 1px solid rgba(148, 163, 184, 0.5); padding: 10px 12px;
-      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.9);
-    }
-    .roadmap-phase { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.16em; color: var(--accent-orange); margin-bottom: 4px; }
-    .roadmap-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; color: var(--accent-cyan); }
-    .roadmap-desc { font-size: 0.85rem; color: var(--text-muted); }
-    .chart-container {
-      margin-top: 10px; border-radius: var(--radius-md);
-      background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.9));
-      border: 1px solid rgba(148, 163, 184, 0.4); padding: 10px;
-      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.9);
-    }
-    .chart-title { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; }
-    svg { max-width: 100%; height: auto; display: block; }
-    @media (max-width: 640px) {
-      .top-nav { flex-direction: column; align-items: flex-start; }
-      .top-nav-cta { align-self: stretch; justify-content: space-between; }
-      .doc-shell { border-radius: 20px; }
-    }
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <canvas id="particle-canvas"></canvas>
   <div class="bg-overlay"></div>
-  <div class="page-shell">
-    <header class="top-nav">
-      <div class="brand">
-        <div class="brand-mark"><div class="brand-mark-inner">EN</div></div>
-        <div class="brand-text">
-          <div class="brand-title">ENRG Protocol</div>
-          <div class="brand-subtitle">Comprehensive Whitepaper</div>
+
+  <!-- FIXED NAV -->
+  <header class="top-nav">
+    <div class="nav-left">
+      <div class="brand-mark">
+        <div class="brand-mark-inner">EN</div>
+      </div>
+      <div class="brand-text">
+        <div class="brand-title">ENRG Protocol</div>
+        <div class="brand-subtitle">DePIN Energy Dashboard</div>
+      </div>
+    </div>
+    <nav class="nav-links">
+      <a href="#home" class="nav-link">HOME</a>
+      <a href="#dashboard" class="nav-link">DASHBOARD</a>
+      <a href="#minting" class="nav-link">MINTING</a>
+      <a href="#history" class="nav-link">HISTORY</a>
+      <a href="#settings" class="nav-link">SETTINGS</a>
+    </nav>
+    <div class="nav-cta">
+      <button class="btn-outline" id="btn-get-started">Get Started</button>
+    </div>
+  </header>
+
+  <main class="page-shell">
+
+    <!-- HERO / HOME -->
+    <section id="home" class="section hero-section fade-up">
+      <div class="hero-grid">
+        <div class="hero-left">
+          <div class="hero-logo-wrap">
+            <svg class="hero-logo" viewBox="0 0 160 160" aria-hidden="true">
+              <defs>
+                <radialGradient id="logoGrad" cx="30%" cy="0%" r="100%">
+                  <stop offset="0%" stop-color="#00E5FF"/>
+                  <stop offset="50%" stop-color="#0B1120"/>
+                  <stop offset="100%" stop-color="#000000"/>
+                </radialGradient>
+                <linearGradient id="logoRing" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#00E5FF"/>
+                  <stop offset="100%" stop-color="#FF6B00"/>
+                </linearGradient>
+              </defs>
+              <circle cx="80" cy="80" r="68" fill="url(#logoGrad)" stroke="url(#logoRing)" stroke-width="5"/>
+              <path d="M45 100 L45 55 L65 55 C78 55 87 63 87 76 C87 89 78 96 65 96 L55 96 L55 100 Z
+                       M55 86 L65 86 C71 86 75 82 75 76 C75 70 71 66 65 66 L55 66 Z"
+                    fill="#00E5FF"/>
+              <path d="M95 100 L95 55 L107 55 L107 100 Z" fill="#FF6B00"/>
+            </svg>
+            <div class="hero-logo-glow" aria-hidden="true"></div>
+          </div>
+          <h1 class="hero-title">Live DePIN Energy Command Center</h1>
+          <p class="hero-tagline">
+            Monitor production, mint ENRG, and track protocol health in real time.
+          </p>
+          <p class="hero-slogan">
+            <strong>The Only DePIN Protocol with Buyback &amp; Burn – Backed by Real MWh, Not Loyalty Points.</strong>
+          </p>
+          <div class="hero-actions">
+            <button class="btn-primary" id="btn-start-minting-hero">Start Minting</button>
+            <button class="btn-secondary" id="btn-download-whitepaper">Download White Paper</button>
+            <button class="btn-secondary" id="btn-technical-docs">Technical Documentation</button>
+          </div>
+          <p class="hero-social-proof">
+            Join <span id="producers-counter" data-target="1200">0</span>+ energy producers already connected.
+          </p>
         </div>
-      </div>
-      <div class="top-nav-cta">
-        <div class="pill"><span class="pill-dot"></span><span>DePIN / Cyber-Physical Energy Infrastructure</span></div>
-        <button class="btn-outline" type="button" onclick="document.getElementById('Roadmap').scrollIntoView({behavior:'smooth'})">
-          <span class="icon">↓</span><span>Jump to Roadmap</span>
-        </button>
-      </div>
-    </header>
-    <main class="doc-shell">
-      <div class="doc-shell-inner">
-        <section id="TitlePage" class="glass-section fade-up">
-          <div style="display:flex; flex-direction:column; align-items:flex-start; gap:16px;">
-            <div style="display:flex; flex-wrap:wrap; gap:20px; align-items:center; width:100%;">
-              <div style="flex:0 0 auto;">
-                <svg width="120" height="120" viewBox="0 0 120 120">
-                  <defs>
-                    <radialGradient id="logoGrad" cx="30%" cy="0%" r="100%">
-                      <stop offset="0%" stop-color="#00E5FF"/>
-                      <stop offset="50%" stop-color="#0B1120"/>
-                      <stop offset="100%" stop-color="#000000"/>
-                    </radialGradient>
-                    <linearGradient id="logoRing" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stop-color="#00E5FF"/>
-                      <stop offset="100%" stop-color="#FF6B00"/>
-                    </linearGradient>
-                  </defs>
-                  <circle cx="60" cy="60" r="54" fill="url(#logoGrad)" stroke="url(#logoRing)" stroke-width="4"/>
-                  <path d="M40 78 L40 42 L55 42 C64 42 70 47 70 56 C70 65 64 70 55 70 L48 70 L48 78 Z M48 62 L55 62 C59 62 62 60 62 56 C62 52 59 50 55 50 L48 50 Z" fill="#00E5FF"/>
-                  <path d="M76 78 L76 42 L84 42 L84 78 Z" fill="#FF6B00"/>
-                </svg>
-              </div>
-              <div style="flex:1 1 220px;">
-                <div class="slogan">Backed by Real MWh, Not Loyalty Points</div>
-                <h1 class="hero-title">ENRG – The Backbone for DePIN Energy</h1>
-                <p class="hero-tagline"><strong>The Only DePIN Protocol with Buyback & Burn and Energy-Backed Tokenization.</strong></p>
-                <p class="hero-quote">“Bitcoin solved the problem of money without central banks. ENRG will solve the problem of energy without monopolies.”</p>
-                <p class="hero-contact">
-                  <strong>Contact:</strong> Anton Grid, Founder & CEO<br/>
-                  <span>Email:</span> <a href="mailto:anton@enrg.network">anton@enrg.network</a><br/>
-                  <span>Website:</span> <a href="https://enrg.network">https://enrg.network</a>
-                </p>
-              </div>
+        <div class="hero-right">
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-label">Total Energy</div>
+              <div class="metric-value"><span class="counter" data-target="2056">0</span> MWh</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Active Producers</div>
+              <div class="metric-value"><span class="counter" data-target="150">0</span></div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">ENRG Staked</div>
+              <div class="metric-value"><span class="counter" data-target="65000">0</span></div>
             </div>
           </div>
-        </section>
-
-        <section id="ExecutiveSummary" class="glass-section fade-up">
-          <h2>2. Executive Summary</h2>
-          <p>ENRG is a DePIN-native energy protocol that turns real-world energy production into a programmable, on-chain asset. Each ENRG token represents 1 MWh of verifiable energy, backed by cryptographic proofs from IoT devices and oracles.</p>
-          <p><strong>ENRG transforms energy from a siloed, monopolized commodity into an open, composable building block for Web3.</strong> Producers plug in low-cost hardware, sign their production data, and mint ENRG against real output. Consumers, protocols, and investors gain access to a transparent, auditable energy asset with built-in scarcity.</p>
-          <p>By combining Proof-of-Production, buyback & burn mechanics, and a DePIN-aligned architecture, ENRG aims to become the settlement layer for tokenized energy—bridging physical infrastructure and digital finance.</p>
-        </section>
-
-        <section id="Problem" class="glass-section fade-up">
-          <h2>3. The Problem – Centralized Energy Markets</h2>
-          <p>Today’s energy markets are dominated by centralized utilities, opaque intermediaries, and fragmented data silos. Producers have little control over pricing or market access, while consumers face volatile tariffs and limited transparency.</p>
-          <ul>
-            <li><strong>Monopolistic control:</strong> a handful of utilities and grid operators gatekeep access to markets and infrastructure.</li>
-            <li><strong>Opaque pricing:</strong> complex tariffs and hidden fees obscure the true cost and origin of energy.</li>
-            <li><strong>Under-monetized renewables:</strong> small solar, wind, and biogas producers struggle to monetize excess capacity.</li>
-            <li><strong>Data fragmentation:</strong> metering data is locked in proprietary systems, making verification and composability difficult.</li>
-          </ul>
-          <p><strong>Energy is the backbone of civilization, yet its markets are stuck in a pre-digital era.</strong> ENRG exists to unlock energy as a transparent, programmable, and globally accessible asset.</p>
-        </section>
-
-        <section id="Solution" class="glass-section fade-up">
-          <h2>4. Our Solution – Proof-of-Production</h2>
-          <p>ENRG introduces Proof-of-Production: a cryptographic pipeline that connects physical energy devices to on-chain tokens. Devices measure energy, sign data locally, and submit it to oracles and smart contracts that verify and mint ENRG.</p>
-          <p><strong>From electrons to tokens in four steps:</strong></p>
-          <pre>
-① Connect   →   ② Sign   →   ③ Verify   →   ④ Mint
-
-① Connect
-   - IoT meter (ESP32 + PZEM-004T) measures real-time energy production.
-   - Device pairs with ENRG oracle endpoint over Wi-Fi.
-
-② Sign
-   - Device signs measurement batches using Ed25519 keys.
-   - (Production) Secure Element (ATECC608) stores keys and performs signing.
-
-③ Verify
-   - Oracle validates signatures and sanity-checks readings.
-   - Switchboard aggregates and delivers data to ENRG smart contracts.
-
-④ Mint
-   - Smart contract mints ENRG tokens proportional to verified MWh.
-   - Protocol fee is applied and distributed (Buyback &amp; Burn, staking, DAO, emergency fund).
-          </pre>
-          <p><strong>ENRG turns raw kilowatt-hours into a programmable, composable digital asset—without trusting monopolies.</strong></p>
-        </section>
-
-        <section id="WhyENRGWins" class="glass-section fade-up">
-          <h2>5. Why ENRG Wins</h2>
-          <p class="slogan">The Only DePIN Protocol with Buyback &amp; Burn and Real MWh Backing.</p>
-          <p>ENRG is designed to be the most capital-efficient, transparent, and incentive-aligned energy protocol in the DePIN ecosystem.</p>
-          <table class="comparison-table">
-            <thead><tr><th>Feature</th><th>ENRG</th><th>Arkreen</th><th>Starpower</th></tr></thead>
-            <tbody>
-              <tr><td>Asset Backing</td><td><strong>Real MWh, cryptographically verified</strong></td><td>Energy points / credits</td><td>Loyalty-style rewards</td></tr>
-              <tr><td>Token Model</td><td><strong>Fixed cap + Buyback &amp; Burn</strong></td><td>Inflationary rewards</td><td>Centralized issuance</td></tr>
-              <tr><td>Energy Sources</td><td><strong>Any source (solar, wind, hydro, biogas, fossil)</strong></td><td>Primarily renewables</td><td>Limited integrations</td></tr>
-              <tr><td>Green Incentives</td><td><strong>Source multipliers favor low-carbon energy</strong></td><td>Static incentives</td><td>Unclear</td></tr>
-              <tr><td>Chain</td><td><strong>Solana (2000+ TPS, low fees)</strong></td><td>Multi-chain</td><td>Single-chain, slower</td></tr>
-              <tr><td>Governance</td><td>DAO with treasury and emergency fund</td><td>Hybrid</td><td>Centralized</td></tr>
-            </tbody>
-          </table>
-          <p><strong>ENRG is built to be the settlement layer for energy in a DePIN world—fast, scarce, and verifiable.</strong></p>
-        </section>
-
-        <section id="Tokenomics" class="glass-section fade-up">
-          <h2>6. Tokenomics (May 2026)</h2>
-          <p class="slogan">Energy-Backed. Hard-Capped. Programmatically Deflationary.</p>
-          <ul>
-            <li><strong>Max supply:</strong> 1,000,000,000 ENRG (fixed cap)</li>
-            <li><strong>Scale:</strong> 1 ENRG = 1 MWh (1,000 kWh)</li>
-            <li><strong>Token decimals:</strong> 6 (1 ENRG = 1,000,000 base units)</li>
-            <li><strong>Protocol fee:</strong> 15% of every mint distributed as:
-              <ul>
-                <li>20% Buyback &amp; Burn</li>
-                <li>40% Staking Rewards</li>
-                <li>30% DAO Reserve</li>
-                <li>10% Emergency Fund</li>
-              </ul>
-            </li>
-            <li><strong>Source multipliers:</strong>
-              <ul>
-                <li>Solar, Wind, Hydro: 100%</li>
-                <li>Biogas: 80%</li>
-                <li>Fossil: 50%</li>
-              </ul>
-            </li>
-          </ul>
-          <h3>Initial Distribution (200M ENRG, 20% of cap)</h3>
-          <table>
-            <thead><tr><th>Category</th><th>Share</th><th>Amount (ENRG)</th></tr></thead>
-            <tbody>
-              <tr><td>Team &amp; Founder (4-year vesting, 1-year cliff)</td><td>20%</td><td>200M</td></tr>
-              <tr><td>DAO Reserve</td><td>15%</td><td>150M</td></tr>
-              <tr><td>Investors &amp; Partners</td><td>10%</td><td>100M</td></tr>
-              <tr><td>Marketing &amp; Bounty</td><td>5%</td><td>50M</td></tr>
-              <tr><td>AirDrop &amp; Early Users</td><td>5%</td><td>50M</td></tr>
-              <tr><td>Liquidity Mining</td><td>5%</td><td>50M</td></tr>
-              <tr><td>Audits &amp; Development</td><td>5%</td><td>50M</td></tr>
-              <tr><td>Emergency Reserve</td><td>5%</td><td>50M</td></tr>
-            </tbody>
-          </table>
-          <h3>Deflationary Mechanics</h3>
-          <p>Every protocol fee is split to reinforce scarcity and long-term sustainability:</p>
-          <ul>
-            <li>20% of every protocol fee buys ENRG from the market and burns it (Buyback &amp; Burn).</li>
-            <li>40% of fees are distributed to stakers as rewards.</li>
-            <li>30% of fees fund ecosystem development via the DAO Reserve.</li>
-            <li>10% of fees are allocated to an Emergency Fund for black swan events.</li>
-          </ul>
-          <p><strong>As energy production grows, ENRG supply tightens—increasing scarcity and value for holders.</strong></p>
-        </section>
-
-        <section id="Emission" class="glass-section fade-up">
-          <h2>7. Emission Curve &amp; Scarcity Forecast</h2>
-          <p>ENRG’s emission schedule is designed so that the 800M ENRG free float is gradually exhausted as the network scales, turning ENRG into a structurally deflationary asset.</p>
-          <ul>
-            <li><strong>Conservative scenario (5% network growth per year):</strong>
-              <ul>
-                <li>Gradual onboarding of producers and stable demand.</li>
-                <li>The 800M ENRG free float is projected to be fully mined by <strong>2030</strong>.</li>
-              </ul>
-            </li>
-            <li><strong>Moderate scenario (15% growth per year):</strong>
-              <ul>
-                <li>Stronger adoption and compounding tokenized energy volume.</li>
-                <li>Mining of the 800M ENRG free float ends by <strong>2028</strong>, creating acute scarcity earlier.</li>
-              </ul>
-            </li>
-            <li><strong>Aggressive scenario (10x growth in first year):</strong>
-              <ul>
-                <li>Breakout year with rapid DePIN adoption and energy tokenization.</li>
-                <li>Remaining tokens are exhausted within <strong>18 months</strong>.</li>
-              </ul>
-            </li>
-          </ul>
-          <p><strong>Across all scenarios, ENRG is programmed to become a deflationary asset as demand grows and supply shrinks.</strong></p>
-          <div class="chart-container">
-            <div class="chart-title">Illustrative ENRG Emission Scenarios (Free Float Remaining)</div>
-            <svg viewBox="0 0 320 180">
-              <defs>
-                <linearGradient id="lineConservative" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#00E5FF"/><stop offset="100%" stop-color="#38BDF8"/></linearGradient>
-                <linearGradient id="lineModerate" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#FF6B00"/><stop offset="100%" stop-color="#FDBA74"/></linearGradient>
-                <linearGradient id="lineAggressive" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#F97316"/><stop offset="100%" stop-color="#FACC15"/></linearGradient>
-              </defs>
-              <line x1="40" y1="20" x2="40" y2="150" stroke="#4B5563" stroke-width="1"/>
-              <line x1="40" y1="150" x2="300" y2="150" stroke="#4B5563" stroke-width="1"/>
-              <text x="32" y="24" fill="#9CA3AF" font-size="8" text-anchor="end">800M</text>
-              <text x="32" y="88" fill="#9CA3AF" font-size="8" text-anchor="end">400M</text>
-              <text x="32" y="150" fill="#9CA3AF" font-size="8" text-anchor="end">0</text>
-              <text x="40" y="164" fill="#9CA3AF" font-size="8" text-anchor="middle">2025</text>
-              <text x="120" y="164" fill="#9CA3AF" font-size="8" text-anchor="middle">2027</text>
-              <text x="200" y="164" fill="#9CA3AF" font-size="8" text-anchor="middle">2029</text>
-              <text x="280" y="164" fill="#9CA3AF" font-size="8" text-anchor="middle">2031</text>
-              <path d="M40 30 L120 60 L200 100 L280 150" fill="none" stroke="url(#lineConservative)" stroke-width="2"/>
-              <path d="M40 30 L120 80 L200 140 L280 150" fill="none" stroke="url(#lineModerate)" stroke-width="2" stroke-dasharray="4 3"/>
-              <path d="M40 30 L120 120 L200 150 L280 150" fill="none" stroke="url(#lineAggressive)" stroke-width="2" stroke-dasharray="2 3"/>
-              <rect x="52" y="24" width="6" height="2" fill="url(#lineConservative)"/><text x="64" y="27" fill="#9CA3AF" font-size="8">Conservative</text>
-              <rect x="140" y="24" width="6" height="2" fill="url(#lineModerate)"/><text x="152" y="27" fill="#9CA3AF" font-size="8">Moderate</text>
-              <rect x="220" y="24" width="6" height="2" fill="url(#lineAggressive)"/><text x="232" y="27" fill="#9CA3AF" font-size="8">Aggressive</text>
-            </svg>
+          <div class="mini-console">
+            <div class="console-header">Live Feed</div>
+            <div class="console-body" id="console-feed" aria-live="polite">
+              <!-- Live log lines injected by JS -->
+            </div>
           </div>
-        </section>
-
-        <section id="EnergyVault" class="glass-section fade-up">
-          <h2>8. Energy Vault – The Economic Engine</h2>
-          <p class="slogan">Every MWh Minted Feeds the Vault. Every Fee Feeds Scarcity.</p>
-          <p>The ENRG Energy Vault is the central economic engine of the protocol. It accumulates protocol fees from every mint, executes buyback & burn operations, and routes capital to stakers, the DAO, and the emergency fund.</p>
-          <ul>
-            <li><strong>Mint event:</strong> producer mints ENRG against verified MWh.</li>
-            <li><strong>Protocol fee (15%):</strong> automatically routed into the Energy Vault.</li>
-            <li><strong>Buyback & Burn (20% of fee):</strong> vault buys ENRG on the market and burns it.</li>
-            <li><strong>Staking rewards (40% of fee):</strong> distributed to ENRG stakers securing the protocol.</li>
-            <li><strong>DAO Reserve (30% of fee):</strong> funds ecosystem growth, grants, and integrations.</li>
-            <li><strong>Emergency Fund (10% of fee):</strong> covers black swan events and critical interventions.</li>
-          </ul>
-          <p><strong>The Energy Vault closes the loop between real-world energy production and on-chain value capture.</strong></p>
-          <div class="chart-container">
-            <div class="chart-title">Protocol Fee Distribution (15% of Every Mint)</div>
-            <svg viewBox="0 0 260 160">
-              <defs>
-                <linearGradient id="pieCyan" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00E5FF"/><stop offset="100%" stop-color="#38BDF8"/></linearGradient>
-                <linearGradient id="pieOrange" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FF6B00"/><stop offset="100%" stop-color="#FDBA74"/></linearGradient>
-              </defs>
-              <circle cx="80" cy="80" r="50" fill="none" stroke="#1F2937" stroke-width="16"/>
-              <circle cx="80" cy="80" r="50" fill="none" stroke="url(#pieOrange)" stroke-width="16" stroke-dasharray="62.8 314" stroke-dashoffset="0"/>
-              <circle cx="80" cy="80" r="50" fill="none" stroke="url(#pieCyan)" stroke-width="16" stroke-dasharray="125.6 314" stroke-dashoffset="-62.8"/>
-              <circle cx="80" cy="80" r="50" fill="none" stroke="#22C55E" stroke-width="16" stroke-dasharray="94.2 314" stroke-dashoffset="-188.4"/>
-              <circle cx="80" cy="80" r="50" fill="none" stroke="#FACC15" stroke-width="16" stroke-dasharray="31.4 314" stroke-dashoffset="-282.6"/>
-              <rect x="150" y="40" width="8" height="8" fill="url(#pieOrange)"/><text x="164" y="47" fill="#E5E7EB" font-size="9">20% Buyback &amp; Burn</text>
-              <rect x="150" y="60" width="8" height="8" fill="url(#pieCyan)"/><text x="164" y="67" fill="#E5E7EB" font-size="9">40% Staking Rewards</text>
-              <rect x="150" y="80" width="8" height="8" fill="#22C55E"/><text x="164" y="87" fill="#E5E7EB" font-size="9">30% DAO Reserve</text>
-              <rect x="150" y="100" width="8" height="8" fill="#FACC15"/><text x="164" y="107" fill="#E5E7EB" font-size="9">10% Emergency Fund</text>
-            </svg>
-          </div>
-        </section>
-
-        <section id="SmartContracts" class="glass-section fade-up">
-          <h2>9. Smart Contract Architecture</h2>
-          <p>ENRG is deployed on Solana as a modular set of programs that separate concerns between minting, vault accounting, governance, and oracle integration.</p>
-          <ul>
-            <li><strong>ENRG_Mint_Program:</strong> mints and burns ENRG tokens based on verified energy proofs and protocol rules.</li>
-            <li><strong>ENRG_Vault_Program:</strong> tracks protocol fees, executes buyback & burn, and routes funds to staking, DAO, and emergency accounts.</li>
-            <li><strong>ENRG_Oracle_Adapter:</strong> validates incoming oracle data, enforces sanity checks, and exposes CPI entrypoints for Switchboard.</li>
-            <li><strong>ENRG_Staking_Program:</strong> manages staking positions, reward distribution, and lockups.</li>
-            <li><strong>ENRG_DAO_Program:</strong> governs parameter changes, treasury allocations, and protocol upgrades.</li>
-          </ul>
-          <p><strong>Each program is upgradeable under strict governance, with a clear path to progressive decentralization.</strong></p>
-        </section>
-
-        <section id="IoT" class="glass-section fade-up">
-          <h2>10. IoT Hardware Prototype</h2>
-          <p>The first ENRG IoT prototype demonstrates end-to-end measurement, signing, and submission of energy data from real-world devices.</p>
-          <ul>
-            <li><strong>ESP32 DevKit V1 with PZEM-004T sensor:</strong> measures voltage, current, power, and energy consumption at the edge.</li>
-            <li><strong>Ed25519 on-device signing:</strong> each measurement batch is signed locally, ensuring authenticity and tamper resistance.</li>
-            <li><strong>Wi-Fi data submission every 10 minutes:</strong> periodic pushes to the ENRG oracle layer keep on-chain state closely aligned with physical reality.</li>
-            <li><strong>OLED display for local monitoring:</strong> operators can verify live readings and device status without relying on external dashboards.</li>
-            <li><strong>Secure Element (ATECC608) planned for production:</strong> hardware-grade key storage and secure signing for large-scale deployments.</li>
-          </ul>
-          <p><strong>ENRG makes it possible for any rooftop, farm, or microgrid to become a cryptographically verifiable energy node.</strong></p>
-        </section>
-
-        <section id="Oracle" class="glass-section fade-up">
-          <h2>11. Oracle Architecture</h2>
-          <p>The ENRG oracle stack bridges physical energy measurements into verifiable on-chain data with a clear evolution path from MVP to production.</p>
-          <ul>
-            <li><strong>Primary:</strong> Switchboard for decentralized data delivery and aggregation.</li>
-            <li><strong>MVP:</strong> a local <code>oracle-publisher.js</code> script that ingests signed device data and publishes it to the network.</li>
-            <li><strong>Production:</strong> direct CPI (Cross-Program Invocation) to the ENRG smart contract, minimizing latency and trust assumptions.</li>
-          </ul>
-          <p><strong>From sensor to Solana, every hop is verifiable, auditable, and open.</strong></p>
-        </section>
-
-        <section id="Roadmap" class="glass-section fade-up">
-          <h2>12. Roadmap</h2>
-          <p class="slogan">From Genesis to Global DePIN Energy Rails.</p>
-          <div class="roadmap-wrapper">
-            <ul class="roadmap-timeline">
-              <li class="roadmap-item"><div class="roadmap-node"></div><div class="roadmap-connector"></div><div class="roadmap-card"><div class="roadmap-phase">Genesis</div><div class="roadmap-title">Testnet Launch &amp; Audit</div><div class="roadmap-desc">Testnet launch, smart contract audit, IoT prototype, landing page.<br/>Q2–Q3 2026</div></div></li>
-              <li class="roadmap-item"><div class="roadmap-node"></div><div class="roadmap-connector"></div><div class="roadmap-card"><div class="roadmap-phase">Mainnet</div><div class="roadmap-title">Mainnet Deployment</div><div class="roadmap-desc">Mainnet deployment, first IoT devices, DEX listing.<br/>Q4 2026 – Q1 2027</div></div></li>
-              <li class="roadmap-item"><div class="roadmap-node"></div><div class="roadmap-connector"></div><div class="roadmap-card"><div class="roadmap-phase">Vault Growth</div><div class="roadmap-title">Vault Activation</div><div class="roadmap-desc">Vault activation, Buyback &amp; Burn, industrial producers.<br/>Q2–Q3 2027</div></div></li>
-              <li class="roadmap-item"><div class="roadmap-node"></div><div class="roadmap-card"><div class="roadmap-phase">Expansion</div><div class="roadmap-title">Global DePIN Integration</div><div class="roadmap-desc">Tier‑1 CEX, cross‑chain, full DAO governance.<br/>2028+</div></div></li>
-            </ul>
-          </div>
-        </section>
-
-        <section id="Investment" class="glass-section fade-up">
-          <h2>13. Investment Opportunity</h2>
-          <p class="slogan">Own a Piece of the Energy Rail for Web3.</p>
-          <p>ENRG is raising a pre-seed round to finalize audits, refine the MVP, and launch the Energy Vault on mainnet.</p>
-          <ul>
-            <li><strong>Pre-Seed:</strong> $150k – $250k targeted to fund:
-              <ul>
-                <li>Smart contract and protocol audits.</li>
-                <li>MVP refinement and UX polish.</li>
-                <li>Legal structuring and compliance.</li>
-                <li>Marketing and community growth.</li>
-                <li>Initial DEX liquidity provisioning.</li>
-              </ul>
-            </li>
-          </ul>
-          <h3>Projected Vault Revenue</h3>
-          <table>
-            <thead><tr><th>Year</th><th>Projected Vault Revenue (USD)</th></tr></thead>
-            <tbody>
-              <tr><td>2027</td><td>$500k</td></tr>
-              <tr><td>2028</td><td>$2M</td></tr>
-              <tr><td>2029</td><td>$10M</td></tr>
-            </tbody>
-          </table>
-          <p><strong>Full technical specifications, detailed financial models, and deployment roadmaps are available upon request for qualified investors.</strong></p>
-        </section>
-
-        <section id="Advantages" class="glass-section fade-up">
-          <h2>14. Competitive Advantages</h2>
-          <p class="slogan">From Electrons to Yield – ENRG Owns the Full Stack.</p>
-          <ul>
-            <li>Supports <strong>any energy source</strong> (solar, wind, hydro, biogas, fossil) with transparent multipliers.</li>
-            <li><strong>Real asset backed by MWh</strong>, not loyalty points or synthetic credits.</li>
-            <li><strong>Buyback &amp; Burn</strong> mechanics continuously remove ENRG from circulation, creating structural scarcity.</li>
-            <li><strong>Energy source multipliers</strong> incentivize green energy and reward low-carbon producers.</li>
-            <li><strong>Fully decentralized, open source</strong> architecture aligned with DePIN and Web3 principles.</li>
-            <li>Built on the <strong>fast and cheap Solana blockchain</strong> (2000+ TPS), enabling high-throughput settlement and low fees.</li>
-            <li><strong>Proof-of-Production pipeline</strong> from IoT hardware to oracles to smart contracts.</li>
-            <li><strong>Energy Vault</strong> that ties protocol growth directly to token scarcity and staking yield.</li>
-          </ul>
-        </section>
-
-        <section id="Team" class="glass-section fade-up">
-          <h2>15. Team</h2>
-          <p><strong>Anton Grid – Founder &amp; CEO</strong></p>
-          <p>Anton is building ENRG to make energy markets as open and programmable as the internet. With experience across software, infrastructure, and crypto, he is focused on turning ENRG into the default settlement layer for tokenized energy.</p>
-          <p><strong>“Energy is the ultimate primitive. ENRG is how we bring it on-chain.”</strong></p>
-        </section>
-
-        <section id="LegalDisclaimer" class="glass-section fade-up">
-          <h2>16. Legal Disclaimer</h2>
-          <p>This document is for informational purposes only and does not constitute financial, legal, or investment advice. Nothing in this whitepaper should be interpreted as an offer to sell or a solicitation of an offer to buy any securities or other financial instruments.</p>
-          <p>ENRG tokens may be subject to regulatory scrutiny in certain jurisdictions. Prospective participants should conduct their own research and consult with professional advisors before making any decisions related to ENRG, its tokens, or associated protocols.</p>
-          <p>All forward-looking statements, including projections of revenue, adoption, or token value, are inherently uncertain and subject to change. ENRG makes no guarantees regarding future performance, and actual outcomes may differ materially from those described in this document.</p>
-        </section>
+        </div>
       </div>
-    </main>
+    </section>
+
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="section glass-section fade-up">
+      <h2>Dashboard Overview</h2>
+      <p class="section-slogan"><strong>From Electrons to Yield – ENRG Owns the Full Stack.</strong></p>
+      <!-- Existing "How It Works" and overview text should remain here -->
+      <p>
+        <!-- TODO: existing landing page "How It Works" content preserved by user -->
+      </p>
+    </section>
+
+    <!-- MINTING -->
+    <section id="minting" class="section glass-section fade-up">
+      <div class="section-header">
+        <h2>Minting Console</h2>
+        <p>Connect your production, simulate energy flows, and visualize ENRG minting.</p>
+      </div>
+      <div class="minting-layout">
+        <div class="minting-left">
+          <p class="section-slogan"><strong>Proof-of-Production in One Glance.</strong></p>
+          <p>
+            Use the simulator to see how your energy output converts into ENRG and protocol fees.
+          </p>
+          <button class="btn-primary" id="btn-start-minting">Start Minting</button>
+        </div>
+        <div class="minting-right">
+          <div class="mint-sim">
+            <div class="sim-header">Minting Simulator</div>
+            <div class="sim-bars">
+              <div class="sim-bar">
+                <span class="sim-label">Energy Input (kWh)</span>
+                <div class="sim-bar-track">
+                  <div class="sim-bar-fill" id="sim-energy-bar" style="width:0%"></div>
+                </div>
+              </div>
+              <div class="sim-bar">
+                <span class="sim-label">ENRG Minted</span>
+                <div class="sim-bar-track">
+                  <div class="sim-bar-fill sim-bar-fill-secondary" id="sim-enrg-bar" style="width:0%"></div>
+                </div>
+              </div>
+            </div>
+            <div class="sim-output">
+              <div>Energy: <span id="sim-energy-value">0</span> kWh</div>
+              <div>ENRG: <span id="sim-enrg-value">0</span></div>
+            </div>
+            <button class="btn-secondary" id="btn-simulate-mint">Simulate Mint</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HISTORY -->
+    <section id="history" class="section glass-section fade-up">
+      <h2>History</h2>
+      <p>
+        <!-- Existing history / previous activity content preserved by user -->
+      </p>
+      <div class="history-table-wrap">
+        <table class="history-table" aria-describedby="history">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Producer</th>
+              <th>Energy (kWh)</th>
+              <th>ENRG Minted</th>
+            </tr>
+          </thead>
+          <tbody id="history-body">
+            <!-- Rows injected by JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TOKENOMICS -->
+    <section id="tokenomics" class="section glass-section fade-up">
+      <h2>Tokenomics</h2>
+      <p>
+        <!-- Existing tokenomics text preserved by user -->
+      </p>
+      <div class="tokenomics-grid">
+        <div class="tokenomics-cards">
+          <div class="token-card">
+            <h3>Max Supply</h3>
+            <p>1,000,000,000 ENRG (fixed cap)</p>
+          </div>
+          <div class="token-card">
+            <h3>Scale</h3>
+            <p>1 ENRG = 1 MWh (1,000 kWh)</p>
+          </div>
+          <div class="token-card">
+            <h3>Protocol Fee</h3>
+            <p>15% of every mint (20% Buyback, 40% Staking, 30% DAO, 10% Emergency).</p>
+          </div>
+        </div>
+        <div class="tokenomics-chart chart-container">
+          <div class="chart-title">Protocol Fee Distribution</div>
+          <!-- SVG chart preserved visually -->
+          <svg viewBox="0 0 260 160" aria-hidden="true">
+            <defs>
+              <linearGradient id="pieCyan" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00E5FF"/>
+                <stop offset="100%" stop-color="#38BDF8"/>
+              </linearGradient>
+              <linearGradient id="pieOrange" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#FF6B00"/>
+                <stop offset="100%" stop-color="#FDBA74"/>
+              </linearGradient>
+            </defs>
+
+            <circle cx="80" cy="80" r="50" fill="none" stroke="#1F2937" stroke-width="16"/>
+
+            <circle cx="80" cy="80" r="50"
+                    fill="none"
+                    stroke="url(#pieOrange)"
+                    stroke-width="16"
+                    stroke-dasharray="62.8 314"
+                    stroke-dashoffset="0"/>
+
+            <circle cx="80" cy="80" r="50"
+                    fill="none"
+                    stroke="url(#pieCyan)"
+                    stroke-width="16"
+                    stroke-dasharray="125.6 314"
+                    stroke-dashoffset="-62.8"/>
+
+            <circle cx="80" cy="80" r="50"
+                    fill="none"
+                    stroke="#22C55E"
+                    stroke-width="16"
+                    stroke-dasharray="94.2 314"
+                    stroke-dashoffset="-188.4"/>
+
+            <circle cx="80" cy="80" r="50"
+                    fill="none"
+                    stroke="#FACC15"
+                    stroke-width="16"
+                    stroke-dasharray="31.4 314"
+                    stroke-dashoffset="-282.6"/>
+
+            <rect x="150" y="40" width="8" height="8" fill="url(#pieOrange)"/>
+            <text x="164" y="47" fill="#E5E7EB" font-size="9">20% Buyback &amp; Burn</text>
+
+            <rect x="150" y="60" width="8" height="8" fill="url(#pieCyan)"/>
+            <text x="164" y="67" fill="#E5E7EB" font-size="9">40% Staking Rewards</text>
+
+            <rect x="150" y="80" width="8" height="8" fill="#22C55E"/>
+            <text x="164" y="87" fill="#E5E7EB" font-size="9">30% DAO Reserve</text>
+
+            <rect x="150" y="100" width="8" height="8" fill="#FACC15"/>
+            <text x="164" y="107" fill="#E5E7EB" font-size="9">10% Emergency Fund</text>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- ENERGY VAULT -->
+    <section id="energy-vault" class="section glass-section fade-up">
+      <h2>Energy Vault</h2>
+      <p class="section-slogan"><strong>Every MWh Minted Feeds the Vault. Every Fee Feeds Scarcity.</strong></p>
+      <div class="vault-flow">
+        <div class="vault-node">Revenue</div>
+        <div class="vault-arrow">→</div>
+        <div class="vault-node">Buyback &amp; Burn</div>
+        <div class="vault-arrow">→</div>
+        <div class="vault-node">Scarcity</div>
+        <div class="vault-arrow">→</div>
+        <div class="vault-node">Value Growth</div>
+      </div>
+    </section>
+
+    <!-- ROADMAP -->
+    <section id="roadmap" class="section glass-section fade-up">
+      <h2>Roadmap</h2>
+      <div class="roadmap-wrapper">
+        <div class="roadmap-timeline">
+          <div class="roadmap-item passed">
+            <div class="roadmap-node"><span class="checkmark">✓</span></div>
+            <div class="roadmap-card">
+              <div class="roadmap-phase">Phase I</div>
+              <div class="roadmap-title">Genesis / Prototype</div>
+              <div class="roadmap-desc">Build IoT prototype, deploy core contracts on testnet, validate oracle pipeline.</div>
+            </div>
+          </div>
+          <div class="roadmap-item current">
+            <div class="roadmap-node"></div>
+            <div class="roadmap-card">
+              <div class="roadmap-phase">Phase II</div>
+              <div class="roadmap-title">Mainnet &amp; Vault Launch</div>
+              <div class="roadmap-desc">Launch ENRG on Solana mainnet, onboard producers, bootstrap staking.</div>
+            </div>
+          </div>
+          <div class="roadmap-item upcoming">
+            <div class="roadmap-node"></div>
+            <div class="roadmap-card">
+              <div class="roadmap-phase">Phase III</div>
+              <div class="roadmap-title">Global DePIN Expansion</div>
+              <div class="roadmap-desc">Integrate with DePIN networks, energy retailers, and financial protocols.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PARTNERS -->
+    <section id="partners" class="section glass-section fade-up">
+      <h2>Partners</h2>
+      <p>We are integrating with infrastructure providers, DePIN networks, and energy innovators.</p>
+      <div class="partners-grid">
+        <div class="partner-logo">LOGO 1</div>
+        <div class="partner-logo">LOGO 2</div>
+        <div class="partner-logo">LOGO 3</div>
+        <div class="partner-logo">LOGO 4</div>
+      </div>
+      <button class="btn-primary" id="btn-become-partner">Become a Partner</button>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="settings" class="section glass-section fade-up">
+      <h2>Settings &amp; Contact</h2>
+      <p>For integrations, support, or investor inquiries, reach out directly.</p>
+      <button class="btn-secondary" id="btn-contact">Get Started</button>
+    </section>
+
+  </main>
+
+  <!-- MINT MODAL -->
+  <div class="modal-backdrop" id="mint-modal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mint-modal-title">
+      <div class="modal-header">
+        <h3 id="mint-modal-title">Start Minting</h3>
+        <button class="modal-close" id="mint-modal-close" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <p>Connect your energy source and run a live Proof-of-Production session.</p>
+        <p><strong>This is a simulator.</strong> Use it to understand how ENRG minting works before going live.</p>
+        <button class="btn-primary" id="btn-simulate-mint-modal">Run Simulation</button>
+      </div>
+    </div>
   </div>
-  <script>
-    (function () {
-      const canvas = document.getElementById("particle-canvas");
-      const ctx = canvas.getContext("2d");
-      let particles = [], width, height;
-      function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
-      window.addEventListener("resize", resize); resize();
-      const colors = [{ c: "#00E5FF", glow: "rgba(0,229,255,0.7)" }, { c: "#FF6B00", glow: "rgba(255,107,0,0.7)" }];
-      function createParticle() {
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        return { x: Math.random() * width, y: Math.random() * height, vx: (Math.random() - 0.5) * 0.25, vy: (Math.random() - 0.5) * 0.25, r: Math.random() * 2 + 0.6, color: color.c, glow: color.glow };
-      }
-      function init() { particles = []; for (let i = 0; i < 140; i++) particles.push(createParticle()); }
-      function draw() {
-        ctx.clearRect(0, 0, width, height); ctx.globalCompositeOperation = "lighter";
-        for (const p of particles) {
-          ctx.beginPath(); const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 4);
-          gradient.addColorStop(0, p.glow); gradient.addColorStop(1, "transparent");
-          ctx.fillStyle = gradient; ctx.arc(p.x, p.y, p.r * 4, 0, Math.PI * 2); ctx.fill();
-          ctx.beginPath(); ctx.fillStyle = p.color; ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
-          p.x += p.vx; p.y += p.vy;
-          if (p.x < -10) p.x = width + 10; if (p.x > width + 10) p.x = -10;
-          if (p.y < -10) p.y = height + 10; if (p.y > height + 10) p.y = -10;
-        }
-        requestAnimationFrame(draw);
-      }
-      init(); draw();
-    })();
-    (function () {
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => { if (entry.isIntersecting) { entry.target.classList.add("visible"); observer.unobserve(entry.target); } });
-      }, { threshold: 0.12 });
-      document.querySelectorAll(".fade-up").forEach((el) => observer.observe(el));
-    })();
-  </script>
+
+  <footer class="site-footer">
+    <div class="footer-links">
+      <a href="whitepaper.html" id="footer-whitepaper">White Paper</a>
+      <a href="technical-overview.html" id="footer-techdocs">Technical Documentation</a>
+      <a href="mailto:anton@enrg.network" id="footer-contact">Contact</a>
+      <a href="#" target="_blank" rel="noopener">Twitter</a>
+      <a href="#" target="_blank" rel="noopener">Discord</a>
+    </div>
+    <div class="footer-copy">
+      © <span id="year"></span> ENRG Protocol – DePIN Energy Infrastructure.
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
 </body>
 </html>
