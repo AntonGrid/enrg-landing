@@ -1,190 +1,375 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ENRG – Decentralized Energy Protocol</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>ENRG – DePIN Energy Command Center</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <canvas id="energyCanvas"></canvas>
+  <canvas id="particle-canvas"></canvas>
+  <div class="bg-overlay"></div>
 
-  <header>
-    <nav>
-      <a href="#" class="logo">ENRG</a>
-      <ul class="nav-links">
-        <li><a href="#how-it-works">How It Works</a></li>
-        <li><a href="#tokenomics">Tokenomics</a></li>
-        <li><a href="#vault">Energy Vault</a></li>
-        <li><a href="#roadmap">Roadmap</a></li>
-        <li><a href="#partners">Partners</a></li>
-        <li><a href="#join">Join Us</a></li>
-      </ul>
+  <!-- FIXED NAV -->
+  <header class="top-nav">
+    <div class="nav-left">
+      <div class="brand-mark">
+        <div class="brand-mark-inner">EN</div>
+      </div>
+      <div class="brand-text">
+        <div class="brand-title">ENRG Protocol</div>
+        <div class="brand-subtitle">DePIN Energy Dashboard</div>
+      </div>
+    </div>
+    <nav class="nav-links">
+      <a href="#home" class="nav-link">HOME</a>
+      <a href="#dashboard" class="nav-link">DASHBOARD</a>
+      <a href="#minting" class="nav-link">MINTING</a>
+      <a href="#history" class="nav-link">HISTORY</a>
+      <a href="#settings" class="nav-link">SETTINGS</a>
     </nav>
+    <div class="nav-cta">
+      <button class="btn-outline" id="btn-get-started">Get Started</button>
+    </div>
   </header>
 
-  <section class="hero">
-    <div class="hero-content">
-      <h1>ENRG</h1>
-      <p class="subtitle">The Backbone for DePIN Energy</p>
-      <p class="hero-desc">Energizing the future of decentralized energy by rewarding every watt of clean energy production with liquid, digital assets.</p>
-      <div class="metrics">
-        <div class="metric">
-          <span class="metric-value" id="total-energy">0</span>
-          <span class="metric-label">Total Energy (MWh)</span>
+  <main class="page-shell">
+    <!-- HERO / HOME -->
+    <section id="home" class="section hero-section fade-up">
+      <div class="hero-grid">
+        <div class="hero-left">
+          <div class="hero-logo-wrap">
+            <svg class="hero-logo" viewBox="0 0 160 160">
+              <defs>
+                <radialGradient id="logoGrad" cx="30%" cy="0%" r="100%">
+                  <stop offset="0%" stop-color="#00E5FF"/>
+                  <stop offset="50%" stop-color="#0B1120"/>
+                  <stop offset="100%" stop-color="#000000"/>
+                </radialGradient>
+                <linearGradient id="logoRing" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#00E5FF"/>
+                  <stop offset="100%" stop-color="#FF6B00"/>
+                </linearGradient>
+              </defs>
+              <circle cx="80" cy="80" r="68" fill="url(#logoGrad)" stroke="url(#logoRing)" stroke-width="5"/>
+              <path d="M45 100 L45 55 L65 55 C78 55 87 63 87 76 C87 89 78 96 65 96 L55 96 L55 100 Z
+                       M55 86 L65 86 C71 86 75 82 75 76 C75 70 71 66 65 66 L55 66 Z"
+                    fill="#00E5FF"/>
+              <path d="M95 100 L95 55 L107 55 L107 100 Z" fill="#FF6B00"/>
+            </svg>
+            <div class="hero-logo-glow"></div>
+          </div>
+          <h1 class="hero-title">Live DePIN Energy Command Center</h1>
+          <p class="hero-tagline">
+            Monitor production, mint ENRG, and track protocol health in real time.
+          </p>
+          <p class="hero-slogan">
+            <strong>The Only DePIN Protocol with Buyback &amp; Burn – Backed by Real MWh, Not Loyalty Points.</strong>
+          </p>
+          <div class="hero-actions">
+            <button class="btn-primary" id="btn-start-minting-hero">Start Minting</button>
+            <button class="btn-secondary" id="btn-download-whitepaper">Download White Paper</button>
+            <button class="btn-secondary" id="btn-technical-docs">Technical Documentation</button>
+          </div>
+          <p class="hero-social-proof">
+            Join <span id="producers-counter" data-target="1200">0</span>+ energy producers already connected.
+          </p>
         </div>
-        <div class="metric">
-          <span class="metric-value" id="active-producers">0</span>
-          <span class="metric-label">Active Producers</span>
-        </div>
-        <div class="metric">
-          <span class="metric-value" id="total-staked">0</span>
-          <span class="metric-label">Total Staked ENRG</span>
+        <div class="hero-right">
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-label">Total Energy</div>
+              <div class="metric-value"><span class="counter" data-target="2056">0</span> MWh</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Active Producers</div>
+              <div class="metric-value"><span class="counter" data-target="150">0</span></div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">ENRG Staked</div>
+              <div class="metric-value"><span class="counter" data-target="65000">0</span></div>
+            </div>
+          </div>
+          <div class="mini-console">
+            <div class="console-header">Live Feed</div>
+            <div class="console-body" id="console-feed">
+              <!-- Fake live log lines injected by JS -->
+            </div>
+          </div>
         </div>
       </div>
-      <p class="hero-community" id="community-counter">
-        Join <span class="counter" data-target="1200">0</span>+ energy producers in the ENRG network
+    </section>
+
+    <!-- DASHBOARD (HOW IT WORKS + OVERVIEW) -->
+    <section id="dashboard" class="section glass-section fade-up">
+      <h2>Dashboard Overview</h2>
+      <p class="section-slogan"><strong>From Electrons to Yield – ENRG Owns the Full Stack.</strong></p>
+      <!-- TODO: paste existing "How It Works" and overview text here -->
+      <p>
+        <!-- Existing landing page explanation of how ENRG works goes here. -->
       </p>
-      <div class="cta-buttons">
-        <a href="#minting" class="btn">Start Minting</a>
-        <a href="mailto:anton@enrg.network" class="btn-outline">For Investors</a>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <section id="how-it-works">
-    <h2>How It Works</h2>
-    <div class="steps">
-      <div class="step">
-        <svg class="step-icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#00D4AA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-        </svg>
-        <h3>Connect Device</h3>
-        <p>Any generator. One-time setup.</p>
+    <!-- MINTING SECTION -->
+    <section id="minting" class="section glass-section fade-up">
+      <div class="section-header">
+        <h2>Minting Console</h2>
+        <p>Connect your production, simulate energy flows, and visualize ENRG minting.</p>
       </div>
-      <div class="step">
-        <svg class="step-icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#00D4AA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-        </svg>
-        <h3>Generate Energy</h3>
-        <p>Every 10 min, a signed proof is created.</p>
-      </div>
-      <div class="step">
-        <svg class="step-icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#00D4AA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-        </svg>
-        <h3>Earn ENRG</h3>
-        <p>85% to you. 15% fuels the protocol.</p>
-      </div>
-    </div>
-  </section>
-
-  <section id="tokenomics">
-    <h2>Tokenomics</h2>
-    <div class="tokenomics-grid">
-      <div class="tokenomics-item">
-        <h3>1,000,000,000 ENRG</h3>
-        <p>Fixed Supply</p>
-      </div>
-      <div class="tokenomics-item">
-        <h3>15% Protocol Fee</h3>
-        <p>Distributed to Buyback, Staking, DAO, Emergency</p>
-      </div>
-      <div class="tokenomics-item">
-        <h3>Buyback & Burn</h3>
-        <p>Deflationary pressure on every mint</p>
-      </div>
-      <div class="tokenomics-item">
-        <h3>Staking Rewards</h3>
-        <p>Earn yield by locking ENRG</p>
-      </div>
-    </div>
-    <a href="whitepaper.pdf" class="btn">Download White Paper</a>
-  </section>
-
-  <section id="vault">
-    <h2>The Energy Vault: The Engine of Value</h2>
-    <div class="vault-diagram">
-      <div class="vault-step">Revenue from energy sales</div>
-      <div class="vault-arrow">↓</div>
-      <div class="vault-row">
-        <div class="vault-step">60% Buyback & Burn</div>
-        <div class="vault-step">20% Staking Rewards</div>
-        <div class="vault-step">20% Reserve</div>
-      </div>
-      <div class="vault-arrow">↓</div>
-      <div class="vault-step">Token scarcity ↑ Value for holders ↑</div>
-    </div>
-    <p>15% protocol fee funds Buyback & Burn, creating deflationary pressure and value for all holders.</p>
-  </section>
-
-  <section id="roadmap">
-    <h2>Roadmap</h2>
-    <div class="timeline">
-      <div class="timeline-item passed">
-        <div class="timeline-icon">✓</div>
-        <div class="timeline-content">
-          <h3>Genesis</h3>
-          <span class="timeline-date">Q2–Q3 2026</span>
-          <p>Testnet launch, smart contract audit, IoT prototype, landing page</p>
+      <div class="minting-layout">
+        <div class="minting-left">
+          <p class="section-slogan"><strong>Proof-of-Production in One Glance.</strong></p>
+          <!-- TODO: if you have existing minting / call-to-action text, paste it here -->
+          <p>
+            Use the simulator to see how your energy output converts into ENRG and protocol fees.
+          </p>
+          <button class="btn-primary" id="btn-start-minting">Start Minting</button>
+        </div>
+        <div class="minting-right">
+          <div class="mint-sim">
+            <div class="sim-header">Minting Simulator</div>
+            <div class="sim-bars">
+              <div class="sim-bar">
+                <span class="sim-label">Energy Input (kWh)</span>
+                <div class="sim-bar-track">
+                  <div class="sim-bar-fill" id="sim-energy-bar"></div>
+                </div>
+              </div>
+              <div class="sim-bar">
+                <span class="sim-label">ENRG Minted</span>
+                <div class="sim-bar-track">
+                  <div class="sim-bar-fill sim-bar-fill-secondary" id="sim-enrg-bar"></div>
+                </div>
+              </div>
+            </div>
+            <div class="sim-output">
+              <div>Energy: <span id="sim-energy-value">0</span> kWh</div>
+              <div>ENRG: <span id="sim-enrg-value">0</span></div>
+            </div>
+            <button class="btn-secondary" id="btn-simulate-mint">Simulate Mint</button>
+          </div>
         </div>
       </div>
-      <div class="timeline-item current">
-        <div class="timeline-icon">●</div>
-        <div class="timeline-content">
-          <h3>Mainnet</h3>
-          <span class="timeline-date">Q4 2026 – Q1 2027</span>
-          <p>Mainnet deployment, first IoT devices, DEX listing</p>
+    </section>
+
+    <!-- HISTORY SECTION -->
+    <section id="history" class="section glass-section fade-up">
+      <h2>History</h2>
+      <!-- TODO: paste existing history / previous activity / narrative text here -->
+      <p>
+        <!-- Existing landing page history / story content goes here. -->
+      </p>
+      <div class="history-table-wrap">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Producer</th>
+              <th>Energy (kWh)</th>
+              <th>ENRG Minted</th>
+            </tr>
+          </thead>
+          <tbody id="history-body">
+            <!-- Fake rows injected by JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TOKENOMICS SECTION -->
+    <section id="tokenomics" class="section glass-section fade-up">
+      <h2>Tokenomics</h2>
+      <!-- TODO: paste existing Tokenomics numbers and descriptions here -->
+      <p>
+        <!-- Existing tokenomics text (max supply, scale, decimals, etc.) goes here. -->
+      </p>
+      <div class="tokenomics-grid">
+        <div class="tokenomics-cards">
+          <div class="token-card">
+            <h3>Max Supply</h3>
+            <p>1,000,000,000 ENRG (fixed cap)</p>
+          </div>
+          <div class="token-card">
+            <h3>Scale</h3>
+            <p>1 ENRG = 1 MWh (1,000 kWh)</p>
+          </div>
+          <div class="token-card">
+            <h3>Protocol Fee</h3>
+            <p>15% of every mint (20% Buyback, 40% Staking, 30% DAO, 10% Emergency).</p>
+          </div>
+        </div>
+        <div class="tokenomics-chart chart-container">
+          <div class="chart-title">Protocol Fee Distribution</div>
+          <svg viewBox="0 0 260 160">
+            <defs>
+              <linearGradient id="pieCyan" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00E5FF"/>
+                <stop offset="100%" stop-color="#38BDF8"/>
+              </linearGradient>
+              <linearGradient id="pieOrange" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#FF6B00"/>
+                <stop offset="100%" stop-color="#FDBA74"/>
+              </linearGradient>
+            </defs>
+
+            <circle cx="80" cy="80" r="50" fill="none" stroke="#1F2937" stroke-width="16"/>
+
+            <circle cx="80" cy="80" r="50"
+                    fill="none"
+                    stroke="url(#pieOrange)"
+                    stroke-width="16"
+                    stroke-dasharray="62.8 314"
+                    stroke-dashoffset="0"/>
+
+            <circle cx="80" cy="80" r="50"
+                    fill="none"
+                    stroke="url(#pieCyan)"
+                    stroke-width="16"
+                    stroke-dasharray="125.6 314"
+                    stroke-dashoffset="-62.8"/>
+
+            <circle cx="80" cy="80" r="50"
+                    fill="none"
+                    stroke="#22C55E"
+                    stroke-width="16"
+                    stroke-dasharray="94.2 314"
+                    stroke-dashoffset="-188.4"/>
+
+            <circle cx="80" cy="80" r="50"
+                    fill="none"
+                    stroke="#FACC15"
+                    stroke-width="16"
+                    stroke-dasharray="31.4 314"
+                    stroke-dashoffset="-282.6"/>
+
+            <rect x="150" y="40" width="8" height="8" fill="url(#pieOrange)"/>
+            <text x="164" y="47" fill="#E5E7EB" font-size="9">20% Buyback &amp; Burn</text>
+
+            <rect x="150" y="60" width="8" height="8" fill="url(#pieCyan)"/>
+            <text x="164" y="67" fill="#E5E7EB" font-size="9">40% Staking Rewards</text>
+
+            <rect x="150" y="80" width="8" height="8" fill="#22C55E"/>
+            <text x="164" y="87" fill="#E5E7EB" font-size="9">30% DAO Reserve</text>
+
+            <rect x="150" y="100" width="8" height="8" fill="#FACC15"/>
+            <text x="164" y="107" fill="#E5E7EB" font-size="9">10% Emergency Fund</text>
+          </svg>
         </div>
       </div>
-      <div class="timeline-item">
-        <div class="timeline-icon">○</div>
-        <div class="timeline-content">
-          <h3>Vault Growth</h3>
-          <span class="timeline-date">Q2–Q3 2027</span>
-          <p>Vault activation, Buyback & Burn, industrial producers</p>
+    </section>
+
+    <!-- ENERGY VAULT SECTION -->
+    <section id="energy-vault" class="section glass-section fade-up">
+      <h2>Energy Vault</h2>
+      <!-- TODO: paste existing Energy Vault / economic engine text here if present -->
+      <p class="section-slogan"><strong>Every MWh Minted Feeds the Vault. Every Fee Feeds Scarcity.</strong></p>
+      <div class="vault-flow">
+        <div class="vault-node">Revenue</div>
+        <div class="vault-arrow">→</div>
+        <div class="vault-node">Buyback &amp; Burn</div>
+        <div class="vault-arrow">→</div>
+        <div class="vault-node">Scarcity</div>
+        <div class="vault-arrow">→</div>
+        <div class="vault-node">Value Growth</div>
+      </div>
+    </section>
+
+    <!-- ROADMAP SECTION -->
+    <section id="roadmap" class="section glass-section fade-up">
+      <h2>Roadmap</h2>
+      <!-- TODO: paste existing Roadmap phases text here -->
+      <div class="roadmap-wrapper">
+        <div class="roadmap-timeline">
+          <div class="roadmap-item passed">
+            <div class="roadmap-node">
+              <span class="checkmark">✓</span>
+            </div>
+            <div class="roadmap-card">
+              <div class="roadmap-phase">Phase I</div>
+              <div class="roadmap-title">Genesis / Prototype</div>
+              <div class="roadmap-desc">
+                <!-- Existing Phase I description goes here. -->
+              </div>
+            </div>
+          </div>
+          <div class="roadmap-item current">
+            <div class="roadmap-node"></div>
+            <div class="roadmap-card">
+              <div class="roadmap-phase">Phase II</div>
+              <div class="roadmap-title">Mainnet &amp; Vault Launch</div>
+              <div class="roadmap-desc">
+                <!-- Existing Phase II description goes here. -->
+              </div>
+            </div>
+          </div>
+          <div class="roadmap-item upcoming">
+            <div class="roadmap-node"></div>
+            <div class="roadmap-card">
+              <div class="roadmap-phase">Phase III</div>
+              <div class="roadmap-title">Global DePIN Expansion</div>
+              <div class="roadmap-desc">
+                <!-- Existing Phase III description goes here. -->
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="timeline-item">
-        <div class="timeline-icon">○</div>
-        <div class="timeline-content">
-          <h3>Expansion</h3>
-          <span class="timeline-date">2028+</span>
-          <p>Tier-1 CEX, cross-chain, full DAO governance</p>
-        </div>
+    </section>
+
+    <!-- PARTNERS SECTION -->
+    <section id="partners" class="section glass-section fade-up">
+      <h2>Partners</h2>
+      <p>We are integrating with infrastructure providers, DePIN networks, and energy innovators.</p>
+      <div class="partners-grid">
+        <div class="partner-logo">LOGO 1</div>
+        <div class="partner-logo">LOGO 2</div>
+        <div class="partner-logo">LOGO 3</div>
+        <div class="partner-logo">LOGO 4</div>
+      </div>
+      <button class="btn-primary" id="btn-become-partner">Become a Partner</button>
+    </section>
+
+    <!-- SETTINGS / CONTACT SECTION -->
+    <section id="settings" class="section glass-section fade-up">
+      <h2>Settings &amp; Contact</h2>
+      <!-- TODO: paste existing contact email and any settings/help text here -->
+      <p>
+        For integrations, support, or investor inquiries, reach out directly.
+      </p>
+      <button class="btn-secondary" id="btn-contact">Get Started</button>
+    </section>
+  </main>
+
+  <!-- MINTING MODAL -->
+  <div class="modal-backdrop" id="mint-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Start Minting</h3>
+        <button class="modal-close" id="mint-modal-close">×</button>
+      </div>
+      <div class="modal-body">
+        <p>Connect your energy source and run a live Proof-of-Production session.</p>
+        <p><strong>This is a simulator.</strong> Use it to understand how ENRG minting works before going live.</p>
+        <button class="btn-primary" id="btn-simulate-mint-modal">Run Simulation</button>
       </div>
     </div>
-  </section>
+  </div>
 
-  <section id="partners">
-    <h2>Partners & Media</h2>
-    <p>We are proud to partner with leading DePIN and energy innovators.</p>
-    <a href="mailto:anton@enrg.network" class="btn">Become a Partner</a>
-    <div class="media-logos">
-      <span class="media-placeholder">Cointelegraph</span>
-      <span class="media-placeholder">Decrypt</span>
-      <span class="media-placeholder">CoinDesk</span>
-    </div>
-  </section>
-
-  <section id="join">
-    <h2>Join the Network</h2>
-    <p>Be part of the decentralized energy revolution. Connect your device and start earning ENRG today.</p>
-    <a href="mailto:anton@enrg.network" class="btn">Get Started</a>
-  </section>
-
-  <footer>
-    <p>&copy; 2026 ENRG Protocol. All rights reserved.</p>
+  <footer class="site-footer">
     <div class="footer-links">
-      <a href="whitepaper.pdf">White Paper</a>
-      <a href="technical-overview.pdf">Technical Documentation</a>
-      <a href="mailto:anton@enrg.network">Contact</a>
-      <a href="#">Twitter</a>
-      <a href="#">Discord</a>
+      <!-- Keep existing links, just enhance visuals -->
+      <a href="whitepaper.pdf" id="footer-whitepaper">White Paper</a>
+      <a href="technical-overview.pdf" id="footer-techdocs">Technical Documentation</a>
+      <a href="mailto:contact@enrg.network" id="footer-contact">Contact</a>
+      <a href="https://twitter.com" target="_blank" rel="noreferrer">Twitter</a>
+      <a href="https://discord.com" target="_blank" rel="noreferrer">Discord</a>
+    </div>
+    <div class="footer-copy">
+      © <span id="year"></span> ENRG Protocol – DePIN Energy Infrastructure.
     </div>
   </footer>
 
   <script src="script.js"></script>
-<canvas id="energyCanvas"></canvas>
 </body>
 </html>
+
