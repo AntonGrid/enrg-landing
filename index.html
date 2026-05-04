@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ENRG – Decentralized Energy Protocol</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="#" class="logo">ENRG</a>
+      <ul class="nav-links">
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#tokenomics">Tokenomics</a></li>
+        <li><a href="#vault">Energy Vault</a></li>
+        <li><a href="#roadmap">Roadmap</a></li>
+        <li><a href="#partners">Partners</a></li>
+        <li><a href="#join">Join Us</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="hero-content">
+      <h1>ENRG</h1>
+      <p class="subtitle">The Backbone for DePIN Energy</p>
+      <p class="hero-desc">Energizing the future of decentralized energy by rewarding every watt of clean energy production with liquid, digital assets.</p>
+      <div class="metrics">
+        <div class="metric">
+          <span class="metric-value" id="total-energy">0</span>
+          <span class="metric-label">Total Energy (MWh)</span>
+        </div>
+        <div class="metric">
+          <span class="metric-value" id="active-producers">0</span>
+          <span class="metric-label">Active Producers</span>
+        </div>
+        <div class="metric">
+          <span class="metric-value" id="total-staked">0</span>
+          <span class="metric-label">Total Staked ENRG</span>
+        </div>
+      </div>
+      <p class="hero-community" id="community-counter">
+        Join <span class="counter" data-target="1200">0</span>+ energy producers in the ENRG network
+      </p>
+      <div class="cta-buttons">
+        <a href="#minting" class="btn">Start Minting</a>
+        <a href="mailto:anton@enrg.network" class="btn-outline">For Investors</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="how-it-works">
+    <h2>How It Works</h2>
+    <div class="steps">
+      <div class="step">
+        <svg class="step-icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#00D4AA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+        <h3>Connect Device</h3>
+        <p>Any generator. One-time setup.</p>
+      </div>
+      <div class="step">
+        <svg class="step-icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#00D4AA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+        <h3>Generate Energy</h3>
+        <p>Every 10 min, a signed proof is created.</p>
+      </div>
+      <div class="step">
+        <svg class="step-icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#00D4AA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+        <h3>Earn ENRG</h3>
+        <p>85% to you. 15% fuels the protocol.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="tokenomics">
+    <h2>Tokenomics</h2>
+    <div class="tokenomics-grid">
+      <div class="tokenomics-item">
+        <h3>1,000,000,000 ENRG</h3>
+        <p>Fixed Supply</p>
+      </div>
+      <div class="tokenomics-item">
+        <h3>15% Protocol Fee</h3>
+        <p>Distributed to Buyback, Staking, DAO, Emergency</p>
+      </div>
+      <div class="tokenomics-item">
+        <h3>Buyback & Burn</h3>
+        <p>Deflationary pressure on every mint</p>
+      </div>
+      <div class="tokenomics-item">
+        <h3>Staking Rewards</h3>
+        <p>Earn yield by locking ENRG</p>
+      </div>
+    </div>
+    <a href="whitepaper.pdf" class="btn">Download White Paper</a>
+  </section>
+
+  <section id="vault">
+    <h2>The Energy Vault: The Engine of Value</h2>
+    <div class="vault-diagram">
+      <div class="vault-step">Revenue from energy sales</div>
+      <div class="vault-arrow">↓</div>
+      <div class="vault-row">
+        <div class="vault-step">60% Buyback & Burn</div>
+        <div class="vault-step">20% Staking Rewards</div>
+        <div class="vault-step">20% Reserve</div>
+      </div>
+      <div class="vault-arrow">↓</div>
+      <div class="vault-step">Token scarcity ↑ Value for holders ↑</div>
+    </div>
+    <p>15% protocol fee funds Buyback & Burn, creating deflationary pressure and value for all holders.</p>
+  </section>
+
+  <section id="roadmap">
+    <h2>Roadmap</h2>
+    <div class="timeline">
+      <div class="timeline-item passed">
+        <div class="timeline-icon">✓</div>
+        <div class="timeline-content">
+          <h3>Genesis</h3>
+          <span class="timeline-date">Q2–Q3 2026</span>
+          <p>Testnet launch, smart contract audit, IoT prototype, landing page</p>
+        </div>
+      </div>
+      <div class="timeline-item current">
+        <div class="timeline-icon">●</div>
+        <div class="timeline-content">
+          <h3>Mainnet</h3>
+          <span class="timeline-date">Q4 2026 – Q1 2027</span>
+          <p>Mainnet deployment, first IoT devices, DEX listing</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-icon">○</div>
+        <div class="timeline-content">
+          <h3>Vault Growth</h3>
+          <span class="timeline-date">Q2–Q3 2027</span>
+          <p>Vault activation, Buyback & Burn, industrial producers</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-icon">○</div>
+        <div class="timeline-content">
+          <h3>Expansion</h3>
+          <span class="timeline-date">2028+</span>
+          <p>Tier-1 CEX, cross-chain, full DAO governance</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="partners">
+    <h2>Partners & Media</h2>
+    <p>We are proud to partner with leading DePIN and energy innovators.</p>
+    <a href="mailto:anton@enrg.network" class="btn">Become a Partner</a>
+    <div class="media-logos">
+      <span class="media-placeholder">Cointelegraph</span>
+      <span class="media-placeholder">Decrypt</span>
+      <span class="media-placeholder">CoinDesk</span>
+    </div>
+  </section>
+
+  <section id="join">
+    <h2>Join the Network</h2>
+    <p>Be part of the decentralized energy revolution. Connect your device and start earning ENRG today.</p>
+    <a href="mailto:anton@enrg.network" class="btn">Get Started</a>
+  </section>
+
+  <footer>
+    <p>&copy; 2026 ENRG Protocol. All rights reserved.</p>
+    <div class="footer-links">
+      <a href="whitepaper.pdf">White Paper</a>
+      <a href="technical-overview.pdf">Technical Documentation</a>
+      <a href="mailto:anton@enrg.network">Contact</a>
+      <a href="#">Twitter</a>
+      <a href="#">Discord</a>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
