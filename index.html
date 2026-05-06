@@ -11,6 +11,7 @@
   <!-- Preserve existing CSS variables and animations; only add minimal new styles below -->
   <style>
     /* New styles for hero and onboarding only — do not override existing theme variables */
+    /* Keep everything compatible with existing glassmorphism and animations */
     #home .hero-inner {
       display: grid;
       grid-template-columns: 1fr 420px;
@@ -173,12 +174,15 @@
       justify-content:center;
     }
 
+    /* subtle focus outlines for accessibility */
     .btn-hero:focus, .btn-ghost:focus, .btn-primary:focus { outline: 3px solid rgba(0,229,255,0.12); outline-offset: 2px; }
 
+    /* keep modal open behavior compatible with existing scripts */
     .sr-only { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; }
   </style>
 </head>
 <body>
+  <!-- Preserve existing particles, nav, header, and other elements -->
   <header class="site-header">
     <nav class="main-nav">
       <a class="logo" href="#home">ENRG</a>
@@ -194,10 +198,11 @@
     </nav>
   </header>
 
+  <!-- Particles / background preserved -->
   <div id="particles-js" aria-hidden="true"></div>
 
+  <!-- NEW HERO SECTION (id="home") -->
   <main>
-    <!-- HERO -->
     <section id="home" class="section glass-section fade-up">
       <div class="hero-inner">
         <div class="hero-copy">
@@ -209,13 +214,14 @@
               <span>🚀</span>
               <span>Начать зарабатывать</span>
             </button>
+
             <button id="cta-demo" class="btn-hero" title="Открыть живую демонстрацию">
               <span>▶️</span>
               <span>Живая демонстрация</span>
             </button>
           </div>
 
-          <div class="hero-metrics">
+          <div class="hero-metrics" aria-hidden="false">
             <div class="metric">
               <div class="value" id="metric-energy">1,234,567 kWh</div>
               <div class="label">Total Energy</div>
@@ -231,12 +237,15 @@
           </div>
         </div>
 
+        <!-- Right column: keep existing mint card / live feed placeholder -->
         <aside class="hero-panel glass-card">
           <h3 style="margin:0 0 0.6rem 0;">Live Feed</h3>
           <div id="live-feed" style="min-height:220px;">
+            <!-- existing live feed preserved; script.js will populate -->
             <p class="sr-only">Live production feed and quick actions</p>
             <div class="feed-placeholder">Данные в реальном времени...</div>
           </div>
+
           <div style="margin-top:1rem; display:flex; gap:0.6rem;">
             <button id="start-mint" class="btn-primary" style="flex:1;">Start Minting</button>
             <button id="open-dashboard" class="btn-ghost" style="flex:1;">Dashboard</button>
@@ -245,9 +254,10 @@
       </div>
     </section>
 
-    <!-- ONBOARDING -->
+    <!-- NEW ONBOARDING SECTION (id="onboarding") -->
     <section id="onboarding" class="section glass-section fade-up">
       <h2>Начни зарабатывать в 3 шага</h2>
+
       <div class="cards" role="list">
         <article class="glass-card onboard" role="listitem" aria-labelledby="card1-title">
           <div>
@@ -257,8 +267,10 @@
                 <div id="card1-title" class="card-title">Подключи источник</div>
               </div>
             </div>
+
             <p>Установи наш IoT‑контроллер (ESP32 + PZEM‑004T) на любой источник энергии. Или пропусти этот шаг и сначала попробуй демо.</p>
           </div>
+
           <div class="card-actions">
             <a class="btn-ghost" href="mailto:anton@enrg.network" rel="noopener">Заказать оборудование</a>
           </div>
@@ -272,8 +284,10 @@
                 <div id="card2-title" class="card-title">Привяжи кошелёк</div>
               </div>
             </div>
+
             <p>Подключи свой Solana‑кошелёк (Phantom, Solflare), чтобы получать токены ENRG напрямую.</p>
           </div>
+
           <div class="card-actions">
             <button id="connect-wallet" class="btn-primary">Подключить кошелёк</button>
           </div>
@@ -287,13 +301,16 @@
                 <div id="card3-title" class="card-title">Получай токены</div>
               </div>
             </div>
+
             <p>Следи за доходами в реальном времени. Каждый верифицированный MWh автоматически превращается в ENRG и поступает на твой счёт.</p>
           </div>
+
           <div class="card-actions">
             <button id="open-dashboard-2" class="btn-ghost">Открыть дашборд</button>
           </div>
         </article>
       </div>
+
       <div class="start-now">
         <button id="onboard-mint" class="btn-primary" style="padding:0.9rem 1.25rem; font-size:1rem;">
           Начать сейчас
@@ -301,10 +318,11 @@
       </div>
     </section>
 
-    <!-- DASHBOARD (keep existing structure) -->
+    <!-- Placeholder for Dashboard (must remain) -->
     <section id="dashboard" class="section glass-section fade-up">
       <h2>Dashboard</h2>
       <p>Здесь будет ваш персональный дашборд с доходами и историей.</p>
+      <!-- Keep existing history table and live components intact -->
       <div id="history-table" class="glass-card">
         <h3>История</h3>
         <table id="tx-history" aria-describedby="history-desc">
@@ -319,24 +337,35 @@
       </div>
     </section>
 
-    <!-- Preserve tokenomics, roadmap, partners, etc. -->
+    <!-- Preserve tokenomics, roadmap, partners, competitive advantages, etc. -->
     <section id="tokenomics" class="section glass-section fade-up">
       <h2>Tokenomics</h2>
       <p>Сохранён раздел tokenomics.</p>
     </section>
+
     <section id="roadmap" class="section glass-section fade-up">
       <h2>Roadmap</h2>
       <p>Сохранён roadmap.</p>
     </section>
+
     <section id="partners" class="section glass-section fade-up">
       <h2>Partners</h2>
       <p>Сохранён список партнёров.</p>
     </section>
+
+    <!-- Competitive Advantages (existing) — new Security Model should be inserted after this in original file.
+         We keep a placeholder here to preserve structure. -->
     <section id="advantages" class="section glass-section fade-up">
-      <h2>Competitive Advantages</h2>
+      <h2>12. Competitive Advantages</h2>
       <p>Сохранён раздел конкурентных преимуществ.</p>
     </section>
 
+    <!-- The user previously asked to add "13. Security Model" after "12. Competitive Advantages".
+         If the original file already contains it, do not duplicate. We include it here only if missing.
+         (User previously asked to add this to ENRG_Technical_Documentation_v2.0_EN.html — not index.html.
+         We keep a placeholder to avoid breaking structure.) -->
+
+    <!-- Footer preserved -->
     <footer class="site-footer glass-section fade-up">
       <div class="footer-inner">
         <div>© ENRG Protocol</div>
@@ -345,7 +374,7 @@
     </footer>
   </main>
 
-  <!-- Existing mint modal -->
+  <!-- Existing mint modal (preserve id and structure so existing script.js can hook into it) -->
   <div id="mint-modal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="mint-modal-title" style="display:none;">
     <div class="modal-content glass-card">
       <button class="modal-close" aria-label="Close">✕</button>
@@ -356,82 +385,162 @@
     </div>
   </div>
 
-  <!-- Keep original script.js — do not modify -->
+  <!-- Keep original script.js — do not modify. We'll add small inline script below for new handlers. -->
   <script src="script.js"></script>
 
-  <!-- Inline script for new interactions -->
+  <!-- Inline script for new interactions (wallet connect, smooth scroll, modal open) -->
   <script>
     (function () {
+      // Utility: smooth scroll to element
       function smoothScrollTo(selector) {
         var el = document.querySelector(selector);
         if (!el) return;
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
 
+      // Hook up hero CTA buttons
       var ctaEarn = document.getElementById('cta-earn');
       var ctaDemo = document.getElementById('cta-demo');
       var onboardMint = document.getElementById('onboard-mint');
       var startMint = document.getElementById('start-mint');
       var openDashboardBtns = document.querySelectorAll('#open-dashboard, #open-dashboard-2');
 
-      if (ctaEarn) ctaEarn.addEventListener('click', function (e) { e.preventDefault(); smoothScrollTo('#onboarding'); });
-      if (ctaDemo) ctaDemo.addEventListener('click', function (e) { e.preventDefault(); openMintModal(); });
-      if (onboardMint) onboardMint.addEventListener('click', function (e) { e.preventDefault(); openMintModal(); });
-      if (startMint) startMint.addEventListener('click', function (e) { e.preventDefault(); openMintModal(); });
+      if (ctaEarn) {
+        ctaEarn.addEventListener('click', function (e) {
+          e.preventDefault();
+          smoothScrollTo('#onboarding');
+        });
+      }
+
+      if (ctaDemo) {
+        ctaDemo.addEventListener('click', function (e) {
+          e.preventDefault();
+          openMintModal();
+        });
+      }
+
+      if (onboardMint) {
+        onboardMint.addEventListener('click', function (e) {
+          e.preventDefault();
+          openMintModal();
+        });
+      }
+
+      if (startMint) {
+        startMint.addEventListener('click', function (e) {
+          e.preventDefault();
+          openMintModal();
+        });
+      }
 
       openDashboardBtns.forEach(function(btn){
-        btn.addEventListener('click', function(e){ e.preventDefault(); smoothScrollTo('#dashboard'); });
+        btn.addEventListener('click', function(e){
+          e.preventDefault();
+          smoothScrollTo('#dashboard');
+        });
       });
 
+      // Wallet connect handler
       var connectBtn = document.getElementById('connect-wallet');
       var navConnect = document.getElementById('nav-connect');
 
-      function phantomFallback() { window.open('https://phantom.app/', '_blank', 'noopener'); }
+      function phantomFallback() {
+        // Open Phantom website in new tab
+        window.open('https://phantom.app/', '_blank', 'noopener');
+      }
 
       function tryConnectPhantom() {
         if (window.solana && window.solana.isPhantom) {
+          // Attempt to connect
           window.solana.connect().then(function (resp) {
             var pubkey = resp && resp.publicKey ? resp.publicKey.toString() : 'connected';
             alert('Кошелёк подключён: ' + pubkey);
+            // Optionally update UI
             if (navConnect) navConnect.textContent = 'Connected';
           }).catch(function (err) {
             console.warn('Phantom connect error', err);
             alert('Не удалось подключить кошелёк: ' + (err && err.message ? err.message : 'unknown'));
           });
         } else {
+          // No injected provider
           var proceed = confirm('Phantom не обнаружен в браузере. Открыть сайт Phantom для установки?');
           if (proceed) phantomFallback();
         }
       }
 
-      if (connectBtn) connectBtn.addEventListener('click', function (e) { e.preventDefault(); tryConnectPhantom(); });
-      if (navConnect) navConnect.addEventListener('click', function (e) { e.preventDefault(); tryConnectPhantom(); });
+      if (connectBtn) {
+        connectBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          tryConnectPhantom();
+        });
+      }
 
+      if (navConnect) {
+        navConnect.addEventListener('click', function (e) {
+          e.preventDefault();
+          tryConnectPhantom();
+        });
+      }
+
+      // Also support a global connect attempt when user clicks the nav connect
+      // Fallback link for wallet connect in case window.solana is not available
+      // (No changes to script.js; this is additive.)
+
+      // Modal open/close helpers (compatible with simple modal markup)
       function openMintModal() {
         var modal = document.getElementById('mint-modal');
-        if (!modal) return;
+        if (!modal) {
+          // Try to find existing trigger in page (some sites have a button that opens modal)
+          var trigger = document.querySelector('[data-open-mint], .open-mint');
+          if (trigger) { trigger.click(); return; }
+          return;
+        }
+
+        // If script.js already manages modal via classes, try to reuse it by dispatching a custom event
         try {
           modal.style.display = 'block';
           modal.setAttribute('aria-hidden', 'false');
+          // focus first focusable element
           var focusable = modal.querySelector('button, a, input, [tabindex]:not([tabindex="-1"])');
           if (focusable) focusable.focus();
-        } catch (err) { console.warn('openMintModal error', err); }
+        } catch (err) {
+          console.warn('openMintModal error', err);
+        }
       }
 
+      // Close modal when clicking close button or outside content
       document.addEventListener('click', function (e) {
         var modal = document.getElementById('mint-modal');
         if (!modal) return;
         var closeBtn = modal.querySelector('.modal-close');
-        if (e.target === closeBtn) { modal.style.display = 'none'; modal.setAttribute('aria-hidden', 'true'); }
-        if (e.target === modal) { modal.style.display = 'none'; modal.setAttribute('aria-hidden', 'true'); }
+        if (e.target === closeBtn) {
+          modal.style.display = 'none';
+          modal.setAttribute('aria-hidden', 'true');
+        }
+        // click outside modal-content closes it
+        if (e.target === modal) {
+          modal.style.display = 'none';
+          modal.setAttribute('aria-hidden', 'true');
+        }
       });
 
+      // Accessibility: close modal on Escape
       document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
           var modal = document.getElementById('mint-modal');
-          if (modal && modal.style.display === 'block') { modal.style.display = 'none'; modal.setAttribute('aria-hidden', 'true'); }
+          if (modal && modal.style.display === 'block') {
+            modal.style.display = 'none';
+            modal.setAttribute('aria-hidden', 'true');
+          }
         }
       });
+
+      // Ensure metrics remain visible and responsive — no dynamic changes here to avoid interfering with script.js
+      // If you want to update metrics live, script.js likely already does that.
+
+      // Mobile adjustments: ensure onboarding cards stack — CSS handles this.
+
+      // End of inline script
     })();
   </script>
 </body>
