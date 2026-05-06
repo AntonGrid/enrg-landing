@@ -187,36 +187,89 @@ if (btnBecomePartner) btnBecomePartner.addEventListener('click', () => mailToAnt
 // Footer contact link already points to mailto in HTML; no extra action needed
 
 // -----------------------------
-// Mint simulation (buttons trigger visible animation)
+// Mint simulation with realistic fee breakdown
 // -----------------------------
 function runMintSimulation() {
   const energyBar = document.getElementById('sim-energy-bar');
   const enrgBar = document.getElementById('sim-enrg-bar');
   const energyValue = document.getElementById('sim-energy-value');
   const enrgValue = document.getElementById('sim-enrg-value');
+  const feed = document.getElementById('console-feed');
 
   if (!energyBar || !enrgBar || !energyValue || !enrgValue) return;
 
-  // Generate fake values
-  const energy = Math.floor(Math.random() * 900 + 100); // 100..999 kWh
-  const enrg = (energy / 1000).toFixed(3); // ENRG minted
+  // Step 1: Generate random energy input (1-500 kWh)
+  const energyKwh = Math.floor(Math.random() * 500) + 1;
 
-  // Animate bars
+  // Step 2: Pick a random source multiplier (1.0 = solar, 0.8 = wind, 0.5 = biogas/hydro)
+  const multipliers = [1.0, 0.8, 0.5];
+  const sourceMultiplier = multipliers[Math.floor(Math.random() * multipliers.length)];
+  const sourceNames = { 1.0: 'Solar', 0.8: 'Wind', 0.5: 'Hydro' };
+  const source = sourceNames[sourceMultiplier];
+
+  // Step 3: Calculate ENRG minted (1 ENRG = 1 MWh = 1000 kWh)
+  // With efficiency = sourceMultiplier, net energy = energyKwh * sourceMultiplier
+  const effectiveEnergyKwh = energyKwh * sourceMultiplier;
+  const enrgMinted = (effectiveEnergyKwh / 1000).toFixed(3);
+
+  // Step 4: Calculate protocol fees (15% of minted ENRG)
+  const protocolFeePercent = 15;
+  const protocolFeeEnrg = (Number(enrgMinted) * (protocolFeePercent / 100)).toFixed(3);
+  const netEnrgReceived = (Number(enrgMinted) - Number(protocolFeeEnrg)).toFixed(3);
+
+  // Step 5: Fee distribution
+  const buybackBurn = (Number(protocolFeeEnrg) * 0.20).toFixed(3);
+  const stakingRewards = (Number(protocolFeeEnrg) * 0.40).toFixed(3);
+  const daoReserve = (Number(protocolFeeEnrg) * 0.30).toFixed(3);
+  const emergencyFund = (Number(protocolFeeEnrg) * 0.10).toFixed(3);
+
+  // Step 6: Reset and animate bars
   energyBar.style.width = '0%';
   enrgBar.style.width = '0%';
   energyValue.textContent = '0';
   enrgValue.textContent = '0';
 
-  // Simple staged animation
+  // Animate energy bar (normalized to percentage: 500 kWh = 100%)
   setTimeout(() => {
-    energyBar.style.width = Math.min(100, energy / 10) + '%';
-    energyValue.textContent = energy.toString();
+    const energyPercent = Math.min(100, (energyKwh / 500) * 100);
+    energyBar.style.width = energyPercent + '%';
+    energyValue.textContent = energyKwh.toFixed(0);
   }, 60);
 
+  // Animate ENRG bar (normalized to percentage: 0.5 ENRG max display = 100%)
   setTimeout(() => {
-    enrgBar.style.width = Math.min(100, (energy / 10) * 0.7) + '%';
-    enrgValue.textContent = enrg.toString();
+    const enrgPercent = Math.min(100, (Number(enrgMinted) / 0.5) * 100);
+    enrgBar.style.width = enrgPercent + '%';
+    enrgValue.textContent = enrgMinted;
   }, 420);
+
+  // Step 7: Log to console feed
+  if (feed) {
+    const p = document.createElement('div');
+    const ts = new Date().toISOString().split('T')[1].split('.')[0];
+    const logText = `[${ts}] Simulation: ${energyKwh}kWh (${source}, ×${sourceMultiplier}) → ${enrgMinted} ENRG (Fee: ${protocolFeeEnrg})`;
+    p.textContent = logText;
+    feed.appendChild(p);
+    feed.scrollTop = feed.scrollHeight;
+    if (feed.children.length > 40) feed.removeChild(feed.firstChild);
+  }
+
+  // Step 8: Log detailed breakdown to browser console
+  console.log('[ENRG Simulator]', {
+    energyInput: `${energyKwh} kWh`,
+    source: source,
+    sourceMultiplier: sourceMultiplier,
+    effectiveEnergy: `${effectiveEnergyKwh.toFixed(1)} kWh`,
+    enrgMinted: enrgMinted,
+    protocolFee: `${protocolFeeEnrg} (${protocolFeePercent}%)`,
+    netReceived: netEnrgReceived,
+    feeBreakdown: {
+      'Buyback & Burn (20%)': buybackBurn,
+      'Staking Rewards (40%)': stakingRewards,
+      'DAO Reserve (30%)': daoReserve,
+      'Emergency Fund (10%)': emergencyFund
+    }
+  });
 }
 
 const btnSim = document.getElementById('btn-simulate-mint');
