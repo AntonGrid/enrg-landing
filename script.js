@@ -272,13 +272,16 @@ function runMintSimulation() {
   });
 }
 
-const btnSim = document.getElementById('btn-simulate-mint');
-const btnSimModal = document.getElementById('btn-simulate-mint-modal');
+// Обработчики кнопок симуляции теперь ждут полной загрузки DOM
+document.addEventListener('DOMContentLoaded', () => {
+  const btnSim = document.getElementById('btn-simulate-mint');
+  const btnSimModal = document.getElementById('btn-simulate-mint-modal');
 
-if (btnSim) btnSim.addEventListener('click', runMintSimulation);
-if (btnSimModal) btnSimModal.addEventListener('click', () => {
-  runMintSimulation();
-  // keep modal open so user sees result
+  if (btnSim) btnSim.addEventListener('click', runMintSimulation);
+  if (btnSimModal) btnSimModal.addEventListener('click', () => {
+    runMintSimulation();
+    // keep modal open so user sees result
+  });
 });
 
 // -----------------------------
@@ -359,20 +362,13 @@ if (btnSimModal) btnSimModal.addEventListener('click', () => {
   }
 
   // Helper: detect account type and extract relevant fields
-  // EnergyProducer (with 8-byte discriminator): authority(32) + device_id(8) + nonce(8) + energy_wh(8) + ...
-  // StakeInfo (with 8-byte discriminator): owner(32) + staked_amount(8) + ...
   function parseAccount(data) {
     const bytes = base64ToBytes(data);
     
-    // Skip discriminator (first 8 bytes) for both account types
-    // Assuming standard Anchor discriminator layout
-    
     // EnergyProducer: authority at 8-39 (pubkey), energy_wh at 56-63 (8 bytes after nonce)
     // StakeInfo: owner at 8-39 (pubkey), staked_amount at 40-47 (right after owner)
-    
-    // Try to detect by reading at expected offsets
-    const energyWhValue = readU64LE(bytes, 56); // Likely EnergyProducer.energy_wh
-    const stakedValue = readU64LE(bytes, 40);   // Likely StakeInfo.staked_amount
+    const energyWhValue = readU64LE(bytes, 56);
+    const stakedValue = readU64LE(bytes, 40);
 
     return {
       energyWh: energyWhValue,
@@ -439,13 +435,11 @@ if (btnSimModal) btnSimModal.addEventListener('click', () => {
 
         const parsed = parseAccount(data);
 
-        // Count as producer if energy_wh is reasonable (> 0 and < 10^14)
         if (parsed.energyWh > 0n && parsed.energyWh < 100000000000000n) {
           totalEnergyWh += parsed.energyWh;
           producerCount++;
         }
 
-        // Sum staked amounts if present
         if (parsed.staked > 0n && parsed.staked < 10000000000000000n) {
           totalStaked += parsed.staked;
         }
@@ -454,7 +448,6 @@ if (btnSimModal) btnSimModal.addEventListener('click', () => {
       }
     }
 
-    // Convert Wh to MWh (divide by 1 million)
     const totalEnergyMWh = Math.round(Number(totalEnergyWh) / 1_000_000);
 
     const metrics = {
@@ -549,4 +542,3 @@ if (btnSimModal) btnSimModal.addEventListener('click', () => {
   const yearEl = document.getElementById('year');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 })();
-
