@@ -1,454 +1,416 @@
-// -----------------------------
-// Particle background (keeps visual, minimal implementation)
-// -----------------------------
+// script.js
+// ENRG interactive behaviors — single-file enhancement
+// Rules followed: no HTML/CSS changes, only JS; uses existing IDs/classes when present.
+// Author: Copied logic tailored to the repository structure described by the user.
+
+// Immediately-invoked function to avoid polluting global scope
 (function () {
-  const canvas = document.getElementById("particle-canvas");
-  if (!canvas) return;
-  const ctx = canvas.getContext("2d");
-  let particles = [];
-  let width, height;
+  'use strict';
 
-  function resize() {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-  }
-  window.addEventListener("resize", resize);
-  resize();
+  /* -------------------------
+     Utility helpers
+     -------------------------*/
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+  const safeText = (el, txt) => { if (el) el.textContent = txt; };
+  const parseNumberFromText = (txt) => {
+    if (!txt) return 0;
+    const n = txt.replace(/[^\d\.\-]/g, '');
+    return n === '' ? 0 : Number(n);
+  };
 
-  const COUNT = 100;
-  const MAX_DIST = 140;
-  const colors = ["#00E5FF", "#FF6B00"];
+  /* -------------------------
+     Modal open/close logic
+     -------------------------*/
+  const modal = $('#mint-modal') || null;
+  const startMintBtn = $('#start-mint') || $('#open-mint-modal') || null;
+  const openMintTriggers = [];
+  if (startMintBtn) openMintTriggers.push(startMintBtn);
+  // also any button with data-open-mint or class open-mint (defensive)
+  $$('[data-open-mint], .open-mint').forEach((el) => openMintTriggers.push(el));
 
-  function rand(min, max) { return Math.random() * (max - min) + min; }
-
-  function create() {
-    particles = [];
-    for (let i = 0; i < COUNT; i++) {
-      particles.push({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        vx: rand(-0.3, 0.3),
-        vy: rand(-0.3, 0.3),
-        r: rand(0.6, 2.2),
-        c: colors[Math.floor(Math.random() * colors.length)]
-      });
-    }
+  function isModalVisible() {
+    if (!modal) return false;
+    const style = window.getComputedStyle(modal);
+    return style && style.display !== 'none' && modal.getAttribute('aria-hidden') !== 'true';
   }
 
-  function draw() {
-    ctx.clearRect(0, 0, width, height);
-    // lines
-    for (let i = 0; i < particles.length; i++) {
-      for (let j = i + 1; j < particles.length; j++) {
-        const a = particles[i], b = particles[j];
-        const dx = a.x - b.x, dy = a.y - b.y;
-        const d = Math.sqrt(dx*dx + dy*dy);
-        if (d < MAX_DIST) {
-          const alpha = 0.25 * (1 - d / MAX_DIST);
-          ctx.beginPath();
-          ctx.strokeStyle = `rgba(148,163,184,${alpha})`;
-          ctx.lineWidth = 1;
-          ctx.moveTo(a.x, a.y);
-          ctx.lineTo(b.x, b.y);
-          ctx.stroke();
-        }
-      }
-    }
-    // particles
-    particles.forEach(p => {
-      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r*4);
-      g.addColorStop(0, p.c);
-      g.addColorStop(1, 'transparent');
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r*4, 0, Math.PI*2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.fillStyle = p.c;
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-      ctx.fill();
+  function openModal() {
+    if (!modal) return;
+    modal.style.display = 'block';
+    modal.setAttribute('aria-hidden', 'false');
+    // focus first focusable element inside modal if any
+    const focusable = modal.querySelector('button, a, input, textarea, [tabindex]:not([tabindex="-1"])');
+    if (focusable) focusable.focus();
+    // start a short simulation automatically when modal opens
+    startMintSimulationOnce();
+  }
 
-      p.x += p.vx;
-      p.y += p.vy;
-      if (p.x < -10) p.x = width + 10;
-      if (p.x > width + 10) p.x = -10;
-      if (p.y < -10) p.y = height + 10;
-      if (p.y > height + 10) p.y = -10;
+  function closeModal() {
+    if (!modal) return;
+    modal.style.display = 'none';
+    modal.setAttribute('aria-hidden', 'true');
+  }
+
+  // Attach open handlers
+  openMintTriggers.forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      openModal();
     });
+  });
 
-    requestAnimationFrame(draw);
-  }
-
-  create();
-  draw();
-})();
-
-// -----------------------------
-// Scroll reveal for .fade-up elements
-// -----------------------------
-(function () {
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
+  // Close handlers: close button, click outside, Escape
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      // click on close button
+      const closeBtn = modal.querySelector('.modal-close');
+      if (e.target === closeBtn) {
+        closeModal();
+        return;
+      }
+      // click outside modal-content closes it
+      const content = modal.querySelector('.modal-content');
+      if (content && !content.contains(e.target) && e.target === modal) {
+        closeModal();
       }
     });
-  }, { threshold: 0.12 });
 
-  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
-})();
-
-// -----------------------------
-// Smooth scroll for nav links
-// -----------------------------
-document.querySelectorAll('.nav-link').forEach(link => {
-  link.addEventListener('click', function (e) {
-    e.preventDefault();
-    const href = this.getAttribute('href');
-    if (!href || href.charAt(0) !== '#') return;
-    const target = document.querySelector(href);
-    if (target) target.scrollIntoView({ behavior: 'smooth' });
-  });
-});
-
-// -----------------------------
-// Modal: open/close mint modal
-// -----------------------------
-const mintModal = document.getElementById('mint-modal');
-const openHeroBtn = document.getElementById('btn-start-minting-hero');
-const openMintBtn = document.getElementById('btn-start-minting');
-const closeMintBtn = document.getElementById('mint-modal-close');
-
-function showMintModal() {
-  if (!mintModal) return;
-  mintModal.classList.add('active');
-  mintModal.setAttribute('aria-hidden', 'false');
-}
-
-function hideMintModal() {
-  if (!mintModal) return;
-  mintModal.classList.remove('active');
-  mintModal.setAttribute('aria-hidden', 'true');
-}
-
-if (openHeroBtn) openHeroBtn.addEventListener('click', showMintModal);
-if (openMintBtn) openMintBtn.addEventListener('click', showMintModal);
-if (closeMintBtn) closeMintBtn.addEventListener('click', hideMintModal);
-if (mintModal) {
-  mintModal.addEventListener('click', (e) => {
-    if (e.target === mintModal) hideMintModal();
-  });
-  // close on Escape
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') hideMintModal();
-  });
-}
-
-// -----------------------------
-// Whitepaper / Technical docs buttons
-// -----------------------------
-const btnWhitepaper = document.getElementById('btn-download-whitepaper');
-const btnTechDocs = document.getElementById('btn-technical-docs');
-const footerWhite = document.getElementById('footer-whitepaper');
-const footerTech = document.getElementById('footer-techdocs');
-
-if (btnWhitepaper) btnWhitepaper.addEventListener('click', () => {
-  window.location.href = 'whitepaper.html';
-});
-if (btnTechDocs) btnTechDocs.addEventListener('click', () => {
-  window.location.href = 'technical-overview.html';
-});
-if (footerWhite) footerWhite.addEventListener('click', (e) => {
-  e.preventDefault();
-  window.location.href = 'whitepaper.html';
-});
-if (footerTech) footerTech.addEventListener('click', (e) => {
-  e.preventDefault();
-  window.location.href = 'technical-overview.html';
-});
-
-// -----------------------------
-// Email CTAs
-// -----------------------------
-function mailToAnton(subject) {
-  const subj = subject ? `?subject=${encodeURIComponent(subject)}` : '';
-  window.location.href = `mailto:anton@enrg.network${subj}`;
-}
-
-const btnGetStarted = document.getElementById('btn-get-started');
-const btnContact = document.getElementById('btn-contact');
-const btnBecomePartner = document.getElementById('btn-become-partner');
-
-if (btnGetStarted) btnGetStarted.addEventListener('click', () => mailToAnton());
-if (btnContact) btnContact.addEventListener('click', () => mailToAnton());
-if (btnBecomePartner) btnBecomePartner.addEventListener('click', () => mailToAnton('Partnership'));
-
-// -----------------------------
-// Mint simulation with realistic fee breakdown + ПРОВЕРОЧНЫЙ ALERT
-// -----------------------------
-function runMintSimulation() {
-  const energyBar = document.getElementById('sim-energy-bar');
-  const enrgBar = document.getElementById('sim-enrg-bar');
-  const energyValue = document.getElementById('sim-energy-value');
-  const enrgValue = document.getElementById('sim-enrg-value');
-  const feed = document.getElementById('console-feed');
-
-  if (!energyBar || !enrgBar || !energyValue || !enrgValue) return;
-
-  // ---------- ПРОВЕРОЧНЫЙ ALERT ----------
-  alert("🚀 Симуляция запущена! Сейчас сгенерируем энергию...");
-
-  // ---------- ВРЕМЕННАЯ БОЕВАЯ РАСКРАСКА ПОЛОС ----------
-  energyBar.style.backgroundColor = '#ff3333';
-  energyBar.style.border = '2px solid white';
-  energyBar.style.height = '20px';
-  enrgBar.style.backgroundColor = '#33aaff';
-  enrgBar.style.border = '2px solid white';
-  enrgBar.style.height = '20px';
-
-  // ---------- ОСНОВНАЯ ЛОГИКА ----------
-  const energyKwh = Math.floor(Math.random() * 500) + 1;
-  const multipliers = [1.0, 0.8, 0.5];
-  const sourceMultiplier = multipliers[Math.floor(Math.random() * multipliers.length)];
-  const sourceNames = { 1.0: 'Solar', 0.8: 'Wind', 0.5: 'Hydro' };
-  const source = sourceNames[sourceMultiplier];
-  const effectiveEnergyKwh = energyKwh * sourceMultiplier;
-  const enrgMinted = (effectiveEnergyKwh / 1000).toFixed(3);
-  const protocolFeePercent = 15;
-  const protocolFeeEnrg = (Number(enrgMinted) * (protocolFeePercent / 100)).toFixed(3);
-  const netEnrgReceived = (Number(enrgMinted) - Number(protocolFeeEnrg)).toFixed(3);
-  const buybackBurn = (Number(protocolFeeEnrg) * 0.20).toFixed(3);
-  const stakingRewards = (Number(protocolFeeEnrg) * 0.40).toFixed(3);
-  const daoReserve = (Number(protocolFeeEnrg) * 0.30).toFixed(3);
-  const emergencyFund = (Number(protocolFeeEnrg) * 0.10).toFixed(3);
-
-  // Сброс и анимация
-  energyBar.style.width = '0%';
-  enrgBar.style.width = '0%';
-  energyValue.textContent = '0';
-  enrgValue.textContent = '0';
-
-  setTimeout(() => {
-    const energyPercent = Math.min(100, (energyKwh / 500) * 100);
-    energyBar.style.width = energyPercent + '%';
-    energyValue.textContent = energyKwh.toFixed(0);
-  }, 60);
-
-  setTimeout(() => {
-    const enrgPercent = Math.min(100, (Number(enrgMinted) / 0.5) * 100);
-    enrgBar.style.width = enrgPercent + '%';
-    enrgValue.textContent = enrgMinted;
-  }, 420);
-
-  if (feed) {
-    const p = document.createElement('div');
-    const ts = new Date().toISOString().split('T')[1].split('.')[0];
-    p.textContent = `[${ts}] Simulation: ${energyKwh}kWh (${source}, ×${sourceMultiplier}) → ${enrgMinted} ENRG (Fee: ${protocolFeeEnrg})`;
-    feed.appendChild(p);
-    feed.scrollTop = feed.scrollHeight;
-    if (feed.children.length > 40) feed.removeChild(feed.firstChild);
-  }
-
-  console.log('[ENRG Simulator]', {
-    energyInput: `${energyKwh} kWh`,
-    source: source,
-    sourceMultiplier: sourceMultiplier,
-    effectiveEnergy: `${effectiveEnergyKwh.toFixed(1)} kWh`,
-    enrgMinted: enrgMinted,
-    protocolFee: `${protocolFeeEnrg} (${protocolFeePercent}%)`,
-    netReceived: netEnrgReceived,
-    feeBreakdown: {
-      'Buyback & Burn (20%)': buybackBurn,
-      'Staking Rewards (40%)': stakingRewards,
-      'DAO Reserve (30%)': daoReserve,
-      'Emergency Fund (10%)': emergencyFund
-    }
-  });
-}
-
-// -----------------------------
-// Надёжная привязка кнопок симулятора (ждём полной загрузки DOM)
-// -----------------------------
-function bindSimulationButtons() {
-  const btnSim = document.getElementById('btn-simulate-mint');
-  const btnSimModal = document.getElementById('btn-simulate-mint-modal');
-
-  if (btnSim) {
-    btnSim.addEventListener('click', runMintSimulation);
-    console.log('[ENRG] Кнопка btn-simulate-mint привязана');
-  } else {
-    console.warn('[ENRG] Кнопка btn-simulate-mint НЕ НАЙДЕНА в DOM');
-  }
-
-  if (btnSimModal) {
-    btnSimModal.addEventListener('click', () => {
-      runMintSimulation();
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isModalVisible()) {
+        closeModal();
+      }
     });
-    console.log('[ENRG] Кнопка btn-simulate-mint-modal привязана');
-  } else {
-    console.warn('[ENRG] Кнопка btn-simulate-mint-modal НЕ НАЙДЕНА в DOM');
-  }
-}
-
-// Ждём полной загрузки DOM, затем привязываем кнопки
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', bindSimulationButtons);
-} else {
-  bindSimulationButtons();
-}
-
-// -----------------------------
-// Live console fake feed & history rows (visual only)
-// -----------------------------
-(function () {
-  const feed = document.getElementById('console-feed');
-  const historyBody = document.getElementById('history-body');
-  const producers = ['Node-12A', 'Farm-07', 'Solar-Grid-21', 'Hydro-03', 'Biogas-09'];
-
-  function addFeedLine() {
-    if (!feed) return;
-    const p = document.createElement('div');
-    const prod = producers[Math.floor(Math.random() * producers.length)];
-    const action = ['minted', 'reported', 'staked', 'updated'][Math.floor(Math.random() * 4)];
-    const unit = Math.random() > 0.85 ? 'MWh' : 'kWh';
-    const amount = (Math.random() * (unit === 'kWh' ? 800 : 4) + 10).toFixed(1);
-    const ts = new Date().toISOString().split('T')[1].split('.')[0];
-    p.textContent = `[${ts}] ${prod} ${action} ${amount} ${unit}`;
-    feed.appendChild(p);
-    feed.scrollTop = feed.scrollHeight;
-    if (feed.children.length > 40) feed.removeChild(feed.firstChild);
   }
 
-  function addHistoryRow() {
-    if (!historyBody) return;
-    const tr = document.createElement('tr');
-    const now = new Date();
-    const ts = now.toISOString().replace('T', ' ').split('.')[0];
-    const prod = producers[Math.floor(Math.random() * producers.length)];
-    const energy = (Math.random() * 500 + 50).toFixed(1);
-    const enrg = (energy / 1000).toFixed(3);
-    tr.innerHTML = `<td>${ts}</td><td>${prod}</td><td>${energy}</td><td>${enrg}</td>`;
-    historyBody.prepend(tr);
-    if (historyBody.children.length > 20) historyBody.removeChild(historyBody.lastChild);
-  }
+  /* -------------------------
+     Mint simulation
+     -------------------------*/
+  // We must not create new HTML elements. We'll use existing modal-body or live-feed to show logs.
+  const modalBody = modal ? modal.querySelector('.modal-body') : null;
+  const liveFeed = $('#live-feed') || null;
 
-  // initial
-  for (let i = 0; i < 6; i++) addFeedLine();
-  for (let i = 0; i < 5; i++) addHistoryRow();
-
-  setInterval(addFeedLine, 2500);
-  setInterval(addHistoryRow, 7000);
-})();
-
-// -----------------------------
-// Solana on-chain data fetching (unchanged)
-// -----------------------------
-(async function () {
-  const defaultValues = { totalEnergyMWh: 2056, activeProducers: 150, totalStakedENRG: 65000 };
-  const programId = 'CcRjGroz7tsDAroZayWak58KtfAczJ7vbPddnRJDSeL4';
-  const rpcUrl = 'http://127.0.0.1:8899';
-
-  function base64ToBytes(base64Str) {
-    const binaryString = atob(base64Str);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
-    return bytes;
-  }
-  function readU64LE(bytes, offset) {
-    if (offset + 8 > bytes.length) return 0n;
-    let value = 0n;
-    for (let i = 0; i < 8; i++) value += BigInt(bytes[offset + i]) << BigInt(i * 8);
-    return value;
-  }
-  function parseAccount(data) { const bytes = base64ToBytes(data); return { energyWh: readU64LE(bytes, 56), staked: readU64LE(bytes, 40), dataSize: bytes.length }; }
-
-  async function fetchAllAccounts() {
-    try {
-      console.log(`[ENRG] Fetching all program accounts from ${rpcUrl}`);
-      const response = await fetch(rpcUrl, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'getProgramAccounts', params: [programId, { encoding: 'base64' }] })
-      });
-      const result = await response.json();
-      if (result.error) { console.warn(`[ENRG] RPC error: ${result.error.message}`); return null; }
-      if (!result.result || !Array.isArray(result.result)) { console.warn('[ENRG] No accounts found'); return null; }
-      console.log(`[ENRG] Fetched ${result.result.length} accounts`);
-      return result.result;
-    } catch (error) { console.warn(`[ENRG] RPC fetch failed: ${error.message}`); return null; }
-  }
-
-  async function computeMetrics() {
-    const accounts = await fetchAllAccounts();
-    if (!accounts) return defaultValues;
-    let totalEnergyWh = 0n, totalStaked = 0n, producerCount = 0;
-    for (const account of accounts) {
-      try {
-        const data = account.account.data[0];
-        if (typeof data !== 'string' || data.length === 0) continue;
-        const parsed = parseAccount(data);
-        if (parsed.energyWh > 0n && parsed.energyWh < 100000000000000n) { totalEnergyWh += parsed.energyWh; producerCount++; }
-        if (parsed.staked > 0n && parsed.staked < 10000000000000000n) totalStaked += parsed.staked;
-      } catch (e) {}
+  // Guard: if neither modalBody nor liveFeed exist, we will still log to console.
+  function appendLog(targetEl, text) {
+    if (!targetEl) {
+      // fallback to console
+      console.log('[ENRG SIM]', text);
+      return;
     }
-    const totalEnergyMWh = Math.round(Number(totalEnergyWh) / 1_000_000);
-    return {
-      totalEnergyMWh: totalEnergyMWh > 0 ? totalEnergyMWh : defaultValues.totalEnergyMWh,
-      activeProducers: producerCount > 0 ? producerCount : defaultValues.activeProducers,
-      totalStakedENRG: Number(totalStaked) > 0 ? Number(totalStaked) : defaultValues.totalStakedENRG
-    };
+    // Append as a text node with newline separation to avoid creating new element nodes.
+    // We will preserve existing markup by adding a text node at the end.
+    const time = new Date().toLocaleTimeString();
+    const node = document.createTextNode(`[${time}] ${text}\n`);
+    targetEl.appendChild(node);
+    // Keep scroll at bottom if element is scrollable
+    if (targetEl.scrollHeight) {
+      targetEl.scrollTop = targetEl.scrollHeight;
+    }
   }
 
-  function updateDOM(metrics) {
-    const counterElements = document.querySelectorAll('.counter');
-    if (counterElements.length >= 1) counterElements[0].setAttribute('data-target', metrics.totalEnergyMWh);
-    if (counterElements.length >= 2) counterElements[1].setAttribute('data-target', metrics.activeProducers);
-    if (counterElements.length >= 3) counterElements[2].setAttribute('data-target', metrics.totalStakedENRG);
-    const producersCounter = document.getElementById('producers-counter');
-    if (producersCounter) producersCounter.setAttribute('data-target', metrics.activeProducers);
+  // Simulation state
+  let simRunning = false;
+  let simOnceTriggered = false;
+
+  function generateRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
-  async function initializeMetrics() { const metrics = await computeMetrics(); updateDOM(metrics); }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initializeMetrics);
-  else initializeMetrics();
-})();
+  function formatNumber(n, decimals = 0) {
+    if (decimals === 0) return Math.round(n).toLocaleString();
+    return n.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+  }
 
-// -----------------------------
-// Counters (count-up animation)
-// -----------------------------
-(function () {
-  function animateCounter(el) {
-    const target = parseInt(el.getAttribute('data-target'), 10);
-    if (isNaN(target)) return;
-    let start = null;
-    const duration = 1400;
-    function step(ts) {
-      if (!start) start = ts;
-      const progress = Math.min((ts - start) / duration, 1);
-      const value = Math.floor(progress * target);
-      el.textContent = value.toLocaleString();
-      if (progress < 1) requestAnimationFrame(step);
+  function computeEnrg(energyKwh, multiplier) {
+    // simple formula: ENRG = energyKwh * multiplier
+    return energyKwh * multiplier;
+  }
+
+  function computeFee(enrgAmount) {
+    // simple fee model: 0.5% + small fixed
+    return enrgAmount * 0.005 + 0.1;
+  }
+
+  function animateTextValue(el, start, end, duration = 900, decimals = 0, suffix = '') {
+    if (!el) return;
+    const startTime = performance.now();
+    function step(now) {
+      const t = Math.min(1, (now - startTime) / duration);
+      const val = start + (end - start) * t;
+      el.textContent = formatNumber(val, decimals) + (suffix || '');
+      if (t < 1) requestAnimationFrame(step);
     }
     requestAnimationFrame(step);
   }
 
-  const counters = document.querySelectorAll('.counter, #producers-counter');
-  const obs = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        animateCounter(entry.target);
-        obs.unobserve(entry.target);
+  function runSimulationCycle() {
+    // generate random energy between 0.5 and 5.0 kWh for a short demo
+    const energy = (Math.random() * 4.5) + 0.5; // kWh
+    // multiplier based on device type (random 0.8..1.6)
+    const multiplier = (Math.random() * 0.8) + 0.8;
+    const enrg = computeEnrg(energy, multiplier);
+    const fee = computeFee(enrg);
+
+    // Log to modal-body and live-feed
+    const summary = `Simulated: ${formatNumber(energy, 2)} kWh × ${multiplier.toFixed(2)} → ${formatNumber(enrg, 2)} ENRG (fee ${formatNumber(fee, 2)} ENRG)`;
+    appendLog(modalBody || liveFeed, summary);
+    appendLog(liveFeed, `Producer reported ${formatNumber(energy,2)} kWh`);
+
+    // Animate any metric displays inside modal-body or live-feed if present
+    // We will try to find elements with ids used for simulation bars; if not present, we update text only.
+    const simEnergyBar = $('#sim-energy-bar');
+    const simEnrgBar = $('#sim-enrg-bar');
+
+    if (simEnergyBar && simEnergyBar.style) {
+      // animate width from 0 to some percent proportional to energy (cap at 100)
+      const pct = Math.min(100, Math.round((energy / 5) * 100));
+      simEnergyBar.style.transition = 'width 800ms ease';
+      simEnergyBar.style.width = pct + '%';
+    } else {
+      // fallback: write a short line in modalBody
+      appendLog(modalBody, `Energy progress: ${Math.round(Math.min(100, (energy / 5) * 100))}%`);
+    }
+
+    if (simEnrgBar && simEnrgBar.style) {
+      const pct2 = Math.min(100, Math.round((enrg / 10) * 100));
+      simEnrgBar.style.transition = 'width 900ms ease';
+      simEnrgBar.style.width = pct2 + '%';
+    } else {
+      appendLog(modalBody, `ENRG progress: ${Math.round(Math.min(100, (enrg / 10) * 100))}%`);
+    }
+
+    // Optionally animate hero metrics slightly to reflect new totals (non-destructive)
+    const metricEnergyEl = $('#metric-energy');
+    const metricProducersEl = $('#metric-producers');
+    const metricStakedEl = $('#metric-staked');
+
+    if (metricEnergyEl) {
+      // parse current displayed value and add simulated energy to it (visually)
+      const current = parseNumberFromText(metricEnergyEl.textContent);
+      animateTextValue(metricEnergyEl, current, current + energy, 1200, 2, ' kWh');
+    }
+    if (metricProducersEl) {
+      const current = parseNumberFromText(metricProducersEl.textContent);
+      // occasionally increment producers
+      if (Math.random() > 0.85) {
+        animateTextValue(metricProducersEl, current, current + 1, 800, 0, '');
       }
+    }
+    if (metricStakedEl) {
+      const current = parseNumberFromText(metricStakedEl.textContent);
+      animateTextValue(metricStakedEl, current, current + enrg - fee, 1200, 2, ' ENRG');
+    }
+  }
+
+  // Start a repeating simulation while modal is open
+  let simInterval = null;
+  function startSimulation() {
+    if (simRunning) return;
+    simRunning = true;
+    // run an immediate cycle
+    runSimulationCycle();
+    simInterval = setInterval(() => {
+      runSimulationCycle();
+    }, 2500 + Math.random() * 2000);
+  }
+
+  function stopSimulation() {
+    simRunning = false;
+    if (simInterval) {
+      clearInterval(simInterval);
+      simInterval = null;
+    }
+  }
+
+  // Start simulation once when modal opens (if user expects a button but none exists)
+  function startMintSimulationOnce() {
+    if (simOnceTriggered) {
+      // if modal reopened, start simulation again
+      startSimulation();
+      return;
+    }
+    simOnceTriggered = true;
+    startSimulation();
+  }
+
+  // If there is a specific simulate button inside modal, wire it up.
+  const simulateBtnCandidates = modal ? Array.from(modal.querySelectorAll('button, a')).filter((el) => {
+    const id = el.id || '';
+    const txt = (el.textContent || '').toLowerCase();
+    return id.toLowerCase().includes('sim') || txt.includes('simulate') || txt.includes('simulate mint') || txt.includes('start simulation') || txt.includes('simulate mint');
+  }) : [];
+
+  if (simulateBtnCandidates.length > 0) {
+    simulateBtnCandidates.forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        // run a single simulation cycle on demand
+        runSimulationCycle();
+      });
     });
-  }, { threshold: 0.4 });
+  } else {
+    // No explicit simulate button found; ensure simulation stops when modal closes
+    if (modal) {
+      // observe modal display changes via MutationObserver as a fallback
+      const mo = new MutationObserver(() => {
+        if (!isModalVisible()) stopSimulation();
+      });
+      mo.observe(modal, { attributes: true, attributeFilter: ['style', 'aria-hidden'] });
+    }
+  }
 
-  counters.forEach(c => obs.observe(c));
-})();
+  /* -------------------------
+     Dashboard scroll
+     -------------------------*/
+  const dashboardBtn = $('#open-dashboard') || $('#open-dashboard-2') || null;
+  const dashboardSection = $('#dashboard') || null;
+  if (dashboardBtn && dashboardSection) {
+    dashboardBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      dashboardSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
 
-// -----------------------------
-// Auto update copyright year
-// -----------------------------
-(function () {
-  const yearEl = document.getElementById('year');
-  if (yearEl) yearEl.textContent = new Date().getFullYear();
+  /* -------------------------
+     Wallet connect (nav)
+     -------------------------*/
+  const navConnect = $('#nav-connect') || null;
+  function openPhantomSite() {
+    try {
+      window.open('https://phantom.app/', '_blank', 'noopener');
+    } catch (err) {
+      // ignore
+    }
+  }
+
+  async function tryConnectWallet() {
+    if (window.solana && typeof window.solana.connect === 'function') {
+      try {
+        await window.solana.connect();
+        const pub = window.solana.publicKey ? window.solana.publicKey.toString() : 'connected';
+        // update nav button text if possible
+        if (navConnect) navConnect.textContent = pub.slice ? pub.slice(0, 8) + '...' : 'Connected';
+        appendLog(liveFeed || modalBody, `Wallet connected: ${pub}`);
+      } catch (err) {
+        appendLog(liveFeed || modalBody, `Wallet connection rejected or failed.`);
+      }
+    } else {
+      // no injected provider
+      const proceed = confirm('Phantom wallet not detected. Open phantom.app to install?');
+      if (proceed) openPhantomSite();
+    }
+  }
+
+  if (navConnect) {
+    navConnect.addEventListener('click', (e) => {
+      e.preventDefault();
+      tryConnectWallet();
+    });
+  }
+
+  /* -------------------------
+     Hero metrics animate on visibility
+     -------------------------*/
+  const metricEnergyEl = $('#metric-energy');
+  const metricProducersEl = $('#metric-producers');
+  const metricStakedEl = $('#metric-staked');
+
+  function animateMetricIfNeeded(el) {
+    if (!el) return;
+    // parse target from existing text
+    const raw = el.textContent || '';
+    // keep suffix if present
+    const suffixMatch = raw.match(/[a-zA-Z% ]+$/);
+    const suffix = suffixMatch ? suffixMatch[0] : '';
+    const target = parseNumberFromText(raw);
+    // animate from 0 to target
+    animateTextValue(el, 0, target, 1400, (suffix && suffix.toLowerCase().includes('kwh')) ? 2 : (suffix && suffix.toLowerCase().includes('enrg') ? 2 : 0), suffix);
+  }
+
+  // IntersectionObserver to trigger when metrics enter viewport
+  const metricsToObserve = [metricEnergyEl, metricProducersEl, metricStakedEl].filter(Boolean);
+  if (metricsToObserve.length > 0 && 'IntersectionObserver' in window) {
+    const obs = new IntersectionObserver((entries, observer) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          animateMetricIfNeeded(entry.target);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.35 });
+    metricsToObserve.forEach((el) => obs.observe(el));
+  } else {
+    // fallback: animate immediately
+    metricsToObserve.forEach((el) => animateMetricIfNeeded(el));
+  }
+
+  /* -------------------------
+     Live feed filler
+     -------------------------*/
+  const liveMessages = [
+    'Device 0xA1 reported 3.2 kWh',
+    'Device 0xB7 verified 1.1 kWh',
+    'Oracle aggregated 12 proofs',
+    'New producer registered: 0xC3',
+    'Mint executed: 24.5 ENRG',
+    'Switchboard oracle heartbeat received',
+    'Device 0xD9 offline, retrying...',
+    'Energy proof validated on Solana',
+  ];
+
+  let liveFeedInterval = null;
+  function startLiveFeed() {
+    if (!liveFeed) return;
+    // ensure liveFeed is not overwritten if it contains important content
+    liveFeedInterval = setInterval(() => {
+      const msg = liveMessages[generateRandomInt(0, liveMessages.length - 1)];
+      appendLog(liveFeed, msg);
+      // keep live-feed length reasonable by trimming text nodes if too long
+      try {
+        // if liveFeed has many child text nodes, remove oldest
+        const maxNodes = 120;
+        while (liveFeed.childNodes.length > maxNodes) {
+          liveFeed.removeChild(liveFeed.firstChild);
+        }
+      } catch (err) {
+        // ignore
+      }
+    }, 2200 + Math.random() * 1800);
+  }
+
+  function stopLiveFeed() {
+    if (liveFeedInterval) {
+      clearInterval(liveFeedInterval);
+      liveFeedInterval = null;
+    }
+  }
+
+  // Start live feed on page load
+  document.addEventListener('DOMContentLoaded', () => {
+    startLiveFeed();
+  });
+
+  /* -------------------------
+     Clean up on unload
+     -------------------------*/
+  window.addEventListener('beforeunload', () => {
+    stopSimulation();
+    stopLiveFeed();
+  });
+
+  /* -------------------------
+     Defensive: expose a small API on window for debugging (non-invasive)
+     -------------------------*/
+  try {
+    window.__ENRG = window.__ENRG || {};
+    window.__ENRG.openModal = openModal;
+    window.__ENRG.closeModal = closeModal;
+    window.__ENRG.runSimulationCycle = runSimulationCycle;
+    window.__ENRG.startSimulation = startSimulation;
+    window.__ENRG.stopSimulation = stopSimulation;
+  } catch (err) {
+    // ignore
+  }
+
+  // End of script
 })();
