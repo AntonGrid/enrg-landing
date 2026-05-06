@@ -185,7 +185,7 @@ if (btnContact) btnContact.addEventListener('click', () => mailToAnton());
 if (btnBecomePartner) btnBecomePartner.addEventListener('click', () => mailToAnton('Partnership'));
 
 // -----------------------------
-// Mint simulation with realistic fee breakdown
+// Mint simulation with realistic fee breakdown + ВИЗУАЛЬНЫЙ ДЕБАГ
 // -----------------------------
 function runMintSimulation() {
   const energyBar = document.getElementById('sim-energy-bar');
@@ -194,64 +194,68 @@ function runMintSimulation() {
   const enrgValue = document.getElementById('sim-enrg-value');
   const feed = document.getElementById('console-feed');
 
-  if (!energyBar || !enrgBar || !energyValue || !enrgValue) return;
+  if (!energyBar || !enrgBar || !energyValue || !enrgValue) {
+    console.warn('[ENRG Debug] Не найдены элементы полос/значений');
+    return;
+  }
 
-  // Step 1: Generate random energy input (1-500 kWh)
+  // ---------- ВРЕМЕННАЯ БОЕВАЯ РАСКРАСКА, ЧТОБЫ ТОЧНО УВИДЕТЬ ПОЛОСЫ ----------
+  energyBar.style.backgroundColor = '#ff3333';   // ярко-красный
+  energyBar.style.border = '2px solid white';
+  energyBar.style.height = '20px';               // гарантированная высота
+  enrgBar.style.backgroundColor = '#33aaff';    // ярко-синий
+  enrgBar.style.border = '2px solid white';
+  enrgBar.style.height = '20px';
+
+  // также убедимся, что родительские контейнеры не скрывают полосы overflow
+  if (energyBar.parentElement) energyBar.parentElement.style.overflow = 'visible';
+  if (enrgBar.parentElement) enrgBar.parentElement.style.overflow = 'visible';
+
+  // ---------- ОСНОВНАЯ ЛОГИКА СИМУЛЯЦИИ ----------
   const energyKwh = Math.floor(Math.random() * 500) + 1;
-
-  // Step 2: Pick a random source multiplier (1.0 = solar, 0.8 = wind, 0.5 = biogas/hydro)
   const multipliers = [1.0, 0.8, 0.5];
   const sourceMultiplier = multipliers[Math.floor(Math.random() * multipliers.length)];
   const sourceNames = { 1.0: 'Solar', 0.8: 'Wind', 0.5: 'Hydro' };
   const source = sourceNames[sourceMultiplier];
-
-  // Step 3: Calculate ENRG minted (1 ENRG = 1 MWh = 1000 kWh)
   const effectiveEnergyKwh = energyKwh * sourceMultiplier;
   const enrgMinted = (effectiveEnergyKwh / 1000).toFixed(3);
-
-  // Step 4: Calculate protocol fees (15% of minted ENRG)
   const protocolFeePercent = 15;
   const protocolFeeEnrg = (Number(enrgMinted) * (protocolFeePercent / 100)).toFixed(3);
   const netEnrgReceived = (Number(enrgMinted) - Number(protocolFeeEnrg)).toFixed(3);
-
-  // Step 5: Fee distribution
   const buybackBurn = (Number(protocolFeeEnrg) * 0.20).toFixed(3);
   const stakingRewards = (Number(protocolFeeEnrg) * 0.40).toFixed(3);
   const daoReserve = (Number(protocolFeeEnrg) * 0.30).toFixed(3);
   const emergencyFund = (Number(protocolFeeEnrg) * 0.10).toFixed(3);
 
-  // Step 6: Reset and animate bars
+  // Сброс и анимация
   energyBar.style.width = '0%';
   enrgBar.style.width = '0%';
   energyValue.textContent = '0';
   enrgValue.textContent = '0';
 
-  // Animate energy bar (normalized to percentage: 500 kWh = 100%)
   setTimeout(() => {
     const energyPercent = Math.min(100, (energyKwh / 500) * 100);
     energyBar.style.width = energyPercent + '%';
     energyValue.textContent = energyKwh.toFixed(0);
+    console.log(`[ENRG Debug] Energy bar set to ${energyPercent}%`);
   }, 60);
 
-  // Animate ENRG bar (normalized to percentage: 0.5 ENRG max display = 100%)
   setTimeout(() => {
     const enrgPercent = Math.min(100, (Number(enrgMinted) / 0.5) * 100);
     enrgBar.style.width = enrgPercent + '%';
     enrgValue.textContent = enrgMinted;
+    console.log(`[ENRG Debug] ENRG bar set to ${enrgPercent}%`);
   }, 420);
 
-  // Step 7: Log to console feed
   if (feed) {
     const p = document.createElement('div');
     const ts = new Date().toISOString().split('T')[1].split('.')[0];
-    const logText = `[${ts}] Simulation: ${energyKwh}kWh (${source}, ×${sourceMultiplier}) → ${enrgMinted} ENRG (Fee: ${protocolFeeEnrg})`;
-    p.textContent = logText;
+    p.textContent = `[${ts}] Simulation: ${energyKwh}kWh (${source}, ×${sourceMultiplier}) → ${enrgMinted} ENRG (Fee: ${protocolFeeEnrg})`;
     feed.appendChild(p);
     feed.scrollTop = feed.scrollHeight;
     if (feed.children.length > 40) feed.removeChild(feed.firstChild);
   }
 
-  // Step 8: Log detailed breakdown to browser console
   console.log('[ENRG Simulator]', {
     energyInput: `${energyKwh} kWh`,
     source: source,
@@ -297,7 +301,6 @@ function bindSimulationButtons() {
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', bindSimulationButtons);
 } else {
-  // DOM уже загружен
   bindSimulationButtons();
 }
 
