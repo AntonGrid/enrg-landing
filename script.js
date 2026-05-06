@@ -1,416 +1,430 @@
 // script.js
-// ENRG interactive behaviors — single-file enhancement
-// Rules followed: no HTML/CSS changes, only JS; uses existing IDs/classes when present.
-// Author: Copied logic tailored to the repository structure described by the user.
+// ENRG – DePIN Energy Command Center interactivity
+// Only uses existing HTML structure and IDs/classes as in index.html
 
-// Immediately-invoked function to avoid polluting global scope
 (function () {
   'use strict';
 
-  /* -------------------------
-     Utility helpers
-     -------------------------*/
+  // ---------- Helpers ----------
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
-  const safeText = (el, txt) => { if (el) el.textContent = txt; };
-  const parseNumberFromText = (txt) => {
-    if (!txt) return 0;
-    const n = txt.replace(/[^\d\.\-]/g, '');
-    return n === '' ? 0 : Number(n);
-  };
 
-  /* -------------------------
-     Modal open/close logic
-     -------------------------*/
-  const modal = $('#mint-modal') || null;
-  const startMintBtn = $('#start-mint') || $('#open-mint-modal') || null;
-  const openMintTriggers = [];
-  if (startMintBtn) openMintTriggers.push(startMintBtn);
-  // also any button with data-open-mint or class open-mint (defensive)
-  $$('[data-open-mint], .open-mint').forEach((el) => openMintTriggers.push(el));
+  const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-  function isModalVisible() {
-    if (!modal) return false;
-    const style = window.getComputedStyle(modal);
-    return style && style.display !== 'none' && modal.getAttribute('aria-hidden') !== 'true';
-  }
-
-  function openModal() {
-    if (!modal) return;
-    modal.style.display = 'block';
-    modal.setAttribute('aria-hidden', 'false');
-    // focus first focusable element inside modal if any
-    const focusable = modal.querySelector('button, a, input, textarea, [tabindex]:not([tabindex="-1"])');
-    if (focusable) focusable.focus();
-    // start a short simulation automatically when modal opens
-    startMintSimulationOnce();
-  }
-
-  function closeModal() {
-    if (!modal) return;
-    modal.style.display = 'none';
-    modal.setAttribute('aria-hidden', 'true');
-  }
-
-  // Attach open handlers
-  openMintTriggers.forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      openModal();
+  const formatNumber = (value, decimals = 0) =>
+    value.toLocaleString(undefined, {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
     });
-  });
 
-  // Close handlers: close button, click outside, Escape
-  if (modal) {
-    modal.addEventListener('click', (e) => {
-      // click on close button
-      const closeBtn = modal.querySelector('.modal-close');
-      if (e.target === closeBtn) {
-        closeModal();
-        return;
+  const nowTime = () => new Date().toLocaleTimeString();
+
+  // ---------- Metric Counters (hero section) ----------
+  function initMetricCounters() {
+    const counters = $$('.counter');
+    const producersCounter = $('#producers-counter');
+    const allCounters = [...counters, producersCounter].filter(Boolean);
+
+    if (!allCounters.length) return;
+
+    const animateCounter = (el) => {
+      const targetAttr = el.getAttribute('data-target');
+      let target = targetAttr ? Number(targetAttr) : 0;
+      if (!target) {
+        const raw = el.textContent || '0';
+        target = Number(raw.replace(/[^\d.]/g, '')) || 0;
       }
-      // click outside modal-content closes it
-      const content = modal.querySelector('.modal-content');
-      if (content && !content.contains(e.target) && e.target === modal) {
+      const duration = 1500;
+      const start = 0;
+      const startTime = performance.now();
+
+      function step(ts) {
+        const progress = Math.min(1, (ts - startTime) / duration);
+        const value = start + (target - start) * progress;
+        el.textContent = formatNumber(value, 0);
+        if (progress < 1) requestAnimationFrame(step);
+      }
+
+      requestAnimationFrame(step);
+    };
+
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(
+        (entries, obs) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              animateCounter(entry.target);
+              obs.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.3 }
+      );
+      allCounters.forEach((el) => observer.observe(el));
+    } else {
+      allCounters.forEach(animateCounter);
+    }
+  }
+
+  // ---------- Live Feed (right panel console) ----------
+  function initLiveFeed() {
+    const feed = $('#console-feed');
+    if (!feed) return;
+
+    const producers = ['Node-01', 'SolarRig-12', 'WindFarm-7B', 'HydroUnit-3C', 'Rooftop-Alpha', 'GridEdge-09'];
+    const actions = ['reported', 'minted', 'staked', 'verified', 'streamed', 'settled'];
+    const units = ['kWh', 'MWh'];
+
+    function appendFeedLine(text) {
+      const line = document.createElement('div');
+      line.className = 'console-line';
+      line.textContent = `[${nowTime()}] ${text}`;
+      feed.appendChild(line);
+
+      while (feed.children.length > 40) {
+        feed.removeChild(feed.firstChild);
+      }
+
+      feed.scrollTop = feed.scrollHeight;
+    }
+
+    function generateMessage() {
+      const producer = producers[randInt(0, producers.length - 1)];
+      const action = actions[randInt(0, actions.length - 1)];
+      const unit = units[randInt(0, units.length - 1)];
+      const value = unit === 'kWh' ? randInt(5, 900) : (randInt(1, 40) / 10).toFixed(1);
+      return `${producer} ${action} ${value} ${unit}`;
+    }
+
+    function scheduleNext() {
+      const delay = randInt(2000, 5000);
+      setTimeout(() => {
+        appendFeedLine(generateMessage());
+        scheduleNext();
+      }, delay);
+    }
+
+    // Seed with a couple of lines
+    appendFeedLine('Bootstrapping ENRG live feed...');
+    appendFeedLine('Oracle connection established. Listening for energy proofs...');
+    scheduleNext();
+  }
+
+  // ---------- Modal (Minting Demo) ----------
+  function initModal() {
+    const modalBackdrop = $('#mint-modal');
+    if (!modalBackdrop) return;
+
+    const modal = modalBackdrop.querySelector('.modal');
+    const closeBtn = $('#mint-modal-close');
+    const heroStartBtn = $('#btn-start-minting-hero');
+    const mintSectionStartBtn = $('#btn-start-minting');
+
+    const openTriggers = [heroStartBtn, mintSectionStartBtn].filter(Boolean);
+
+    const openModal = () => {
+      modalBackdrop.classList.add('active');
+      modalBackdrop.setAttribute('aria-hidden', 'false');
+      modalBackdrop.style.display = 'flex';
+    };
+
+    const closeModal = () => {
+      modalBackdrop.classList.remove('active');
+      modalBackdrop.setAttribute('aria-hidden', 'true');
+      modalBackdrop.style.display = 'none';
+    };
+
+    openTriggers.forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        openModal();
+      });
+    });
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        closeModal();
+      });
+    }
+
+    modalBackdrop.addEventListener('click', (e) => {
+      if (e.target === modalBackdrop) {
         closeModal();
       }
     });
 
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && isModalVisible()) {
+      if (e.key === 'Escape' && modalBackdrop.getAttribute('aria-hidden') === 'false') {
         closeModal();
       }
     });
   }
 
-  /* -------------------------
-     Mint simulation
-     -------------------------*/
-  // We must not create new HTML elements. We'll use existing modal-body or live-feed to show logs.
-  const modalBody = modal ? modal.querySelector('.modal-body') : null;
-  const liveFeed = $('#live-feed') || null;
+  // ---------- Minting Simulation ----------
+  function initMintSimulation() {
+    const energyBar = $('#sim-energy-bar');
+    const enrgBar = $('#sim-enrg-bar');
+    const energyValueEl = $('#sim-energy-value');
+    const enrgValueEl = $('#sim-enrg-value');
+    const consoleFeed = $('#console-feed');
+    const historyBody = $('#history-body');
 
-  // Guard: if neither modalBody nor liveFeed exist, we will still log to console.
-  function appendLog(targetEl, text) {
-    if (!targetEl) {
-      // fallback to console
-      console.log('[ENRG SIM]', text);
-      return;
-    }
-    // Append as a text node with newline separation to avoid creating new element nodes.
-    // We will preserve existing markup by adding a text node at the end.
-    const time = new Date().toLocaleTimeString();
-    const node = document.createTextNode(`[${time}] ${text}\n`);
-    targetEl.appendChild(node);
-    // Keep scroll at bottom if element is scrollable
-    if (targetEl.scrollHeight) {
-      targetEl.scrollTop = targetEl.scrollHeight;
-    }
-  }
+    const btnSimMintMain = $('#btn-simulate-mint');
+    const btnSimMintModal = $('#btn-simulate-mint-modal');
 
-  // Simulation state
-  let simRunning = false;
-  let simOnceTriggered = false;
+    const simTriggers = [btnSimMintMain, btnSimMintModal].filter(Boolean);
 
-  function generateRandomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
+    const sources = [
+      { name: 'Solar', multiplier: 1.0 },
+      { name: 'Wind', multiplier: 0.8 },
+      { name: 'Hydro', multiplier: 0.5 },
+    ];
 
-  function formatNumber(n, decimals = 0) {
-    if (decimals === 0) return Math.round(n).toLocaleString();
-    return n.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
-  }
-
-  function computeEnrg(energyKwh, multiplier) {
-    // simple formula: ENRG = energyKwh * multiplier
-    return energyKwh * multiplier;
-  }
-
-  function computeFee(enrgAmount) {
-    // simple fee model: 0.5% + small fixed
-    return enrgAmount * 0.005 + 0.1;
-  }
-
-  function animateTextValue(el, start, end, duration = 900, decimals = 0, suffix = '') {
-    if (!el) return;
-    const startTime = performance.now();
-    function step(now) {
-      const t = Math.min(1, (now - startTime) / duration);
-      const val = start + (end - start) * t;
-      el.textContent = formatNumber(val, decimals) + (suffix || '');
-      if (t < 1) requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
-  }
-
-  function runSimulationCycle() {
-    // generate random energy between 0.5 and 5.0 kWh for a short demo
-    const energy = (Math.random() * 4.5) + 0.5; // kWh
-    // multiplier based on device type (random 0.8..1.6)
-    const multiplier = (Math.random() * 0.8) + 0.8;
-    const enrg = computeEnrg(energy, multiplier);
-    const fee = computeFee(enrg);
-
-    // Log to modal-body and live-feed
-    const summary = `Simulated: ${formatNumber(energy, 2)} kWh × ${multiplier.toFixed(2)} → ${formatNumber(enrg, 2)} ENRG (fee ${formatNumber(fee, 2)} ENRG)`;
-    appendLog(modalBody || liveFeed, summary);
-    appendLog(liveFeed, `Producer reported ${formatNumber(energy,2)} kWh`);
-
-    // Animate any metric displays inside modal-body or live-feed if present
-    // We will try to find elements with ids used for simulation bars; if not present, we update text only.
-    const simEnergyBar = $('#sim-energy-bar');
-    const simEnrgBar = $('#sim-enrg-bar');
-
-    if (simEnergyBar && simEnergyBar.style) {
-      // animate width from 0 to some percent proportional to energy (cap at 100)
-      const pct = Math.min(100, Math.round((energy / 5) * 100));
-      simEnergyBar.style.transition = 'width 800ms ease';
-      simEnergyBar.style.width = pct + '%';
-    } else {
-      // fallback: write a short line in modalBody
-      appendLog(modalBody, `Energy progress: ${Math.round(Math.min(100, (energy / 5) * 100))}%`);
+    function animateBar(el, targetPercent) {
+      if (!el) return;
+      el.style.transition = 'width 0.8s ease-out';
+      el.style.width = '0%';
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          el.style.width = `${Math.max(0, Math.min(100, targetPercent))}%`;
+        });
+      });
     }
 
-    if (simEnrgBar && simEnrgBar.style) {
-      const pct2 = Math.min(100, Math.round((enrg / 10) * 100));
-      simEnrgBar.style.transition = 'width 900ms ease';
-      simEnrgBar.style.width = pct2 + '%';
-    } else {
-      appendLog(modalBody, `ENRG progress: ${Math.round(Math.min(100, (enrg / 10) * 100))}%`);
+    function appendConsoleLog(text) {
+      if (!consoleFeed) {
+        console.log('[ENRG]', text);
+        return;
+      }
+      const line = document.createElement('div');
+      line.className = 'console-line';
+      line.textContent = `[${nowTime()}] ${text}`;
+      consoleFeed.appendChild(line);
+      while (consoleFeed.children.length > 40) {
+        consoleFeed.removeChild(consoleFeed.firstChild);
+      }
+      consoleFeed.scrollTop = consoleFeed.scrollHeight;
     }
 
-    // Optionally animate hero metrics slightly to reflect new totals (non-destructive)
-    const metricEnergyEl = $('#metric-energy');
-    const metricProducersEl = $('#metric-producers');
-    const metricStakedEl = $('#metric-staked');
+    function appendHistoryRow(timestamp, producer, energy, enrg) {
+      if (!historyBody) return;
+      const tr = document.createElement('tr');
+      const tdTime = document.createElement('td');
+      const tdProd = document.createElement('td');
+      const tdEnergy = document.createElement('td');
+      const tdEnrg = document.createElement('td');
 
-    if (metricEnergyEl) {
-      // parse current displayed value and add simulated energy to it (visually)
-      const current = parseNumberFromText(metricEnergyEl.textContent);
-      animateTextValue(metricEnergyEl, current, current + energy, 1200, 2, ' kWh');
-    }
-    if (metricProducersEl) {
-      const current = parseNumberFromText(metricProducersEl.textContent);
-      // occasionally increment producers
-      if (Math.random() > 0.85) {
-        animateTextValue(metricProducersEl, current, current + 1, 800, 0, '');
+      tdTime.textContent = timestamp;
+      tdProd.textContent = producer;
+      tdEnergy.textContent = `${formatNumber(energy, 0)} kWh`;
+      tdEnrg.textContent = `${formatNumber(enrg, 3)} ENRG`;
+
+      tr.appendChild(tdTime);
+      tr.appendChild(tdProd);
+      tr.appendChild(tdEnergy);
+      tr.appendChild(tdEnrg);
+
+      historyBody.insertBefore(tr, historyBody.firstChild);
+      while (historyBody.children.length > 50) {
+        historyBody.removeChild(historyBody.lastChild);
       }
     }
-    if (metricStakedEl) {
-      const current = parseNumberFromText(metricStakedEl.textContent);
-      animateTextValue(metricStakedEl, current, current + enrg - fee, 1200, 2, ' ENRG');
+
+    function runSimulation() {
+      const energyKwh = randInt(1, 500);
+      const source = sources[randInt(0, sources.length - 1)];
+      const effectiveEnergy = energyKwh * source.multiplier;
+      const enrgMinted = effectiveEnergy / 1000;
+      const enrgMintedRounded = Number(enrgMinted.toFixed(3));
+      const protocolFee = enrgMintedRounded * 0.15;
+
+      const feeBuyback = protocolFee * 0.2;
+      const feeStaking = protocolFee * 0.4;
+      const feeDao = protocolFee * 0.3;
+      const feeEmergency = protocolFee * 0.1;
+
+      const energyPercent = (energyKwh / 500) * 100;
+      const enrgPercent = (enrgMintedRounded / 0.5) * 100;
+
+      animateBar(energyBar, energyPercent);
+      animateBar(enrgBar, enrgPercent);
+
+      if (energyValueEl) energyValueEl.textContent = formatNumber(energyKwh, 0);
+      if (enrgValueEl) enrgValueEl.textContent = formatNumber(enrgMintedRounded, 3);
+
+      const summary = `Simulated ${energyKwh} kWh (${source.name}, x${source.multiplier}) → ${enrgMintedRounded.toFixed(
+        3
+      )} ENRG, fee ${protocolFee.toFixed(3)} ENRG`;
+      appendConsoleLog(summary);
+
+      console.log('[ENRG Mint Simulation]');
+      console.log('Energy (kWh):', energyKwh);
+      console.log('Source:', source.name, 'Multiplier:', source.multiplier);
+      console.log('Effective energy (kWh):', effectiveEnergy);
+      console.log('ENRG minted:', enrgMintedRounded);
+      console.log('Protocol fee (15%):', protocolFee.toFixed(3));
+      console.log('Fee breakdown:');
+      console.log('  Buyback & Burn (20%):', feeBuyback.toFixed(3));
+      console.log('  Staking Rewards (40%):', feeStaking.toFixed(3));
+      console.log('  DAO Reserve (30%):', feeDao.toFixed(3));
+      console.log('  Emergency Fund (10%):', feeEmergency.toFixed(3));
+
+      appendHistoryRow(new Date().toISOString(), source.name, energyKwh, enrgMintedRounded);
     }
-  }
 
-  // Start a repeating simulation while modal is open
-  let simInterval = null;
-  function startSimulation() {
-    if (simRunning) return;
-    simRunning = true;
-    // run an immediate cycle
-    runSimulationCycle();
-    simInterval = setInterval(() => {
-      runSimulationCycle();
-    }, 2500 + Math.random() * 2000);
-  }
-
-  function stopSimulation() {
-    simRunning = false;
-    if (simInterval) {
-      clearInterval(simInterval);
-      simInterval = null;
-    }
-  }
-
-  // Start simulation once when modal opens (if user expects a button but none exists)
-  function startMintSimulationOnce() {
-    if (simOnceTriggered) {
-      // if modal reopened, start simulation again
-      startSimulation();
-      return;
-    }
-    simOnceTriggered = true;
-    startSimulation();
-  }
-
-  // If there is a specific simulate button inside modal, wire it up.
-  const simulateBtnCandidates = modal ? Array.from(modal.querySelectorAll('button, a')).filter((el) => {
-    const id = el.id || '';
-    const txt = (el.textContent || '').toLowerCase();
-    return id.toLowerCase().includes('sim') || txt.includes('simulate') || txt.includes('simulate mint') || txt.includes('start simulation') || txt.includes('simulate mint');
-  }) : [];
-
-  if (simulateBtnCandidates.length > 0) {
-    simulateBtnCandidates.forEach((btn) => {
+    simTriggers.forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
-        // run a single simulation cycle on demand
-        runSimulationCycle();
+        runSimulation();
       });
     });
-  } else {
-    // No explicit simulate button found; ensure simulation stops when modal closes
-    if (modal) {
-      // observe modal display changes via MutationObserver as a fallback
-      const mo = new MutationObserver(() => {
-        if (!isModalVisible()) stopSimulation();
-      });
-      mo.observe(modal, { attributes: true, attributeFilter: ['style', 'aria-hidden'] });
-    }
   }
 
-  /* -------------------------
-     Dashboard scroll
-     -------------------------*/
-  const dashboardBtn = $('#open-dashboard') || $('#open-dashboard-2') || null;
-  const dashboardSection = $('#dashboard') || null;
-  if (dashboardBtn && dashboardSection) {
-    dashboardBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      dashboardSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // ---------- Navigation (smooth scroll) ----------
+  function initNavigation() {
+    const navLinks = $$('.nav-link[href^="#"]');
+    navLinks.forEach((link) => {
+      link.addEventListener('click', (e) => {
+        const href = link.getAttribute('href');
+        if (!href || !href.startsWith('#')) return;
+        const target = $(href);
+        if (!target) return;
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+
+    const dashboardSection = $('#dashboard');
+    const dashboardButtons = [$('#btn-start-minting'), $('#btn-start-minting-hero')].filter(Boolean);
+    dashboardButtons.forEach((btn) => {
+      btn.addEventListener('dblclick', (e) => {
+        if (!dashboardSection) return;
+        e.preventDefault();
+        dashboardSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
     });
   }
 
-  /* -------------------------
-     Wallet connect (nav)
-     -------------------------*/
-  const navConnect = $('#nav-connect') || null;
-  function openPhantomSite() {
-    try {
-      window.open('https://phantom.app/', '_blank', 'noopener');
-    } catch (err) {
-      // ignore
-    }
-  }
+  // ---------- Wallet Connect ----------
+  function initWalletConnect() {
+    const connectButtons = [
+      $('#btn-get-started'),
+      $('#btn-contact'),
+      $('#btn-become-partner'),
+    ].filter(Boolean);
 
-  async function tryConnectWallet() {
-    if (window.solana && typeof window.solana.connect === 'function') {
-      try {
-        await window.solana.connect();
-        const pub = window.solana.publicKey ? window.solana.publicKey.toString() : 'connected';
-        // update nav button text if possible
-        if (navConnect) navConnect.textContent = pub.slice ? pub.slice(0, 8) + '...' : 'Connected';
-        appendLog(liveFeed || modalBody, `Wallet connected: ${pub}`);
-      } catch (err) {
-        appendLog(liveFeed || modalBody, `Wallet connection rejected or failed.`);
+    async function connectPhantom() {
+      const provider = window.solana;
+      if (provider && provider.isPhantom) {
+        try {
+          const res = await provider.connect();
+          const pubkey = (res && res.publicKey && res.publicKey.toString()) || 'Unknown public key';
+          alert(`Phantom wallet connected:\n${pubkey}`);
+          console.log('[ENRG] Phantom wallet connected:', pubkey);
+        } catch (err) {
+          console.error('[ENRG] Phantom connection rejected or failed', err);
+          alert('Phantom connection was rejected or failed.');
+        }
+      } else {
+        window.open('https://phantom.app/', '_blank', 'noopener');
       }
+    }
+
+    connectButtons.forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        connectPhantom();
+      });
+    });
+  }
+
+  // ---------- Particles Background ----------
+  function initParticles() {
+    const canvas = $('#particle-canvas');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const particles = [];
+    const PARTICLE_COUNT = 80;
+
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4,
+        r: Math.random() * 2 + 0.5,
+        alpha: Math.random() * 0.6 + 0.2,
+      });
+    }
+
+    function step() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#00E5FF';
+
+      particles.forEach((p) => {
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x < 0) p.x = canvas.width;
+        if (p.x > canvas.width) p.x = 0;
+        if (p.y < 0) p.y = canvas.height;
+        if (p.y > canvas.height) p.y = 0;
+
+        ctx.globalAlpha = p.alpha;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      ctx.globalAlpha = 1;
+      requestAnimationFrame(step);
+    }
+
+    step();
+  }
+
+  // ---------- Fade-up scroll animations (preserve) ----------
+  function initFadeUp() {
+    const fadeEls = $$('.fade-up');
+    if (!fadeEls.length) return;
+
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('in-view');
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.2 }
+      );
+      fadeEls.forEach((el) => observer.observe(el));
     } else {
-      // no injected provider
-      const proceed = confirm('Phantom wallet not detected. Open phantom.app to install?');
-      if (proceed) openPhantomSite();
+      fadeEls.forEach((el) => el.classList.add('in-view'));
     }
   }
 
-  if (navConnect) {
-    navConnect.addEventListener('click', (e) => {
-      e.preventDefault();
-      tryConnectWallet();
-    });
-  }
-
-  /* -------------------------
-     Hero metrics animate on visibility
-     -------------------------*/
-  const metricEnergyEl = $('#metric-energy');
-  const metricProducersEl = $('#metric-producers');
-  const metricStakedEl = $('#metric-staked');
-
-  function animateMetricIfNeeded(el) {
-    if (!el) return;
-    // parse target from existing text
-    const raw = el.textContent || '';
-    // keep suffix if present
-    const suffixMatch = raw.match(/[a-zA-Z% ]+$/);
-    const suffix = suffixMatch ? suffixMatch[0] : '';
-    const target = parseNumberFromText(raw);
-    // animate from 0 to target
-    animateTextValue(el, 0, target, 1400, (suffix && suffix.toLowerCase().includes('kwh')) ? 2 : (suffix && suffix.toLowerCase().includes('enrg') ? 2 : 0), suffix);
-  }
-
-  // IntersectionObserver to trigger when metrics enter viewport
-  const metricsToObserve = [metricEnergyEl, metricProducersEl, metricStakedEl].filter(Boolean);
-  if (metricsToObserve.length > 0 && 'IntersectionObserver' in window) {
-    const obs = new IntersectionObserver((entries, observer) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          animateMetricIfNeeded(entry.target);
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.35 });
-    metricsToObserve.forEach((el) => obs.observe(el));
-  } else {
-    // fallback: animate immediately
-    metricsToObserve.forEach((el) => animateMetricIfNeeded(el));
-  }
-
-  /* -------------------------
-     Live feed filler
-     -------------------------*/
-  const liveMessages = [
-    'Device 0xA1 reported 3.2 kWh',
-    'Device 0xB7 verified 1.1 kWh',
-    'Oracle aggregated 12 proofs',
-    'New producer registered: 0xC3',
-    'Mint executed: 24.5 ENRG',
-    'Switchboard oracle heartbeat received',
-    'Device 0xD9 offline, retrying...',
-    'Energy proof validated on Solana',
-  ];
-
-  let liveFeedInterval = null;
-  function startLiveFeed() {
-    if (!liveFeed) return;
-    // ensure liveFeed is not overwritten if it contains important content
-    liveFeedInterval = setInterval(() => {
-      const msg = liveMessages[generateRandomInt(0, liveMessages.length - 1)];
-      appendLog(liveFeed, msg);
-      // keep live-feed length reasonable by trimming text nodes if too long
-      try {
-        // if liveFeed has many child text nodes, remove oldest
-        const maxNodes = 120;
-        while (liveFeed.childNodes.length > maxNodes) {
-          liveFeed.removeChild(liveFeed.firstChild);
-        }
-      } catch (err) {
-        // ignore
-      }
-    }, 2200 + Math.random() * 1800);
-  }
-
-  function stopLiveFeed() {
-    if (liveFeedInterval) {
-      clearInterval(liveFeedInterval);
-      liveFeedInterval = null;
-    }
-  }
-
-  // Start live feed on page load
+  // ---------- Init on DOMContentLoaded ----------
   document.addEventListener('DOMContentLoaded', () => {
-    startLiveFeed();
+    initMetricCounters();
+    initLiveFeed();
+    initModal();
+    initMintSimulation();
+    initNavigation();
+    initWalletConnect();
+    initParticles();
+    initFadeUp();
   });
-
-  /* -------------------------
-     Clean up on unload
-     -------------------------*/
-  window.addEventListener('beforeunload', () => {
-    stopSimulation();
-    stopLiveFeed();
-  });
-
-  /* -------------------------
-     Defensive: expose a small API on window for debugging (non-invasive)
-     -------------------------*/
-  try {
-    window.__ENRG = window.__ENRG || {};
-    window.__ENRG.openModal = openModal;
-    window.__ENRG.closeModal = closeModal;
-    window.__ENRG.runSimulationCycle = runSimulationCycle;
-    window.__ENRG.startSimulation = startSimulation;
-    window.__ENRG.stopSimulation = stopSimulation;
-  } catch (err) {
-    // ignore
-  }
-
-  // End of script
 })();
