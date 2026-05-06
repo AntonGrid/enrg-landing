@@ -185,7 +185,7 @@ if (btnContact) btnContact.addEventListener('click', () => mailToAnton());
 if (btnBecomePartner) btnBecomePartner.addEventListener('click', () => mailToAnton('Partnership'));
 
 // -----------------------------
-// Mint simulation with realistic fee breakdown + ВИЗУАЛЬНЫЙ ДЕБАГ
+// Mint simulation with realistic fee breakdown + ДИАГНОСТИЧЕСКИЙ ALERT
 // -----------------------------
 function runMintSimulation() {
   const energyBar = document.getElementById('sim-energy-bar');
@@ -194,16 +194,16 @@ function runMintSimulation() {
   const enrgValue = document.getElementById('sim-enrg-value');
   const feed = document.getElementById('console-feed');
 
-  if (!energyBar || !enrgBar || !energyValue || !enrgValue) {
-    console.warn('[ENRG Debug] Не найдены элементы полос/значений');
-    return;
-  }
+  if (!energyBar || !enrgBar || !energyValue || !enrgValue) return;
 
-  // ---------- ВРЕМЕННАЯ БОЕВАЯ РАСКРАСКА, ЧТОБЫ ТОЧНО УВИДЕТЬ ПОЛОСЫ ----------
-  energyBar.style.backgroundColor = '#ff3333';   // ярко-красный
+  // ⚡ ДИАГНОСТИЧЕСКОЕ ВСПЛЫВАЮЩЕЕ ОКНО (убрать после теста)
+  alert("Симуляция запущена! Энергии: " + energyKwh + " кВт⋅ч");
+
+  // Принудительно делаем полосы заметными
+  energyBar.style.backgroundColor = '#ff3333';
   energyBar.style.border = '2px solid white';
-  energyBar.style.height = '20px';               // гарантированная высота
-  enrgBar.style.backgroundColor = '#33aaff';    // ярко-синий
+  energyBar.style.height = '20px';
+  enrgBar.style.backgroundColor = '#33aaff';
   enrgBar.style.border = '2px solid white';
   enrgBar.style.height = '20px';
 
@@ -211,17 +211,17 @@ function runMintSimulation() {
   if (energyBar.parentElement) energyBar.parentElement.style.overflow = 'visible';
   if (enrgBar.parentElement) enrgBar.parentElement.style.overflow = 'visible';
 
-  // ---------- ОСНОВНАЯ ЛОГИКА СИМУЛЯЦИИ ----------
   const energyKwh = Math.floor(Math.random() * 500) + 1;
   const multipliers = [1.0, 0.8, 0.5];
   const sourceMultiplier = multipliers[Math.floor(Math.random() * multipliers.length)];
   const sourceNames = { 1.0: 'Solar', 0.8: 'Wind', 0.5: 'Hydro' };
   const source = sourceNames[sourceMultiplier];
+
   const effectiveEnergyKwh = energyKwh * sourceMultiplier;
   const enrgMinted = (effectiveEnergyKwh / 1000).toFixed(3);
+
   const protocolFeePercent = 15;
   const protocolFeeEnrg = (Number(enrgMinted) * (protocolFeePercent / 100)).toFixed(3);
-  const netEnrgReceived = (Number(enrgMinted) - Number(protocolFeeEnrg)).toFixed(3);
   const buybackBurn = (Number(protocolFeeEnrg) * 0.20).toFixed(3);
   const stakingRewards = (Number(protocolFeeEnrg) * 0.40).toFixed(3);
   const daoReserve = (Number(protocolFeeEnrg) * 0.30).toFixed(3);
@@ -237,14 +237,12 @@ function runMintSimulation() {
     const energyPercent = Math.min(100, (energyKwh / 500) * 100);
     energyBar.style.width = energyPercent + '%';
     energyValue.textContent = energyKwh.toFixed(0);
-    console.log(`[ENRG Debug] Energy bar set to ${energyPercent}%`);
   }, 60);
 
   setTimeout(() => {
     const enrgPercent = Math.min(100, (Number(enrgMinted) / 0.5) * 100);
     enrgBar.style.width = enrgPercent + '%';
     enrgValue.textContent = enrgMinted;
-    console.log(`[ENRG Debug] ENRG bar set to ${enrgPercent}%`);
   }, 420);
 
   if (feed) {
@@ -263,7 +261,6 @@ function runMintSimulation() {
     effectiveEnergy: `${effectiveEnergyKwh.toFixed(1)} kWh`,
     enrgMinted: enrgMinted,
     protocolFee: `${protocolFeeEnrg} (${protocolFeePercent}%)`,
-    netReceived: netEnrgReceived,
     feeBreakdown: {
       'Buyback & Burn (20%)': buybackBurn,
       'Staking Rewards (40%)': stakingRewards,
