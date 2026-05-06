@@ -270,7 +270,7 @@ function runMintSimulation() {
 }
 
 // -----------------------------
-// ✅ Надёжная привязка кнопок симулятора (ждём DOM, затем ищем кнопки)
+// Надёжная привязка кнопок симулятора (ждём полной загрузки DOM)
 // -----------------------------
 function bindSimulationButtons() {
   const btnSim = document.getElementById('btn-simulate-mint');
@@ -280,7 +280,7 @@ function bindSimulationButtons() {
     btnSim.addEventListener('click', runMintSimulation);
     console.log('[ENRG] Кнопка btn-simulate-mint привязана');
   } else {
-    console.warn('[ENRG] Кнопка btn-simulate-mint НЕ НАЙДЕНА');
+    console.warn('[ENRG] Кнопка btn-simulate-mint НЕ НАЙДЕНА в DOM');
   }
 
   if (btnSimModal) {
@@ -289,11 +289,11 @@ function bindSimulationButtons() {
     });
     console.log('[ENRG] Кнопка btn-simulate-mint-modal привязана');
   } else {
-    console.warn('[ENRG] Кнопка btn-simulate-mint-modal НЕ НАЙДЕНА');
+    console.warn('[ENRG] Кнопка btn-simulate-mint-modal НЕ НАЙДЕНА в DOM');
   }
 }
 
-// Ждём полной загрузки DOM
+// Ждём полной загрузки DOM, затем привязываем кнопки
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', bindSimulationButtons);
 } else {
@@ -346,6 +346,7 @@ if (document.readyState === 'loading') {
 
 // -----------------------------
 // Solana on-chain data fetching (improved)
+// Fetches all EnergyProducer and StakeInfo accounts and accurately sums metrics
 // -----------------------------
 (async function () {
   const defaultValues = {
@@ -357,6 +358,7 @@ if (document.readyState === 'loading') {
   const programId = 'CcRjGroz7tsDAroZayWak58KtfAczJ7vbPddnRJDSeL4';
   const rpcUrl = 'http://127.0.0.1:8899';
 
+  // Helper: convert base64 account data to Uint8Array
   function base64ToBytes(base64Str) {
     const binaryString = atob(base64Str);
     const bytes = new Uint8Array(binaryString.length);
@@ -366,6 +368,7 @@ if (document.readyState === 'loading') {
     return bytes;
   }
 
+  // Helper: read u64 (little-endian) from byte array
   function readU64LE(bytes, offset) {
     if (offset + 8 > bytes.length) return 0n;
     let value = 0n;
@@ -375,10 +378,15 @@ if (document.readyState === 'loading') {
     return value;
   }
 
+  // Helper: detect account type and extract relevant fields
   function parseAccount(data) {
     const bytes = base64ToBytes(data);
+    
+    // EnergyProducer: authority at 8-39 (pubkey), energy_wh at 56-63 (8 bytes after nonce)
+    // StakeInfo: owner at 8-39 (pubkey), staked_amount at 40-47 (right after owner)
     const energyWhValue = readU64LE(bytes, 56);
     const stakedValue = readU64LE(bytes, 40);
+
     return {
       energyWh: energyWhValue,
       staked: stakedValue,
@@ -389,6 +397,7 @@ if (document.readyState === 'loading') {
   async function fetchAllAccounts() {
     try {
       console.log(`[ENRG] Fetching all program accounts from ${rpcUrl}`);
+
       const response = await fetch(rpcUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -402,15 +411,19 @@ if (document.readyState === 'loading') {
           ]
         })
       });
+
       const result = await response.json();
+      
       if (result.error) {
         console.warn(`[ENRG] RPC error: ${result.error.message}`);
         return null;
       }
+
       if (!result.result || !Array.isArray(result.result)) {
         console.warn('[ENRG] No accounts found in RPC response');
         return null;
       }
+
       console.log(`[ENRG] Fetched ${result.result.length} accounts from on-chain`);
       return result.result;
     } catch (error) {
@@ -421,41 +434,80 @@ if (document.readyState === 'loading') {
 
   async function computeMetrics() {
     const accounts = await fetchAllAccounts();
-    if (!accounts) return defaultValues;
+    
+    if (!accounts) {
+      console.warn('[ENRG] Falling back to default values');
+      return defaultValues;
+    }
+
     let totalEnergyWh = 0n;
     let totalStaked = 0n;
     let producerCount = 0;
+
+    // Parse all accounts and aggregate metrics
     for (const account of accounts) {
       try {
         const data = account.account.data[0];
         if (typeof data !== 'string' || data.length === 0) continue;
+
         const parsed = parseAccount(data);
+
         if (parsed.energyWh > 0n && parsed.energyWh < 100000000000000n) {
           totalEnergyWh += parsed.energyWh;
           producerCount++;
         }
+
         if (parsed.staked > 0n && parsed.staked < 10000000000000000n) {
           totalStaked += parsed.staked;
         }
-      } catch (e) {}
+      } catch (e) {
+        // Skip malformed accounts silently
+      }
     }
+
     const totalEnergyMWh = Math.round(Number(totalEnergyWh) / 1_000_000);
-    return {
+
+    const metrics = {
       totalEnergyMWh: totalEnergyMWh > 0 ? totalEnergyMWh : defaultValues.totalEnergyMWh,
       activeProducers: producerCount > 0 ? producerCount : defaultValues.activeProducers,
       totalStakedENRG: Number(totalStaked) > 0 ? Number(totalStaked) : defaultValues.totalStakedENRG
     };
+
+    console.log('[ENRG] Computed metrics:', {
+      totalEnergyWh: totalEnergyWh.toString(),
+      totalEnergyMWh: metrics.totalEnergyMWh,
+      producerCount: producerCount,
+      totalStaked: totalStaked.toString(),
+      finalMetrics: metrics
+    });
+
+    return metrics;
   }
 
   function updateDOM(metrics) {
+    // Update the three metric card counters
     const counterElements = document.querySelectorAll('.counter');
-    if (counterElements.length >= 1) counterElements[0].setAttribute('data-target', metrics.totalEnergyMWh);
-    if (counterElements.length >= 2) counterElements[1].setAttribute('data-target', metrics.activeProducers);
-    if (counterElements.length >= 3) counterElements[2].setAttribute('data-target', metrics.totalStakedENRG);
+    
+    if (counterElements.length >= 1) {
+      counterElements[0].setAttribute('data-target', metrics.totalEnergyMWh);
+    }
+    if (counterElements.length >= 2) {
+      counterElements[1].setAttribute('data-target', metrics.activeProducers);
+    }
+    if (counterElements.length >= 3) {
+      counterElements[2].setAttribute('data-target', metrics.totalStakedENRG);
+    }
+
+    // Update the producers counter in hero section ("Join X+ energy producers")
     const producersCounter = document.getElementById('producers-counter');
-    if (producersCounter) producersCounter.setAttribute('data-target', metrics.activeProducers);
+    if (producersCounter) {
+      producersCounter.setAttribute('data-target', metrics.activeProducers);
+    }
+
+    console.log('[ENRG] Updated DOM with metrics');
   }
 
+  // Main execution: fetch and update on page load
   async function initializeMetrics() {
     const metrics = await computeMetrics();
     updateDOM(metrics);
