@@ -1,547 +1,359 @@
-<!doctype html>
-<html lang="ru">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ENRG — Decentralized Energy Protocol</title>
-
-  <!-- Existing styling — do not change -->
-  <link rel="stylesheet" href="style.css">
-
-  <!-- Preserve existing CSS variables and animations; only add minimal new styles below -->
-  <style>
-    /* New styles for hero and onboarding only — do not override existing theme variables */
-    /* Keep everything compatible with existing glassmorphism and animations */
-    #home .hero-inner {
-      display: grid;
-      grid-template-columns: 1fr 420px;
-      gap: 2.5rem;
-      align-items: center;
-    }
-
-    @media (max-width: 900px) {
-      #home .hero-inner {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    #home .hero-copy h1 {
-      font-size: 2.4rem;
-      line-height: 1.05;
-      margin: 0 0 0.6rem 0;
-      color: var(--accent, #00E5FF);
-    }
-
-    #home .hero-copy p.lead {
-      margin: 0 0 1.25rem 0;
-      color: rgba(255,255,255,0.9);
-      max-width: 60ch;
-    }
-
-    .hero-cta {
-      display: flex;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-    }
-
-    .btn-hero {
-      --btn-bg: linear-gradient(90deg, rgba(0,229,255,0.12), rgba(255,107,0,0.08));
-      background: var(--btn-bg);
-      border: 1px solid rgba(255,255,255,0.06);
-      color: #fff;
-      padding: 0.9rem 1.15rem;
-      border-radius: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.6rem;
-      transition: transform .18s ease, box-shadow .18s ease;
-      backdrop-filter: blur(6px);
-    }
-
-    .btn-hero:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,0.45); }
-
-    .hero-metrics {
-      display: grid;
-      grid-template-columns: repeat(3,1fr);
-      gap: 0.75rem;
-      margin-top: 1.25rem;
-    }
-
-    @media (max-width: 700px) {
-      .hero-metrics { grid-template-columns: 1fr; }
-    }
-
-    .metric {
-      padding: 0.9rem;
-      border-radius: 10px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      border: 1px solid rgba(255,255,255,0.04);
-      text-align: center;
-    }
-
-    .metric .value {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: #00E5FF;
-    }
-
-    .metric .label {
-      font-size: 0.85rem;
-      color: rgba(255,255,255,0.7);
-    }
-
-    /* Onboarding section */
-    #onboarding .cards {
-      display: grid;
-      grid-template-columns: repeat(3,1fr);
-      gap: 1rem;
-      margin-top: 1rem;
-    }
-
-    @media (max-width: 900px) {
-      #onboarding .cards { grid-template-columns: 1fr; }
-    }
-
-    .glass-card.onboard {
-      padding: 1.15rem;
-      border-radius: 14px;
-      min-height: 160px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .onboard .card-head {
-      display: flex;
-      gap: 0.75rem;
-      align-items: center;
-    }
-
-    .onboard .card-head .emoji {
-      font-size: 1.6rem;
-      width: 44px;
-      height: 44px;
-      display: inline-grid;
-      place-items: center;
-      border-radius: 10px;
-      background: rgba(0,0,0,0.18);
-      color: #fff;
-    }
-
-    .onboard .card-title {
-      font-weight: 700;
-      color: #00E5FF;
-      font-size: 1.05rem;
-    }
-
-    .onboard p {
-      margin: 0.6rem 0 1rem 0;
-      color: rgba(255,255,255,0.9);
-      font-size: 0.95rem;
-    }
-
-    .onboard .card-actions {
-      display:flex;
-      gap:0.6rem;
-      align-items:center;
-    }
-
-    .btn-ghost {
-      background: transparent;
-      border: 1px solid rgba(255,255,255,0.06);
-      color: #fff;
-      padding: 0.6rem 0.9rem;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: 600;
-    }
-
-    .btn-primary {
-      background: linear-gradient(90deg,#00E5FF,#FF6B00);
-      color: #08121a;
-      padding: 0.6rem 0.9rem;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      font-weight: 700;
-    }
-
-    #onboarding .start-now {
-      margin-top: 1.25rem;
-      display:flex;
-      justify-content:center;
-    }
-
-    /* subtle focus outlines for accessibility */
-    .btn-hero:focus, .btn-ghost:focus, .btn-primary:focus { outline: 3px solid rgba(0,229,255,0.12); outline-offset: 2px; }
-
-    /* keep modal open behavior compatible with existing scripts */
-    .sr-only { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; }
-  </style>
+  <meta charset="UTF-8" />
+  <title>ENRG – DePIN Energy Command Center</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Preserve existing particles, nav, header, and other elements -->
-  <header class="site-header">
-    <nav class="main-nav">
-      <a class="logo" href="#home">ENRG</a>
-      <ul class="nav-links">
-        <li><a href="#home">Home</a></li>
-        <li><a href="#onboarding">Как начать</a></li>
-        <li><a href="#dashboard">Dashboard</a></li>
-        <li><a href="#tokenomics">Tokenomics</a></li>
-        <li><a href="#roadmap">Roadmap</a></li>
-        <li><a href="#partners">Partners</a></li>
-      </ul>
-      <button id="nav-connect" class="btn-ghost">Connect</button>
+  <canvas id="particle-canvas"></canvas>
+  <div class="bg-overlay"></div>
+
+  <!-- FIXED NAV -->
+  <header class="top-nav">
+    <div class="nav-left">
+      <div class="brand-mark">
+        <div class="brand-mark-inner">EN</div>
+      </div>
+      <div class="brand-text">
+        <div class="brand-title">ENRG Protocol</div>
+        <div class="brand-subtitle">DePIN Energy Dashboard</div>
+      </div>
+    </div>
+    <nav class="nav-links">
+      <a href="#home" class="nav-link">HOME</a>
+      <a href="#dashboard" class="nav-link">DASHBOARD</a>
+      <a href="#minting" class="nav-link">MINTING</a>
+      <a href="#history" class="nav-link">HISTORY</a>
+      <a href="#settings" class="nav-link">SETTINGS</a>
     </nav>
+    <div class="nav-cta">
+      <button class="btn-outline" id="btn-get-started">Get Started</button>
+    </div>
   </header>
 
-  <!-- Particles / background preserved -->
-  <div id="particles-js" aria-hidden="true"></div>
+  <main class="page-shell">
 
-  <!-- NEW HERO SECTION (id="home") -->
-  <main>
-    <section id="home" class="section glass-section fade-up">
-      <div class="hero-inner">
-        <div class="hero-copy">
-          <h1>Твоя энергия. Твои токены.</h1>
-          <p class="lead">Подключи солнечные панели или ветрогенератор к протоколу ENRG и преврати мегаватт‑часы в реальный доход на Solana.</p>
-
-          <div class="hero-cta">
-            <button id="cta-earn" class="btn-hero" title="Начать зарабатывать — перейти к инструкции">
-              <span>🚀</span>
-              <span>Начать зарабатывать</span>
-            </button>
-
-            <button id="cta-demo" class="btn-hero" title="Открыть живую демонстрацию">
-              <span>▶️</span>
-              <span>Живая демонстрация</span>
-            </button>
+    <!-- HERO / HOME -->
+    <section id="home" class="section hero-section fade-up">
+      <div class="hero-grid">
+        <div class="hero-left">
+          <div class="hero-logo-wrap">
+            <svg class="hero-logo" viewBox="0 0 160 160" aria-hidden="true">
+              <defs>
+                <radialGradient id="logoGrad" cx="30%" cy="0%" r="100%">
+                  <stop offset="0%" stop-color="#00E5FF"/>
+                  <stop offset="50%" stop-color="#0B1120"/>
+                  <stop offset="100%" stop-color="#000000"/>
+                </radialGradient>
+                <linearGradient id="logoRing" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#00E5FF"/>
+                  <stop offset="100%" stop-color="#FF6B00"/>
+                </linearGradient>
+              </defs>
+              <circle cx="80" cy="80" r="68" fill="url(#logoGrad)" stroke="url(#logoRing)" stroke-width="5"/>
+              <path d="M45 100 L45 55 L65 55 C78 55 87 63 87 76 C87 89 78 96 65 96 L55 96 L55 100 Z
+                       M55 86 L65 86 C71 86 75 82 75 76 C75 70 71 66 65 66 L55 66 Z"
+                    fill="#00E5FF"/>
+              <path d="M95 100 L95 55 L107 55 L107 100 Z" fill="#FF6B00"/>
+            </svg>
+            <div class="hero-logo-glow" aria-hidden="true"></div>
           </div>
-
-          <div class="hero-metrics" aria-hidden="false">
-            <div class="metric">
-              <div class="value" id="metric-energy">1,234,567 kWh</div>
-              <div class="label">Total Energy</div>
+          <h1 class="hero-title">Live DePIN Energy Command Center</h1>
+          <p class="hero-tagline">
+            Monitor production, mint ENRG, and track protocol health in real time.
+          </p>
+          <p class="hero-slogan">
+            <strong>The Only DePIN Protocol with Buyback &amp; Burn – Backed by Real MWh, Not Loyalty Points.</strong>
+          </p>
+          <div class="hero-actions">
+            <button class="btn-primary" id="btn-start-minting-hero">Start Minting</button>
+            <button class="btn-secondary" id="btn-download-whitepaper">Download White Paper</button>
+            <button class="btn-secondary" id="btn-technical-docs">Technical Documentation</button>
+          </div>
+          <p class="hero-social-proof">
+            Join <span id="producers-counter" data-target="1200">0</span>+ energy producers already connected.
+          </p>
+        </div>
+        <div class="hero-right">
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-label">Total Energy</div>
+              <div class="metric-value"><span class="counter" data-target="2056">0</span> MWh</div>
             </div>
-            <div class="metric">
-              <div class="value" id="metric-producers">1,024</div>
-              <div class="label">Active Producers</div>
+            <div class="metric-card">
+              <div class="metric-label">Active Producers</div>
+              <div class="metric-value"><span class="counter" data-target="150">0</span></div>
             </div>
-            <div class="metric">
-              <div class="value" id="metric-staked">512,000 ENRG</div>
-              <div class="label">ENRG Staked</div>
+            <div class="metric-card">
+              <div class="metric-label">ENRG Staked</div>
+              <div class="metric-value"><span class="counter" data-target="65000">0</span></div>
+            </div>
+          </div>
+          <div class="mini-console">
+            <div class="console-header">Live Feed</div>
+            <div class="console-body" id="console-feed" aria-live="polite">
+              <!-- Live log lines injected by JS -->
             </div>
           </div>
         </div>
-
-        <!-- Right column: keep existing mint card / live feed placeholder -->
-        <aside class="hero-panel glass-card">
-          <h3 style="margin:0 0 0.6rem 0;">Live Feed</h3>
-          <div id="live-feed" style="min-height:220px;">
-            <!-- existing live feed preserved; script.js will populate -->
-            <p class="sr-only">Live production feed and quick actions</p>
-            <div class="feed-placeholder">Данные в реальном времени...</div>
-          </div>
-
-          <div style="margin-top:1rem; display:flex; gap:0.6rem;">
-            <button id="start-mint" class="btn-primary" style="flex:1;">Start Minting</button>
-            <button id="open-dashboard" class="btn-ghost" style="flex:1;">Dashboard</button>
-          </div>
-        </aside>
       </div>
     </section>
 
-    <!-- NEW ONBOARDING SECTION (id="onboarding") -->
-    <section id="onboarding" class="section glass-section fade-up">
-      <h2>Начни зарабатывать в 3 шага</h2>
-
-      <div class="cards" role="list">
-        <article class="glass-card onboard" role="listitem" aria-labelledby="card1-title">
-          <div>
-            <div class="card-head">
-              <div class="emoji">⚡</div>
-              <div>
-                <div id="card1-title" class="card-title">Подключи источник</div>
-              </div>
-            </div>
-
-            <p>Установи наш IoT‑контроллер (ESP32 + PZEM‑004T) на любой источник энергии. Или пропусти этот шаг и сначала попробуй демо.</p>
-          </div>
-
-          <div class="card-actions">
-            <a class="btn-ghost" href="mailto:anton@enrg.network" rel="noopener">Заказать оборудование</a>
-          </div>
-        </article>
-
-        <article class="glass-card onboard" role="listitem" aria-labelledby="card2-title">
-          <div>
-            <div class="card-head">
-              <div class="emoji">👛</div>
-              <div>
-                <div id="card2-title" class="card-title">Привяжи кошелёк</div>
-              </div>
-            </div>
-
-            <p>Подключи свой Solana‑кошелёк (Phantom, Solflare), чтобы получать токены ENRG напрямую.</p>
-          </div>
-
-          <div class="card-actions">
-            <button id="connect-wallet" class="btn-primary">Подключить кошелёк</button>
-          </div>
-        </article>
-
-        <article class="glass-card onboard" role="listitem" aria-labelledby="card3-title">
-          <div>
-            <div class="card-head">
-              <div class="emoji">💰</div>
-              <div>
-                <div id="card3-title" class="card-title">Получай токены</div>
-              </div>
-            </div>
-
-            <p>Следи за доходами в реальном времени. Каждый верифицированный MWh автоматически превращается в ENRG и поступает на твой счёт.</p>
-          </div>
-
-          <div class="card-actions">
-            <button id="open-dashboard-2" class="btn-ghost">Открыть дашборд</button>
-          </div>
-        </article>
-      </div>
-
-      <div class="start-now">
-        <button id="onboard-mint" class="btn-primary" style="padding:0.9rem 1.25rem; font-size:1rem;">
-          Начать сейчас
-        </button>
-      </div>
-    </section>
-
-    <!-- Placeholder for Dashboard (must remain) -->
+    <!-- DASHBOARD -->
     <section id="dashboard" class="section glass-section fade-up">
-      <h2>Dashboard</h2>
-      <p>Здесь будет ваш персональный дашборд с доходами и историей.</p>
-      <!-- Keep existing history table and live components intact -->
-      <div id="history-table" class="glass-card">
-        <h3>История</h3>
-        <table id="tx-history" aria-describedby="history-desc">
-          <caption id="history-desc" class="sr-only">Таблица истории транзакций и верификаций</caption>
+      <h2>Dashboard Overview</h2>
+      <p class="section-slogan"><strong>From Electrons to Yield – ENRG Owns the Full Stack.</strong></p>
+      <!-- Existing "How It Works" and overview text should remain here -->
+      <p>
+        <!-- TODO: existing landing page "How It Works" content preserved by user -->
+      </p>
+    </section>
+
+    <!-- MINTING -->
+    <section id="minting" class="section glass-section fade-up">
+      <div class="section-header">
+        <h2>Minting Console</h2>
+        <p>Connect your production, simulate energy flows, and visualize ENRG minting.</p>
+      </div>
+      <div class="minting-layout">
+        <div class="minting-left">
+          <p class="section-slogan"><strong>Proof-of-Production in One Glance.</strong></p>
+          <p>
+            Use the simulator to see how your energy output converts into ENRG and protocol fees.
+          </p>
+          <button class="btn-primary" id="btn-start-minting">Start Minting</button>
+        </div>
+        <div class="minting-right">
+          <div class="mint-sim">
+            <div class="sim-header">Minting Simulator</div>
+            <div class="sim-bars">
+              <div class="sim-bar">
+                <span class="sim-label">Energy Input (kWh)</span>
+                <div class="sim-bar-track">
+                  <div class="sim-bar-fill" id="sim-energy-bar" style="width:0%"></div>
+                </div>
+              </div>
+              <div class="sim-bar">
+                <span class="sim-label">ENRG Minted</span>
+                <div class="sim-bar-track">
+                  <div class="sim-bar-fill sim-bar-fill-secondary" id="sim-enrg-bar" style="width:0%"></div>
+                </div>
+              </div>
+            </div>
+            <div class="sim-output">
+              <div>Energy: <span id="sim-energy-value">0</span> kWh</div>
+              <div>ENRG: <span id="sim-enrg-value">0</span></div>
+            </div>
+            <button class="btn-secondary" id="btn-simulate-mint">Simulate Mint</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HISTORY -->
+    <section id="history" class="section glass-section fade-up">
+      <h2>History</h2>
+      <p>
+        <!-- Existing history / previous activity content preserved by user -->
+      </p>
+      <div class="history-table-wrap">
+        <table class="history-table" aria-describedby="history">
           <thead>
-            <tr><th>Дата</th><th>Устройство</th><th>kWh</th><th>ENRG</th></tr>
+            <tr>
+              <th>Timestamp</th>
+              <th>Producer</th>
+              <th>Energy (kWh)</th>
+              <th>ENRG Minted</th>
+            </tr>
           </thead>
-          <tbody>
-            <tr><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+          <tbody id="history-body">
+            <!-- Rows injected by JS -->
           </tbody>
         </table>
       </div>
     </section>
 
-    <!-- Preserve tokenomics, roadmap, partners, competitive advantages, etc. -->
+    <!-- TOKENOMICS -->
     <section id="tokenomics" class="section glass-section fade-up">
       <h2>Tokenomics</h2>
-      <p>Сохранён раздел tokenomics.</p>
+      <p>
+        <!-- Existing tokenomics text preserved by user -->
+      </p>
+      <div class="tokenomics-grid">
+        <div class="tokenomics-cards">
+          <div class="token-card">
+            <h3>Max Supply</h3>
+            <p>1,000,000,000 ENRG (fixed cap)</p>
+          </div>
+          <div class="token-card">
+            <h3>Scale</h3>
+            <p>1 ENRG = 1 MWh (1,000 kWh)</p>
+          </div>
+          <div class="token-card">
+            <h3>Protocol Fee</h3>
+            <p>15% of every mint (20% Buyback, 40% Staking, 30% DAO, 10% Emergency).</p>
+          </div>
+        </div>
+        <div class="tokenomics-chart chart-container">
+          <div class="chart-title">Protocol Fee Distribution</div>
+          <!-- SVG chart preserved visually -->
+          <svg viewBox="0 0 260 160" aria-hidden="true">
+            <defs>
+              <linearGradient id="pieCyan" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00E5FF"/>
+                <stop offset="100%" stop-color="#38BDF8"/>
+              </linearGradient>
+              <linearGradient id="pieOrange" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#FF6B00"/>
+                <stop offset="100%" stop-color="#FDBA74"/>
+              </linearGradient>
+            </defs>
+
+            <circle cx="80" cy="80" r="50" fill="none" stroke="#1F2937" stroke-width="16"/>
+
+            <circle cx="80" cy="80" r="50"
+                    fill="none"
+                    stroke="url(#pieOrange)"
+                    stroke-width="16"
+                    stroke-dasharray="62.8 314"
+                    stroke-dashoffset="0"/>
+
+            <circle cx="80" cy="80" r="50"
+                    fill="none"
+                    stroke="url(#pieCyan)"
+                    stroke-width="16"
+                    stroke-dasharray="125.6 314"
+                    stroke-dashoffset="-62.8"/>
+
+            <circle cx="80" cy="80" r="50"
+                    fill="none"
+                    stroke="#22C55E"
+                    stroke-width="16"
+                    stroke-dasharray="94.2 314"
+                    stroke-dashoffset="-188.4"/>
+
+            <circle cx="80" cy="80" r="50"
+                    fill="none"
+                    stroke="#FACC15"
+                    stroke-width="16"
+                    stroke-dasharray="31.4 314"
+                    stroke-dashoffset="-282.6"/>
+
+            <rect x="150" y="40" width="8" height="8" fill="url(#pieOrange)"/>
+            <text x="164" y="47" fill="#E5E7EB" font-size="9">20% Buyback &amp; Burn</text>
+
+            <rect x="150" y="60" width="8" height="8" fill="url(#pieCyan)"/>
+            <text x="164" y="67" fill="#E5E7EB" font-size="9">40% Staking Rewards</text>
+
+            <rect x="150" y="80" width="8" height="8" fill="#22C55E"/>
+            <text x="164" y="87" fill="#E5E7EB" font-size="9">30% DAO Reserve</text>
+
+            <rect x="150" y="100" width="8" height="8" fill="#FACC15"/>
+            <text x="164" y="107" fill="#E5E7EB" font-size="9">10% Emergency Fund</text>
+          </svg>
+        </div>
+      </div>
     </section>
 
+    <!-- ENERGY VAULT -->
+    <section id="energy-vault" class="section glass-section fade-up">
+      <h2>Energy Vault</h2>
+      <p class="section-slogan"><strong>Every MWh Minted Feeds the Vault. Every Fee Feeds Scarcity.</strong></p>
+      <div class="vault-flow">
+        <div class="vault-node">Revenue</div>
+        <div class="vault-arrow">→</div>
+        <div class="vault-node">Buyback &amp; Burn</div>
+        <div class="vault-arrow">→</div>
+        <div class="vault-node">Scarcity</div>
+        <div class="vault-arrow">→</div>
+        <div class="vault-node">Value Growth</div>
+      </div>
+    </section>
+
+    <!-- ROADMAP -->
     <section id="roadmap" class="section glass-section fade-up">
       <h2>Roadmap</h2>
-      <p>Сохранён roadmap.</p>
+      <div class="roadmap-wrapper">
+        <div class="roadmap-timeline">
+          <div class="roadmap-item passed">
+            <div class="roadmap-node"><span class="checkmark">✓</span></div>
+            <div class="roadmap-card">
+              <div class="roadmap-phase">Phase I</div>
+              <div class="roadmap-title">Genesis / Prototype</div>
+              <div class="roadmap-desc">Build IoT prototype, deploy core contracts on testnet, validate oracle pipeline.</div>
+            </div>
+          </div>
+          <div class="roadmap-item current">
+            <div class="roadmap-node"></div>
+            <div class="roadmap-card">
+              <div class="roadmap-phase">Phase II</div>
+              <div class="roadmap-title">Mainnet &amp; Vault Launch</div>
+              <div class="roadmap-desc">Launch ENRG on Solana mainnet, onboard producers, bootstrap staking.</div>
+            </div>
+          </div>
+          <div class="roadmap-item upcoming">
+            <div class="roadmap-node"></div>
+            <div class="roadmap-card">
+              <div class="roadmap-phase">Phase III</div>
+              <div class="roadmap-title">Global DePIN Expansion</div>
+              <div class="roadmap-desc">Integrate with DePIN networks, energy retailers, and financial protocols.</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
+    <!-- PARTNERS -->
     <section id="partners" class="section glass-section fade-up">
       <h2>Partners</h2>
-      <p>Сохранён список партнёров.</p>
-    </section>
-
-    <!-- Competitive Advantages (existing) — new Security Model should be inserted after this in original file.
-         We keep a placeholder here to preserve structure. -->
-    <section id="advantages" class="section glass-section fade-up">
-      <h2>12. Competitive Advantages</h2>
-      <p>Сохранён раздел конкурентных преимуществ.</p>
-    </section>
-
-    <!-- The user previously asked to add "13. Security Model" after "12. Competitive Advantages".
-         If the original file already contains it, do not duplicate. We include it here only if missing.
-         (User previously asked to add this to ENRG_Technical_Documentation_v2.0_EN.html — not index.html.
-         We keep a placeholder to avoid breaking structure.) -->
-
-    <!-- Footer preserved -->
-    <footer class="site-footer glass-section fade-up">
-      <div class="footer-inner">
-        <div>© ENRG Protocol</div>
-        <div class="socials">Follow: <a href="https://x.com/ENRG_Protocol" target="_blank" rel="noopener">X</a></div>
+      <p>We are integrating with infrastructure providers, DePIN networks, and energy innovators.</p>
+      <div class="partners-grid">
+        <div class="partner-logo">LOGO 1</div>
+        <div class="partner-logo">LOGO 2</div>
+        <div class="partner-logo">LOGO 3</div>
+        <div class="partner-logo">LOGO 4</div>
       </div>
-    </footer>
+      <button class="btn-primary" id="btn-become-partner">Become a Partner</button>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="settings" class="section glass-section fade-up">
+      <h2>Settings &amp; Contact</h2>
+      <p>For integrations, support, or investor inquiries, reach out directly.</p>
+      <button class="btn-secondary" id="btn-contact">Get Started</button>
+    </section>
+
   </main>
 
-  <!-- Existing mint modal (preserve id and structure so existing script.js can hook into it) -->
-  <div id="mint-modal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="mint-modal-title" style="display:none;">
-    <div class="modal-content glass-card">
-      <button class="modal-close" aria-label="Close">✕</button>
-      <h3 id="mint-modal-title">Live Mint Demo</h3>
+  <!-- MINT MODAL -->
+  <div class="modal-backdrop" id="mint-modal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mint-modal-title">
+      <div class="modal-header">
+        <h3 id="mint-modal-title">Start Minting</h3>
+        <button class="modal-close" id="mint-modal-close" aria-label="Close">×</button>
+      </div>
       <div class="modal-body">
-        <p>Демонстрация minting-интерфейса. (Существующий скрипт может подгружать содержимое.)</p>
+        <p>Connect your energy source and run a live Proof-of-Production session.</p>
+        <p><strong>This is a simulator.</strong> Use it to understand how ENRG minting works before going live.</p>
+        <button class="btn-primary" id="btn-simulate-mint-modal">Run Simulation</button>
       </div>
     </div>
   </div>
 
-  <!-- Keep original script.js — do not modify. We'll add small inline script below for new handlers. -->
-  <script src="script.js"></script>
-
-  <!-- Inline script for new interactions (wallet connect, smooth scroll, modal open) -->
-  <script>
-    (function () {
-      // Utility: smooth scroll to element
-      function smoothScrollTo(selector) {
-        var el = document.querySelector(selector);
-        if (!el) return;
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-
-      // Hook up hero CTA buttons
-      var ctaEarn = document.getElementById('cta-earn');
-      var ctaDemo = document.getElementById('cta-demo');
-      var onboardMint = document.getElementById('onboard-mint');
-      var startMint = document.getElementById('start-mint');
-      var openDashboardBtns = document.querySelectorAll('#open-dashboard, #open-dashboard-2');
-
-      if (ctaEarn) {
-        ctaEarn.addEventListener('click', function (e) {
-          e.preventDefault();
-          smoothScrollTo('#onboarding');
-        });
-      }
-
-      if (ctaDemo) {
-        ctaDemo.addEventListener('click', function (e) {
-          e.preventDefault();
-          openMintModal();
-        });
-      }
-
-      if (onboardMint) {
-        onboardMint.addEventListener('click', function (e) {
-          e.preventDefault();
-          openMintModal();
-        });
-      }
-
-      if (startMint) {
-        startMint.addEventListener('click', function (e) {
-          e.preventDefault();
-          openMintModal();
-        });
-      }
-
-      openDashboardBtns.forEach(function(btn){
-        btn.addEventListener('click', function(e){
-          e.preventDefault();
-          smoothScrollTo('#dashboard');
-        });
-      });
-
-      // Wallet connect handler
-      var connectBtn = document.getElementById('connect-wallet');
-      var navConnect = document.getElementById('nav-connect');
-
-      function phantomFallback() {
-        // Open Phantom website in new tab
-        window.open('https://phantom.app/', '_blank', 'noopener');
-      }
-
-      function tryConnectPhantom() {
-        if (window.solana && window.solana.isPhantom) {
-          // Attempt to connect
-          window.solana.connect().then(function (resp) {
-            var pubkey = resp && resp.publicKey ? resp.publicKey.toString() : 'connected';
-            alert('Кошелёк подключён: ' + pubkey);
-            // Optionally update UI
-            if (navConnect) navConnect.textContent = 'Connected';
-          }).catch(function (err) {
-            console.warn('Phantom connect error', err);
-            alert('Не удалось подключить кошелёк: ' + (err && err.message ? err.message : 'unknown'));
-          });
-        } else {
-          // No injected provider
-          var proceed = confirm('Phantom не обнаружен в браузере. Открыть сайт Phantom для установки?');
-          if (proceed) phantomFallback();
-        }
-      }
-
-      if (connectBtn) {
-        connectBtn.addEventListener('click', function (e) {
-          e.preventDefault();
-          tryConnectPhantom();
-        });
-      }
-
-      if (navConnect) {
-        navConnect.addEventListener('click', function (e) {
-          e.preventDefault();
-          tryConnectPhantom();
-        });
-      }
-
-      // Also support a global connect attempt when user clicks the nav connect
-      // Fallback link for wallet connect in case window.solana is not available
-      // (No changes to script.js; this is additive.)
-
-      // Modal open/close helpers (compatible with simple modal markup)
-      function openMintModal() {
-        var modal = document.getElementById('mint-modal');
-        if (!modal) {
-          // Try to find existing trigger in page (some sites have a button that opens modal)
-          var trigger = document.querySelector('[data-open-mint], .open-mint');
-          if (trigger) { trigger.click(); return; }
-          return;
-        }
-
-        // If script.js already manages modal via classes, try to reuse it by dispatching a custom event
-        try {
-          modal.style.display = 'block';
-          modal.setAttribute('aria-hidden', 'false');
-          // focus first focusable element
-          var focusable = modal.querySelector('button, a, input, [tabindex]:not([tabindex="-1"])');
-          if (focusable) focusable.focus();
-        } catch (err) {
-          console.warn('openMintModal error', err);
-        }
-      }
-
-      // Close modal when clicking close button or outside content
-      document.addEventListener('click', function (e) {
-        var modal = document.getElementById('mint-modal');
-        if (!modal) return;
-        var closeBtn = modal.querySelector('.modal-close');
-        if (e.target === closeBtn) {
-          modal.style.display = 'none';
-          modal.setAttribute('aria-hidden', 'true');
-        }
-        // click outside modal-content closes it
-        if (e.target === modal) {
-          modal.style.display = 'none';
-          modal.setAttribute('aria-hidden', 'true');
-        }
-      });
-
-      // Accessibility: close modal on Escape
-      document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') {
-          var modal = document.getElementById('mint-modal');
-          if (modal && modal.style.display === 'block') {
-            modal.style.display = 'none';
-            modal.setAttribute('aria-hidden', 'true');
-          }
-        }
-      });
-
-      // Ensure metrics remain visible and responsive — no dynamic changes here to avoid interfering with script.js
-      // If you want to update metrics live, script.js likely already does that.
-
-      // Mobile adjustments: ensure onboarding cards stack — CSS handles this.
-
-      // End of inline script
-    })();
-  </script>
+  <footer>
+  <div class="footer-links">
+    <a href="whitepaper.html">White Paper</a>
+    <a href="technical-overview.html">Technical Documentation</a>
+    <a href="mailto:anton@enrg.network">Contact</a>
+    <a href="https://x.com/ENRG_Protocol" target="_blank" rel="noreferrer">Twitter</a>
+    <a href="https://discord.gg/enrg" target="_blank" rel="noreferrer">Discord</a>
+  </div>
+  <div class="footer-copy">
+    © 2026 Anton Grid. All rights reserved.
+  </div>
+</footer>
+  <script src="script.js" defer></script>
 </body>
 </html>
