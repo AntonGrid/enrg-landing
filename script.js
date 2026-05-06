@@ -1,430 +1,454 @@
-// script.js
-// ENRG – DePIN Energy Command Center interactivity
-// Only uses existing HTML structure and IDs/classes as in index.html
-
+// -----------------------------
+// Particle background (keeps visual, minimal implementation)
+// -----------------------------
 (function () {
-  'use strict';
+  const canvas = document.getElementById("particle-canvas");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  let particles = [];
+  let width, height;
 
-  // ---------- Helpers ----------
-  const $ = (sel) => document.querySelector(sel);
-  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
-
-  const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
-
-  const formatNumber = (value, decimals = 0) =>
-    value.toLocaleString(undefined, {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals,
-    });
-
-  const nowTime = () => new Date().toLocaleTimeString();
-
-  // ---------- Metric Counters (hero section) ----------
-  function initMetricCounters() {
-    const counters = $$('.counter');
-    const producersCounter = $('#producers-counter');
-    const allCounters = [...counters, producersCounter].filter(Boolean);
-
-    if (!allCounters.length) return;
-
-    const animateCounter = (el) => {
-      const targetAttr = el.getAttribute('data-target');
-      let target = targetAttr ? Number(targetAttr) : 0;
-      if (!target) {
-        const raw = el.textContent || '0';
-        target = Number(raw.replace(/[^\d.]/g, '')) || 0;
-      }
-      const duration = 1500;
-      const start = 0;
-      const startTime = performance.now();
-
-      function step(ts) {
-        const progress = Math.min(1, (ts - startTime) / duration);
-        const value = start + (target - start) * progress;
-        el.textContent = formatNumber(value, 0);
-        if (progress < 1) requestAnimationFrame(step);
-      }
-
-      requestAnimationFrame(step);
-    };
-
-    if ('IntersectionObserver' in window) {
-      const observer = new IntersectionObserver(
-        (entries, obs) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              animateCounter(entry.target);
-              obs.unobserve(entry.target);
-            }
-          });
-        },
-        { threshold: 0.3 }
-      );
-      allCounters.forEach((el) => observer.observe(el));
-    } else {
-      allCounters.forEach(animateCounter);
-    }
+  function resize() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
   }
+  window.addEventListener("resize", resize);
+  resize();
 
-  // ---------- Live Feed (right panel console) ----------
-  function initLiveFeed() {
-    const feed = $('#console-feed');
-    if (!feed) return;
+  const COUNT = 100;
+  const MAX_DIST = 140;
+  const colors = ["#00E5FF", "#FF6B00"];
 
-    const producers = ['Node-01', 'SolarRig-12', 'WindFarm-7B', 'HydroUnit-3C', 'Rooftop-Alpha', 'GridEdge-09'];
-    const actions = ['reported', 'minted', 'staked', 'verified', 'streamed', 'settled'];
-    const units = ['kWh', 'MWh'];
+  function rand(min, max) { return Math.random() * (max - min) + min; }
 
-    function appendFeedLine(text) {
-      const line = document.createElement('div');
-      line.className = 'console-line';
-      line.textContent = `[${nowTime()}] ${text}`;
-      feed.appendChild(line);
-
-      while (feed.children.length > 40) {
-        feed.removeChild(feed.firstChild);
-      }
-
-      feed.scrollTop = feed.scrollHeight;
-    }
-
-    function generateMessage() {
-      const producer = producers[randInt(0, producers.length - 1)];
-      const action = actions[randInt(0, actions.length - 1)];
-      const unit = units[randInt(0, units.length - 1)];
-      const value = unit === 'kWh' ? randInt(5, 900) : (randInt(1, 40) / 10).toFixed(1);
-      return `${producer} ${action} ${value} ${unit}`;
-    }
-
-    function scheduleNext() {
-      const delay = randInt(2000, 5000);
-      setTimeout(() => {
-        appendFeedLine(generateMessage());
-        scheduleNext();
-      }, delay);
-    }
-
-    // Seed with a couple of lines
-    appendFeedLine('Bootstrapping ENRG live feed...');
-    appendFeedLine('Oracle connection established. Listening for energy proofs...');
-    scheduleNext();
-  }
-
-  // ---------- Modal (Minting Demo) ----------
-  function initModal() {
-    const modalBackdrop = $('#mint-modal');
-    if (!modalBackdrop) return;
-
-    const modal = modalBackdrop.querySelector('.modal');
-    const closeBtn = $('#mint-modal-close');
-    const heroStartBtn = $('#btn-start-minting-hero');
-    const mintSectionStartBtn = $('#btn-start-minting');
-
-    const openTriggers = [heroStartBtn, mintSectionStartBtn].filter(Boolean);
-
-    const openModal = () => {
-      modalBackdrop.classList.add('active');
-      modalBackdrop.setAttribute('aria-hidden', 'false');
-      modalBackdrop.style.display = 'flex';
-    };
-
-    const closeModal = () => {
-      modalBackdrop.classList.remove('active');
-      modalBackdrop.setAttribute('aria-hidden', 'true');
-      modalBackdrop.style.display = 'none';
-    };
-
-    openTriggers.forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        openModal();
-      });
-    });
-
-    if (closeBtn) {
-      closeBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        closeModal();
-      });
-    }
-
-    modalBackdrop.addEventListener('click', (e) => {
-      if (e.target === modalBackdrop) {
-        closeModal();
-      }
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && modalBackdrop.getAttribute('aria-hidden') === 'false') {
-        closeModal();
-      }
-    });
-  }
-
-  // ---------- Minting Simulation ----------
-  function initMintSimulation() {
-    const energyBar = $('#sim-energy-bar');
-    const enrgBar = $('#sim-enrg-bar');
-    const energyValueEl = $('#sim-energy-value');
-    const enrgValueEl = $('#sim-enrg-value');
-    const consoleFeed = $('#console-feed');
-    const historyBody = $('#history-body');
-
-    const btnSimMintMain = $('#btn-simulate-mint');
-    const btnSimMintModal = $('#btn-simulate-mint-modal');
-
-    const simTriggers = [btnSimMintMain, btnSimMintModal].filter(Boolean);
-
-    const sources = [
-      { name: 'Solar', multiplier: 1.0 },
-      { name: 'Wind', multiplier: 0.8 },
-      { name: 'Hydro', multiplier: 0.5 },
-    ];
-
-    function animateBar(el, targetPercent) {
-      if (!el) return;
-      el.style.transition = 'width 0.8s ease-out';
-      el.style.width = '0%';
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          el.style.width = `${Math.max(0, Math.min(100, targetPercent))}%`;
-        });
-      });
-    }
-
-    function appendConsoleLog(text) {
-      if (!consoleFeed) {
-        console.log('[ENRG]', text);
-        return;
-      }
-      const line = document.createElement('div');
-      line.className = 'console-line';
-      line.textContent = `[${nowTime()}] ${text}`;
-      consoleFeed.appendChild(line);
-      while (consoleFeed.children.length > 40) {
-        consoleFeed.removeChild(consoleFeed.firstChild);
-      }
-      consoleFeed.scrollTop = consoleFeed.scrollHeight;
-    }
-
-    function appendHistoryRow(timestamp, producer, energy, enrg) {
-      if (!historyBody) return;
-      const tr = document.createElement('tr');
-      const tdTime = document.createElement('td');
-      const tdProd = document.createElement('td');
-      const tdEnergy = document.createElement('td');
-      const tdEnrg = document.createElement('td');
-
-      tdTime.textContent = timestamp;
-      tdProd.textContent = producer;
-      tdEnergy.textContent = `${formatNumber(energy, 0)} kWh`;
-      tdEnrg.textContent = `${formatNumber(enrg, 3)} ENRG`;
-
-      tr.appendChild(tdTime);
-      tr.appendChild(tdProd);
-      tr.appendChild(tdEnergy);
-      tr.appendChild(tdEnrg);
-
-      historyBody.insertBefore(tr, historyBody.firstChild);
-      while (historyBody.children.length > 50) {
-        historyBody.removeChild(historyBody.lastChild);
-      }
-    }
-
-    function runSimulation() {
-      const energyKwh = randInt(1, 500);
-      const source = sources[randInt(0, sources.length - 1)];
-      const effectiveEnergy = energyKwh * source.multiplier;
-      const enrgMinted = effectiveEnergy / 1000;
-      const enrgMintedRounded = Number(enrgMinted.toFixed(3));
-      const protocolFee = enrgMintedRounded * 0.15;
-
-      const feeBuyback = protocolFee * 0.2;
-      const feeStaking = protocolFee * 0.4;
-      const feeDao = protocolFee * 0.3;
-      const feeEmergency = protocolFee * 0.1;
-
-      const energyPercent = (energyKwh / 500) * 100;
-      const enrgPercent = (enrgMintedRounded / 0.5) * 100;
-
-      animateBar(energyBar, energyPercent);
-      animateBar(enrgBar, enrgPercent);
-
-      if (energyValueEl) energyValueEl.textContent = formatNumber(energyKwh, 0);
-      if (enrgValueEl) enrgValueEl.textContent = formatNumber(enrgMintedRounded, 3);
-
-      const summary = `Simulated ${energyKwh} kWh (${source.name}, x${source.multiplier}) → ${enrgMintedRounded.toFixed(
-        3
-      )} ENRG, fee ${protocolFee.toFixed(3)} ENRG`;
-      appendConsoleLog(summary);
-
-      console.log('[ENRG Mint Simulation]');
-      console.log('Energy (kWh):', energyKwh);
-      console.log('Source:', source.name, 'Multiplier:', source.multiplier);
-      console.log('Effective energy (kWh):', effectiveEnergy);
-      console.log('ENRG minted:', enrgMintedRounded);
-      console.log('Protocol fee (15%):', protocolFee.toFixed(3));
-      console.log('Fee breakdown:');
-      console.log('  Buyback & Burn (20%):', feeBuyback.toFixed(3));
-      console.log('  Staking Rewards (40%):', feeStaking.toFixed(3));
-      console.log('  DAO Reserve (30%):', feeDao.toFixed(3));
-      console.log('  Emergency Fund (10%):', feeEmergency.toFixed(3));
-
-      appendHistoryRow(new Date().toISOString(), source.name, energyKwh, enrgMintedRounded);
-    }
-
-    simTriggers.forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        runSimulation();
-      });
-    });
-  }
-
-  // ---------- Navigation (smooth scroll) ----------
-  function initNavigation() {
-    const navLinks = $$('.nav-link[href^="#"]');
-    navLinks.forEach((link) => {
-      link.addEventListener('click', (e) => {
-        const href = link.getAttribute('href');
-        if (!href || !href.startsWith('#')) return;
-        const target = $(href);
-        if (!target) return;
-        e.preventDefault();
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
-    });
-
-    const dashboardSection = $('#dashboard');
-    const dashboardButtons = [$('#btn-start-minting'), $('#btn-start-minting-hero')].filter(Boolean);
-    dashboardButtons.forEach((btn) => {
-      btn.addEventListener('dblclick', (e) => {
-        if (!dashboardSection) return;
-        e.preventDefault();
-        dashboardSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
-    });
-  }
-
-  // ---------- Wallet Connect ----------
-  function initWalletConnect() {
-    const connectButtons = [
-      $('#btn-get-started'),
-      $('#btn-contact'),
-      $('#btn-become-partner'),
-    ].filter(Boolean);
-
-    async function connectPhantom() {
-      const provider = window.solana;
-      if (provider && provider.isPhantom) {
-        try {
-          const res = await provider.connect();
-          const pubkey = (res && res.publicKey && res.publicKey.toString()) || 'Unknown public key';
-          alert(`Phantom wallet connected:\n${pubkey}`);
-          console.log('[ENRG] Phantom wallet connected:', pubkey);
-        } catch (err) {
-          console.error('[ENRG] Phantom connection rejected or failed', err);
-          alert('Phantom connection was rejected or failed.');
-        }
-      } else {
-        window.open('https://phantom.app/', '_blank', 'noopener');
-      }
-    }
-
-    connectButtons.forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        connectPhantom();
-      });
-    });
-  }
-
-  // ---------- Particles Background ----------
-  function initParticles() {
-    const canvas = $('#particle-canvas');
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    const particles = [];
-    const PARTICLE_COUNT = 80;
-
-    function resize() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-
-    window.addEventListener('resize', resize);
-    resize();
-
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
+  function create() {
+    particles = [];
+    for (let i = 0; i < COUNT; i++) {
       particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.4,
-        vy: (Math.random() - 0.5) * 0.4,
-        r: Math.random() * 2 + 0.5,
-        alpha: Math.random() * 0.6 + 0.2,
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: rand(-0.3, 0.3),
+        vy: rand(-0.3, 0.3),
+        r: rand(0.6, 2.2),
+        c: colors[Math.floor(Math.random() * colors.length)]
       });
-    }
-
-    function step() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#00E5FF';
-
-      particles.forEach((p) => {
-        p.x += p.vx;
-        p.y += p.vy;
-
-        if (p.x < 0) p.x = canvas.width;
-        if (p.x > canvas.width) p.x = 0;
-        if (p.y < 0) p.y = canvas.height;
-        if (p.y > canvas.height) p.y = 0;
-
-        ctx.globalAlpha = p.alpha;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fill();
-      });
-
-      ctx.globalAlpha = 1;
-      requestAnimationFrame(step);
-    }
-
-    step();
-  }
-
-  // ---------- Fade-up scroll animations (preserve) ----------
-  function initFadeUp() {
-    const fadeEls = $$('.fade-up');
-    if (!fadeEls.length) return;
-
-    if ('IntersectionObserver' in window) {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('in-view');
-              observer.unobserve(entry.target);
-            }
-          });
-        },
-        { threshold: 0.2 }
-      );
-      fadeEls.forEach((el) => observer.observe(el));
-    } else {
-      fadeEls.forEach((el) => el.classList.add('in-view'));
     }
   }
 
-  // ---------- Init on DOMContentLoaded ----------
-  document.addEventListener('DOMContentLoaded', () => {
-    initMetricCounters();
-    initLiveFeed();
-    initModal();
-    initMintSimulation();
-    initNavigation();
-    initWalletConnect();
-    initParticles();
-    initFadeUp();
+  function draw() {
+    ctx.clearRect(0, 0, width, height);
+    // lines
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const a = particles[i], b = particles[j];
+        const dx = a.x - b.x, dy = a.y - b.y;
+        const d = Math.sqrt(dx*dx + dy*dy);
+        if (d < MAX_DIST) {
+          const alpha = 0.25 * (1 - d / MAX_DIST);
+          ctx.beginPath();
+          ctx.strokeStyle = `rgba(148,163,184,${alpha})`;
+          ctx.lineWidth = 1;
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+        }
+      }
+    }
+    // particles
+    particles.forEach(p => {
+      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r*4);
+      g.addColorStop(0, p.c);
+      g.addColorStop(1, 'transparent');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r*4, 0, Math.PI*2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.fillStyle = p.c;
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fill();
+
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < -10) p.x = width + 10;
+      if (p.x > width + 10) p.x = -10;
+      if (p.y < -10) p.y = height + 10;
+      if (p.y > height + 10) p.y = -10;
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  create();
+  draw();
+})();
+
+// -----------------------------
+// Scroll reveal for .fade-up elements
+// -----------------------------
+(function () {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+})();
+
+// -----------------------------
+// Smooth scroll for nav links
+// -----------------------------
+document.querySelectorAll('.nav-link').forEach(link => {
+  link.addEventListener('click', function (e) {
+    e.preventDefault();
+    const href = this.getAttribute('href');
+    if (!href || href.charAt(0) !== '#') return;
+    const target = document.querySelector(href);
+    if (target) target.scrollIntoView({ behavior: 'smooth' });
   });
+});
+
+// -----------------------------
+// Modal: open/close mint modal
+// -----------------------------
+const mintModal = document.getElementById('mint-modal');
+const openHeroBtn = document.getElementById('btn-start-minting-hero');
+const openMintBtn = document.getElementById('btn-start-minting');
+const closeMintBtn = document.getElementById('mint-modal-close');
+
+function showMintModal() {
+  if (!mintModal) return;
+  mintModal.classList.add('active');
+  mintModal.setAttribute('aria-hidden', 'false');
+}
+
+function hideMintModal() {
+  if (!mintModal) return;
+  mintModal.classList.remove('active');
+  mintModal.setAttribute('aria-hidden', 'true');
+}
+
+if (openHeroBtn) openHeroBtn.addEventListener('click', showMintModal);
+if (openMintBtn) openMintBtn.addEventListener('click', showMintModal);
+if (closeMintBtn) closeMintBtn.addEventListener('click', hideMintModal);
+if (mintModal) {
+  mintModal.addEventListener('click', (e) => {
+    if (e.target === mintModal) hideMintModal();
+  });
+  // close on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') hideMintModal();
+  });
+}
+
+// -----------------------------
+// Whitepaper / Technical docs buttons
+// -----------------------------
+const btnWhitepaper = document.getElementById('btn-download-whitepaper');
+const btnTechDocs = document.getElementById('btn-technical-docs');
+const footerWhite = document.getElementById('footer-whitepaper');
+const footerTech = document.getElementById('footer-techdocs');
+
+if (btnWhitepaper) btnWhitepaper.addEventListener('click', () => {
+  window.location.href = 'whitepaper.html';
+});
+if (btnTechDocs) btnTechDocs.addEventListener('click', () => {
+  window.location.href = 'technical-overview.html';
+});
+if (footerWhite) footerWhite.addEventListener('click', (e) => {
+  e.preventDefault();
+  window.location.href = 'whitepaper.html';
+});
+if (footerTech) footerTech.addEventListener('click', (e) => {
+  e.preventDefault();
+  window.location.href = 'technical-overview.html';
+});
+
+// -----------------------------
+// Email CTAs
+// -----------------------------
+function mailToAnton(subject) {
+  const subj = subject ? `?subject=${encodeURIComponent(subject)}` : '';
+  window.location.href = `mailto:anton@enrg.network${subj}`;
+}
+
+const btnGetStarted = document.getElementById('btn-get-started');
+const btnContact = document.getElementById('btn-contact');
+const btnBecomePartner = document.getElementById('btn-become-partner');
+
+if (btnGetStarted) btnGetStarted.addEventListener('click', () => mailToAnton());
+if (btnContact) btnContact.addEventListener('click', () => mailToAnton());
+if (btnBecomePartner) btnBecomePartner.addEventListener('click', () => mailToAnton('Partnership'));
+
+// -----------------------------
+// Mint simulation with realistic fee breakdown + ПРОВЕРОЧНЫЙ ALERT
+// -----------------------------
+function runMintSimulation() {
+  const energyBar = document.getElementById('sim-energy-bar');
+  const enrgBar = document.getElementById('sim-enrg-bar');
+  const energyValue = document.getElementById('sim-energy-value');
+  const enrgValue = document.getElementById('sim-enrg-value');
+  const feed = document.getElementById('console-feed');
+
+  if (!energyBar || !enrgBar || !energyValue || !enrgValue) return;
+
+  // ---------- ПРОВЕРОЧНЫЙ ALERT ----------
+  alert("🚀 Симуляция запущена! Сейчас сгенерируем энергию...");
+
+  // ---------- ВРЕМЕННАЯ БОЕВАЯ РАСКРАСКА ПОЛОС ----------
+  energyBar.style.backgroundColor = '#ff3333';
+  energyBar.style.border = '2px solid white';
+  energyBar.style.height = '20px';
+  enrgBar.style.backgroundColor = '#33aaff';
+  enrgBar.style.border = '2px solid white';
+  enrgBar.style.height = '20px';
+
+  // ---------- ОСНОВНАЯ ЛОГИКА ----------
+  const energyKwh = Math.floor(Math.random() * 500) + 1;
+  const multipliers = [1.0, 0.8, 0.5];
+  const sourceMultiplier = multipliers[Math.floor(Math.random() * multipliers.length)];
+  const sourceNames = { 1.0: 'Solar', 0.8: 'Wind', 0.5: 'Hydro' };
+  const source = sourceNames[sourceMultiplier];
+  const effectiveEnergyKwh = energyKwh * sourceMultiplier;
+  const enrgMinted = (effectiveEnergyKwh / 1000).toFixed(3);
+  const protocolFeePercent = 15;
+  const protocolFeeEnrg = (Number(enrgMinted) * (protocolFeePercent / 100)).toFixed(3);
+  const netEnrgReceived = (Number(enrgMinted) - Number(protocolFeeEnrg)).toFixed(3);
+  const buybackBurn = (Number(protocolFeeEnrg) * 0.20).toFixed(3);
+  const stakingRewards = (Number(protocolFeeEnrg) * 0.40).toFixed(3);
+  const daoReserve = (Number(protocolFeeEnrg) * 0.30).toFixed(3);
+  const emergencyFund = (Number(protocolFeeEnrg) * 0.10).toFixed(3);
+
+  // Сброс и анимация
+  energyBar.style.width = '0%';
+  enrgBar.style.width = '0%';
+  energyValue.textContent = '0';
+  enrgValue.textContent = '0';
+
+  setTimeout(() => {
+    const energyPercent = Math.min(100, (energyKwh / 500) * 100);
+    energyBar.style.width = energyPercent + '%';
+    energyValue.textContent = energyKwh.toFixed(0);
+  }, 60);
+
+  setTimeout(() => {
+    const enrgPercent = Math.min(100, (Number(enrgMinted) / 0.5) * 100);
+    enrgBar.style.width = enrgPercent + '%';
+    enrgValue.textContent = enrgMinted;
+  }, 420);
+
+  if (feed) {
+    const p = document.createElement('div');
+    const ts = new Date().toISOString().split('T')[1].split('.')[0];
+    p.textContent = `[${ts}] Simulation: ${energyKwh}kWh (${source}, ×${sourceMultiplier}) → ${enrgMinted} ENRG (Fee: ${protocolFeeEnrg})`;
+    feed.appendChild(p);
+    feed.scrollTop = feed.scrollHeight;
+    if (feed.children.length > 40) feed.removeChild(feed.firstChild);
+  }
+
+  console.log('[ENRG Simulator]', {
+    energyInput: `${energyKwh} kWh`,
+    source: source,
+    sourceMultiplier: sourceMultiplier,
+    effectiveEnergy: `${effectiveEnergyKwh.toFixed(1)} kWh`,
+    enrgMinted: enrgMinted,
+    protocolFee: `${protocolFeeEnrg} (${protocolFeePercent}%)`,
+    netReceived: netEnrgReceived,
+    feeBreakdown: {
+      'Buyback & Burn (20%)': buybackBurn,
+      'Staking Rewards (40%)': stakingRewards,
+      'DAO Reserve (30%)': daoReserve,
+      'Emergency Fund (10%)': emergencyFund
+    }
+  });
+}
+
+// -----------------------------
+// Надёжная привязка кнопок симулятора (ждём полной загрузки DOM)
+// -----------------------------
+function bindSimulationButtons() {
+  const btnSim = document.getElementById('btn-simulate-mint');
+  const btnSimModal = document.getElementById('btn-simulate-mint-modal');
+
+  if (btnSim) {
+    btnSim.addEventListener('click', runMintSimulation);
+    console.log('[ENRG] Кнопка btn-simulate-mint привязана');
+  } else {
+    console.warn('[ENRG] Кнопка btn-simulate-mint НЕ НАЙДЕНА в DOM');
+  }
+
+  if (btnSimModal) {
+    btnSimModal.addEventListener('click', () => {
+      runMintSimulation();
+    });
+    console.log('[ENRG] Кнопка btn-simulate-mint-modal привязана');
+  } else {
+    console.warn('[ENRG] Кнопка btn-simulate-mint-modal НЕ НАЙДЕНА в DOM');
+  }
+}
+
+// Ждём полной загрузки DOM, затем привязываем кнопки
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bindSimulationButtons);
+} else {
+  bindSimulationButtons();
+}
+
+// -----------------------------
+// Live console fake feed & history rows (visual only)
+// -----------------------------
+(function () {
+  const feed = document.getElementById('console-feed');
+  const historyBody = document.getElementById('history-body');
+  const producers = ['Node-12A', 'Farm-07', 'Solar-Grid-21', 'Hydro-03', 'Biogas-09'];
+
+  function addFeedLine() {
+    if (!feed) return;
+    const p = document.createElement('div');
+    const prod = producers[Math.floor(Math.random() * producers.length)];
+    const action = ['minted', 'reported', 'staked', 'updated'][Math.floor(Math.random() * 4)];
+    const unit = Math.random() > 0.85 ? 'MWh' : 'kWh';
+    const amount = (Math.random() * (unit === 'kWh' ? 800 : 4) + 10).toFixed(1);
+    const ts = new Date().toISOString().split('T')[1].split('.')[0];
+    p.textContent = `[${ts}] ${prod} ${action} ${amount} ${unit}`;
+    feed.appendChild(p);
+    feed.scrollTop = feed.scrollHeight;
+    if (feed.children.length > 40) feed.removeChild(feed.firstChild);
+  }
+
+  function addHistoryRow() {
+    if (!historyBody) return;
+    const tr = document.createElement('tr');
+    const now = new Date();
+    const ts = now.toISOString().replace('T', ' ').split('.')[0];
+    const prod = producers[Math.floor(Math.random() * producers.length)];
+    const energy = (Math.random() * 500 + 50).toFixed(1);
+    const enrg = (energy / 1000).toFixed(3);
+    tr.innerHTML = `<td>${ts}</td><td>${prod}</td><td>${energy}</td><td>${enrg}</td>`;
+    historyBody.prepend(tr);
+    if (historyBody.children.length > 20) historyBody.removeChild(historyBody.lastChild);
+  }
+
+  // initial
+  for (let i = 0; i < 6; i++) addFeedLine();
+  for (let i = 0; i < 5; i++) addHistoryRow();
+
+  setInterval(addFeedLine, 2500);
+  setInterval(addHistoryRow, 7000);
+})();
+
+// -----------------------------
+// Solana on-chain data fetching (unchanged)
+// -----------------------------
+(async function () {
+  const defaultValues = { totalEnergyMWh: 2056, activeProducers: 150, totalStakedENRG: 65000 };
+  const programId = 'CcRjGroz7tsDAroZayWak58KtfAczJ7vbPddnRJDSeL4';
+  const rpcUrl = 'http://127.0.0.1:8899';
+
+  function base64ToBytes(base64Str) {
+    const binaryString = atob(base64Str);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
+    return bytes;
+  }
+  function readU64LE(bytes, offset) {
+    if (offset + 8 > bytes.length) return 0n;
+    let value = 0n;
+    for (let i = 0; i < 8; i++) value += BigInt(bytes[offset + i]) << BigInt(i * 8);
+    return value;
+  }
+  function parseAccount(data) { const bytes = base64ToBytes(data); return { energyWh: readU64LE(bytes, 56), staked: readU64LE(bytes, 40), dataSize: bytes.length }; }
+
+  async function fetchAllAccounts() {
+    try {
+      console.log(`[ENRG] Fetching all program accounts from ${rpcUrl}`);
+      const response = await fetch(rpcUrl, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'getProgramAccounts', params: [programId, { encoding: 'base64' }] })
+      });
+      const result = await response.json();
+      if (result.error) { console.warn(`[ENRG] RPC error: ${result.error.message}`); return null; }
+      if (!result.result || !Array.isArray(result.result)) { console.warn('[ENRG] No accounts found'); return null; }
+      console.log(`[ENRG] Fetched ${result.result.length} accounts`);
+      return result.result;
+    } catch (error) { console.warn(`[ENRG] RPC fetch failed: ${error.message}`); return null; }
+  }
+
+  async function computeMetrics() {
+    const accounts = await fetchAllAccounts();
+    if (!accounts) return defaultValues;
+    let totalEnergyWh = 0n, totalStaked = 0n, producerCount = 0;
+    for (const account of accounts) {
+      try {
+        const data = account.account.data[0];
+        if (typeof data !== 'string' || data.length === 0) continue;
+        const parsed = parseAccount(data);
+        if (parsed.energyWh > 0n && parsed.energyWh < 100000000000000n) { totalEnergyWh += parsed.energyWh; producerCount++; }
+        if (parsed.staked > 0n && parsed.staked < 10000000000000000n) totalStaked += parsed.staked;
+      } catch (e) {}
+    }
+    const totalEnergyMWh = Math.round(Number(totalEnergyWh) / 1_000_000);
+    return {
+      totalEnergyMWh: totalEnergyMWh > 0 ? totalEnergyMWh : defaultValues.totalEnergyMWh,
+      activeProducers: producerCount > 0 ? producerCount : defaultValues.activeProducers,
+      totalStakedENRG: Number(totalStaked) > 0 ? Number(totalStaked) : defaultValues.totalStakedENRG
+    };
+  }
+
+  function updateDOM(metrics) {
+    const counterElements = document.querySelectorAll('.counter');
+    if (counterElements.length >= 1) counterElements[0].setAttribute('data-target', metrics.totalEnergyMWh);
+    if (counterElements.length >= 2) counterElements[1].setAttribute('data-target', metrics.activeProducers);
+    if (counterElements.length >= 3) counterElements[2].setAttribute('data-target', metrics.totalStakedENRG);
+    const producersCounter = document.getElementById('producers-counter');
+    if (producersCounter) producersCounter.setAttribute('data-target', metrics.activeProducers);
+  }
+
+  async function initializeMetrics() { const metrics = await computeMetrics(); updateDOM(metrics); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initializeMetrics);
+  else initializeMetrics();
+})();
+
+// -----------------------------
+// Counters (count-up animation)
+// -----------------------------
+(function () {
+  function animateCounter(el) {
+    const target = parseInt(el.getAttribute('data-target'), 10);
+    if (isNaN(target)) return;
+    let start = null;
+    const duration = 1400;
+    function step(ts) {
+      if (!start) start = ts;
+      const progress = Math.min((ts - start) / duration, 1);
+      const value = Math.floor(progress * target);
+      el.textContent = value.toLocaleString();
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  const counters = document.querySelectorAll('.counter, #producers-counter');
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        animateCounter(entry.target);
+        obs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.4 });
+
+  counters.forEach(c => obs.observe(c));
+})();
+
+// -----------------------------
+// Auto update copyright year
+// -----------------------------
+(function () {
+  const yearEl = document.getElementById('year');
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
 })();
