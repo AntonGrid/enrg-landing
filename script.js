@@ -184,8 +184,6 @@ if (btnGetStarted) btnGetStarted.addEventListener('click', () => mailToAnton());
 if (btnContact) btnContact.addEventListener('click', () => mailToAnton());
 if (btnBecomePartner) btnBecomePartner.addEventListener('click', () => mailToAnton('Partnership'));
 
-// Footer contact link already points to mailto in HTML; no extra action needed
-
 // -----------------------------
 // Mint simulation with realistic fee breakdown
 // -----------------------------
@@ -208,7 +206,6 @@ function runMintSimulation() {
   const source = sourceNames[sourceMultiplier];
 
   // Step 3: Calculate ENRG minted (1 ENRG = 1 MWh = 1000 kWh)
-  // With efficiency = sourceMultiplier, net energy = energyKwh * sourceMultiplier
   const effectiveEnergyKwh = energyKwh * sourceMultiplier;
   const enrgMinted = (effectiveEnergyKwh / 1000).toFixed(3);
 
@@ -272,17 +269,37 @@ function runMintSimulation() {
   });
 }
 
-// Обработчики кнопок симуляции теперь ждут полной загрузки DOM
-document.addEventListener('DOMContentLoaded', () => {
+// -----------------------------
+// ✅ Надёжная привязка кнопок симулятора (ждём DOM, затем ищем кнопки)
+// -----------------------------
+function bindSimulationButtons() {
   const btnSim = document.getElementById('btn-simulate-mint');
   const btnSimModal = document.getElementById('btn-simulate-mint-modal');
 
-  if (btnSim) btnSim.addEventListener('click', runMintSimulation);
-  if (btnSimModal) btnSimModal.addEventListener('click', () => {
-    runMintSimulation();
-    // keep modal open so user sees result
-  });
-});
+  if (btnSim) {
+    btnSim.addEventListener('click', runMintSimulation);
+    console.log('[ENRG] Кнопка btn-simulate-mint привязана');
+  } else {
+    console.warn('[ENRG] Кнопка btn-simulate-mint НЕ НАЙДЕНА');
+  }
+
+  if (btnSimModal) {
+    btnSimModal.addEventListener('click', () => {
+      runMintSimulation();
+    });
+    console.log('[ENRG] Кнопка btn-simulate-mint-modal привязана');
+  } else {
+    console.warn('[ENRG] Кнопка btn-simulate-mint-modal НЕ НАЙДЕНА');
+  }
+}
+
+// Ждём полной загрузки DOM
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bindSimulationButtons);
+} else {
+  // DOM уже загружен
+  bindSimulationButtons();
+}
 
 // -----------------------------
 // Live console fake feed & history rows (visual only)
@@ -329,7 +346,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // -----------------------------
 // Solana on-chain data fetching (improved)
-// Fetches all EnergyProducer and StakeInfo accounts and accurately sums metrics
 // -----------------------------
 (async function () {
   const defaultValues = {
@@ -341,7 +357,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const programId = 'CcRjGroz7tsDAroZayWak58KtfAczJ7vbPddnRJDSeL4';
   const rpcUrl = 'http://127.0.0.1:8899';
 
-  // Helper: convert base64 account data to Uint8Array
   function base64ToBytes(base64Str) {
     const binaryString = atob(base64Str);
     const bytes = new Uint8Array(binaryString.length);
@@ -351,7 +366,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return bytes;
   }
 
-  // Helper: read u64 (little-endian) from byte array
   function readU64LE(bytes, offset) {
     if (offset + 8 > bytes.length) return 0n;
     let value = 0n;
@@ -361,15 +375,10 @@ document.addEventListener('DOMContentLoaded', () => {
     return value;
   }
 
-  // Helper: detect account type and extract relevant fields
   function parseAccount(data) {
     const bytes = base64ToBytes(data);
-    
-    // EnergyProducer: authority at 8-39 (pubkey), energy_wh at 56-63 (8 bytes after nonce)
-    // StakeInfo: owner at 8-39 (pubkey), staked_amount at 40-47 (right after owner)
     const energyWhValue = readU64LE(bytes, 56);
     const stakedValue = readU64LE(bytes, 40);
-
     return {
       energyWh: energyWhValue,
       staked: stakedValue,
@@ -380,7 +389,6 @@ document.addEventListener('DOMContentLoaded', () => {
   async function fetchAllAccounts() {
     try {
       console.log(`[ENRG] Fetching all program accounts from ${rpcUrl}`);
-
       const response = await fetch(rpcUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -394,19 +402,15 @@ document.addEventListener('DOMContentLoaded', () => {
           ]
         })
       });
-
       const result = await response.json();
-      
       if (result.error) {
         console.warn(`[ENRG] RPC error: ${result.error.message}`);
         return null;
       }
-
       if (!result.result || !Array.isArray(result.result)) {
         console.warn('[ENRG] No accounts found in RPC response');
         return null;
       }
-
       console.log(`[ENRG] Fetched ${result.result.length} accounts from on-chain`);
       return result.result;
     } catch (error) {
@@ -417,80 +421,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function computeMetrics() {
     const accounts = await fetchAllAccounts();
-    
-    if (!accounts) {
-      console.warn('[ENRG] Falling back to default values');
-      return defaultValues;
-    }
-
+    if (!accounts) return defaultValues;
     let totalEnergyWh = 0n;
     let totalStaked = 0n;
     let producerCount = 0;
-
-    // Parse all accounts and aggregate metrics
     for (const account of accounts) {
       try {
         const data = account.account.data[0];
         if (typeof data !== 'string' || data.length === 0) continue;
-
         const parsed = parseAccount(data);
-
         if (parsed.energyWh > 0n && parsed.energyWh < 100000000000000n) {
           totalEnergyWh += parsed.energyWh;
           producerCount++;
         }
-
         if (parsed.staked > 0n && parsed.staked < 10000000000000000n) {
           totalStaked += parsed.staked;
         }
-      } catch (e) {
-        // Skip malformed accounts silently
-      }
+      } catch (e) {}
     }
-
     const totalEnergyMWh = Math.round(Number(totalEnergyWh) / 1_000_000);
-
-    const metrics = {
+    return {
       totalEnergyMWh: totalEnergyMWh > 0 ? totalEnergyMWh : defaultValues.totalEnergyMWh,
       activeProducers: producerCount > 0 ? producerCount : defaultValues.activeProducers,
       totalStakedENRG: Number(totalStaked) > 0 ? Number(totalStaked) : defaultValues.totalStakedENRG
     };
-
-    console.log('[ENRG] Computed metrics:', {
-      totalEnergyWh: totalEnergyWh.toString(),
-      totalEnergyMWh: metrics.totalEnergyMWh,
-      producerCount: producerCount,
-      totalStaked: totalStaked.toString(),
-      finalMetrics: metrics
-    });
-
-    return metrics;
   }
 
   function updateDOM(metrics) {
-    // Update the three metric card counters
     const counterElements = document.querySelectorAll('.counter');
-    
-    if (counterElements.length >= 1) {
-      counterElements[0].setAttribute('data-target', metrics.totalEnergyMWh);
-    }
-    if (counterElements.length >= 2) {
-      counterElements[1].setAttribute('data-target', metrics.activeProducers);
-    }
-    if (counterElements.length >= 3) {
-      counterElements[2].setAttribute('data-target', metrics.totalStakedENRG);
-    }
-
-    // Update the producers counter in hero section ("Join X+ energy producers")
+    if (counterElements.length >= 1) counterElements[0].setAttribute('data-target', metrics.totalEnergyMWh);
+    if (counterElements.length >= 2) counterElements[1].setAttribute('data-target', metrics.activeProducers);
+    if (counterElements.length >= 3) counterElements[2].setAttribute('data-target', metrics.totalStakedENRG);
     const producersCounter = document.getElementById('producers-counter');
-    if (producersCounter) {
-      producersCounter.setAttribute('data-target', metrics.activeProducers);
-    }
-
-    console.log('[ENRG] Updated DOM with metrics');
+    if (producersCounter) producersCounter.setAttribute('data-target', metrics.activeProducers);
   }
 
-  // Main execution: fetch and update on page load
   async function initializeMetrics() {
     const metrics = await computeMetrics();
     updateDOM(metrics);
@@ -505,7 +470,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // -----------------------------
 // Counters (count-up animation)
- // -----------------------------
+// -----------------------------
 (function () {
   function animateCounter(el) {
     const target = parseInt(el.getAttribute('data-target'), 10);
