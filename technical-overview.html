@@ -62,7 +62,10 @@
       color: var(--accent-cyan); font-weight: 700; font-size: 0.9rem; letter-spacing: 0.08em;
     }
     .brand-text { display: flex; flex-direction: column; gap: 2px; }
-    .brand-title { font-size: 1rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-cyan); }
+    .brand-title {
+      font-size: 1rem; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--accent-cyan);
+    }
     .brand-subtitle { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.16em; }
     .top-nav-cta { display: flex; gap: 10px; align-items: center; }
     .pill {
@@ -172,7 +175,7 @@
     <main class="doc-shell">
       <div class="doc-shell-inner fade-up">
         <h1>ENRG Technical Overview v2.0</h1>
-        <p>May 2026 · Contact: <a href="mailto:anton@enrg.network">anton@enrg.network</a></p>
+        <p>May 2026 · Contact: <a href="mailto:contact@enrg.network">contact@enrg.network</a></p>
 
         <section id="Architecture" class="glass-section fade-up">
           <h2>1. Architecture</h2>
@@ -194,7 +197,7 @@
             <li><strong>vault</strong> – revenue management</li>
             <li><strong>buyback_burn</strong> – automated market buy and burn</li>
             <li><strong>staking</strong> – stake/unstake/claim</li>
-            <li><strong>founder_vesting / claim_vested</strong> – 1‑year cliff, 3‑year linear</li>
+            <li><strong>founder_vesting</strong> – 1‑year cliff, 3‑year linear</li>
           </ul>
         </section>
 
@@ -206,7 +209,7 @@
 
         <section id="Economy" class="glass-section fade-up">
           <h2>5. Energy Vault Economy</h2>
-          <p>15% protocol fee: 20% Buyback & Burn · 40% Staking Rewards · 30% DAO Reserve · 10% Emergency Fund</p>
+          <p>20% Buyback & Burn · 40% Staking Pool · 30% DAO Reserve · 10% Emergency Fund</p>
         </section>
 
         <section id="Roadmap" class="glass-section fade-up">
@@ -249,6 +252,8 @@
           </div>
         </section>
 
+        <!-- NEW SECTIONS START -->
+
         <section id="Tokenomics" class="glass-section fade-up">
           <h2>7. Tokenomics (May 2026)</h2>
           <p>The ENRG token is engineered as a hard-capped, energy-denominated asset with clear protocol fees and deflationary mechanics.</p>
@@ -275,16 +280,54 @@
 
           <h3>Initial Distribution (200M ENRG, 20% of cap)</h3>
           <table>
-            <thead><tr><th>Category</th><th style="text-align:right;">Share</th><th style="text-align:right;">Amount (ENRG)</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th style="text-align:right;">Share</th>
+                <th style="text-align:right;">Amount (ENRG)</th>
+              </tr>
+            </thead>
             <tbody>
-              <tr><td>Team &amp; Founder (4-year vesting, 1-year cliff)</td><td style="text-align:right;">20%</td><td style="text-align:right;">200M</td></tr>
-              <tr><td>DAO Reserve</td><td style="text-align:right;">15%</td><td style="text-align:right;">150M</td></tr>
-              <tr><td>Investors &amp; Partners</td><td style="text-align:right;">10%</td><td style="text-align:right;">100M</td></tr>
-              <tr><td>Marketing &amp; Bounty</td><td style="text-align:right;">5%</td><td style="text-align:right;">50M</td></tr>
-              <tr><td>AirDrop &amp; Early Users</td><td style="text-align:right;">5%</td><td style="text-align:right;">50M</td></tr>
-              <tr><td>Liquidity Mining</td><td style="text-align:right;">5%</td><td style="text-align:right;">50M</td></tr>
-              <tr><td>Audits &amp; Development</td><td style="text-align:right;">5%</td><td style="text-align:right;">50M</td></tr>
-              <tr><td>Emergency Reserve</td><td style="text-align:right;">5%</td><td style="text-align:right;">50M</td></tr>
+              <tr>
+                <td>Team &amp; Founder (4-year vesting, 1-year cliff)</td>
+                <td style="text-align:right;">20%</td>
+                <td style="text-align:right;">200M</td>
+              </tr>
+              <tr>
+                <td>DAO Reserve</td>
+                <td style="text-align:right;">15%</td>
+                <td style="text-align:right;">150M</td>
+              </tr>
+              <tr>
+                <td>Investors &amp; Partners</td>
+                <td style="text-align:right;">10%</td>
+                <td style="text-align:right;">100M</td>
+              </tr>
+              <tr>
+                <td>Marketing &amp; Bounty</td>
+                <td style="text-align:right;">5%</td>
+                <td style="text-align:right;">50M</td>
+              </tr>
+              <tr>
+                <td>AirDrop &amp; Early Users</td>
+                <td style="text-align:right;">5%</td>
+                <td style="text-align:right;">50M</td>
+              </tr>
+              <tr>
+                <td>Liquidity Mining</td>
+                <td style="text-align:right;">5%</td>
+                <td style="text-align:right;">50M</td>
+              </tr>
+              <tr>
+                <td>Audits &amp; Development</td>
+                <td style="text-align:right;">5%</td>
+                <td style="text-align:right;">50M</td>
+              </tr>
+              <tr>
+                <td>Emergency Reserve</td>
+                <td style="text-align:right;">5%</td>
+                <td style="text-align:right;">50M</td>
+              </tr>
             </tbody>
           </table>
 
@@ -305,16 +348,19 @@
             <li><strong>Conservative scenario (5% network growth per year):</strong>
               <ul>
                 <li>Assuming modest onboarding of energy producers and stable demand, the 800M ENRG free float is projected to be fully mined by 2030.</li>
+                <li>This implies a gradual but steady reduction in newly issued ENRG over the next few years.</li>
               </ul>
             </li>
             <li><strong>Moderate scenario (15% growth per year):</strong>
               <ul>
                 <li>With stronger adoption and compounding growth in energy tokenization, mining of the 800M ENRG free float ends by 2028.</li>
+                <li>This accelerates scarcity and shifts value capture toward secondary markets and staking yields.</li>
               </ul>
             </li>
             <li><strong>Aggressive scenario (10x growth in first year):</strong>
               <ul>
                 <li>If ENRG experiences a breakout year with 10x growth in tokenized energy volume, the remaining tokens are exhausted within 18 months.</li>
+                <li>Under this regime, ENRG rapidly transitions from an emission-driven asset to a purely fee- and scarcity-driven asset.</li>
               </ul>
             </li>
           </ul>
@@ -357,13 +403,28 @@
               </ul>
             </li>
           </ul>
+
           <h3>Projected Vault Revenue</h3>
           <table>
-            <thead><tr><th>Year</th><th style="text-align:right;">Projected Vault Revenue (USD)</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Year</th>
+                <th style="text-align:right;">Projected Vault Revenue (USD)</th>
+              </tr>
+            </thead>
             <tbody>
-              <tr><td>2027</td><td style="text-align:right;">$500k</td></tr>
-              <tr><td>2028</td><td style="text-align:right;">$2M</td></tr>
-              <tr><td>2029</td><td style="text-align:right;">$10M</td></tr>
+              <tr>
+                <td>2027</td>
+                <td style="text-align:right;">$500k</td>
+              </tr>
+              <tr>
+                <td>2028</td>
+                <td style="text-align:right;">$2M</td>
+              </tr>
+              <tr>
+                <td>2029</td>
+                <td style="text-align:right;">$10M</td>
+              </tr>
             </tbody>
           </table>
           <p>Full technical specifications, detailed financial models, and deployment roadmaps are available upon request for qualified investors.</p>
@@ -382,6 +443,39 @@
           </ul>
         </section>
 
+        <section id="Security" class="glass-section fade-up">
+          <h2>13. Security Model</h2>
+
+          <h3>13.1 IoT Device Security</h3>
+          <ul>
+            <li>Ed25519 private key is generated and stored on the device during provisioning.</li>
+            <li>Future production devices will use a dedicated Secure Element (ATECC608) for hardware‑grade key protection.</li>
+            <li>Over‑the‑Air (OTA) firmware updates are signed and verified before installation to prevent unauthorized modifications.</li>
+            <li>Physical tamper detection triggers immediate key invalidation.</li>
+          </ul>
+
+          <h3>13.2 Data Integrity & Replay Protection</h3>
+          <ul>
+            <li>Every energy proof includes a monotonically increasing nonce, which is validated by the smart contract. Replay of an old proof is rejected.</li>
+            <li>The proof also contains a timestamp that must be within 15 minutes of the current Solana block time, limiting the window for stale data.</li>
+            <li>The smart contract enforces a maximum energy per interval based on the registered device power rating, preventing inflated readings.</li>
+          </ul>
+
+          <h3>13.3 Communication Security</h3>
+          <ul>
+            <li>Devices communicate over TLS‑encrypted channels to the oracle endpoint.</li>
+            <li>In the production phase, Switchboard’s decentralized oracle network will aggregate and validate data, removing single points of failure.</li>
+          </ul>
+
+          <h3>13.4 Smart Contract Security</h3>
+          <ul>
+            <li>All ENRG programs are written in Rust using the Anchor framework and follow Solana’s secure development best practices.</li>
+            <li>A third‑party professional audit of all core programs is scheduled as Milestone 1 in the roadmap.</li>
+            <li>The protocol supports upgradeability through a secure multisig governance model, with a clear path to full DAO governance.</li>
+          </ul>
+        </section>
+
+        <!-- NEW SECTIONS END -->
         <p style="margin-top: 24px; color: var(--text-muted);">Full specifications available at <a href="https://enrg.network">enrg.network</a></p>
       </div>
     </main>
