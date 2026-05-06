@@ -1,454 +1,325 @@
-// -----------------------------
-// Particle background (keeps visual, minimal implementation)
-// -----------------------------
+// ENRG - DePIN Energy Dashboard interactivity
+// Does NOT modify index.html or style.css
 (function () {
-  const canvas = document.getElementById("particle-canvas");
-  if (!canvas) return;
-  const ctx = canvas.getContext("2d");
-  let particles = [];
-  let width, height;
+  'use strict';
 
-  function resize() {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-  }
-  window.addEventListener("resize", resize);
-  resize();
+  // ---------- Helpers ----------
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
-  const COUNT = 100;
-  const MAX_DIST = 140;
-  const colors = ["#00E5FF", "#FF6B00"];
+  // ---------- Particle Background ----------
+  (function initParticles() {
+    const canvas = $('#particle-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    let width, height;
 
-  function rand(min, max) { return Math.random() * (max - min) + min; }
-
-  function create() {
-    particles = [];
-    for (let i = 0; i < COUNT; i++) {
-      particles.push({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        vx: rand(-0.3, 0.3),
-        vy: rand(-0.3, 0.3),
-        r: rand(0.6, 2.2),
-        c: colors[Math.floor(Math.random() * colors.length)]
-      });
+    function resize() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
     }
-  }
+    window.addEventListener('resize', resize);
+    resize();
 
-  function draw() {
-    ctx.clearRect(0, 0, width, height);
-    // lines
-    for (let i = 0; i < particles.length; i++) {
-      for (let j = i + 1; j < particles.length; j++) {
-        const a = particles[i], b = particles[j];
-        const dx = a.x - b.x, dy = a.y - b.y;
-        const d = Math.sqrt(dx*dx + dy*dy);
-        if (d < MAX_DIST) {
-          const alpha = 0.25 * (1 - d / MAX_DIST);
-          ctx.beginPath();
-          ctx.strokeStyle = `rgba(148,163,184,${alpha})`;
-          ctx.lineWidth = 1;
-          ctx.moveTo(a.x, a.y);
-          ctx.lineTo(b.x, b.y);
-          ctx.stroke();
+    const COUNT = 100;
+    const MAX_DIST = 140;
+    const colors = ['#00E5FF', '#FF6B00'];
+
+    function rand(min, max) { return Math.random() * (max - min) + min; }
+
+    function createParticles() {
+      particles = [];
+      for (let i = 0; i < COUNT; i++) {
+        particles.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          vx: rand(-0.3, 0.3),
+          vy: rand(-0.3, 0.3),
+          r: rand(0.6, 2.2),
+          c: colors[Math.floor(Math.random() * colors.length)]
+        });
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, width, height);
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const a = particles[i], b = particles[j];
+          const dx = a.x - b.x, dy = a.y - b.y;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          if (dist < MAX_DIST) {
+            const alpha = 0.25 * (1 - dist / MAX_DIST);
+            ctx.beginPath();
+            ctx.strokeStyle = `rgba(148,163,184,${alpha})`;
+            ctx.lineWidth = 1;
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+          }
         }
       }
-    }
-    // particles
-    particles.forEach(p => {
-      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r*4);
-      g.addColorStop(0, p.c);
-      g.addColorStop(1, 'transparent');
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r*4, 0, Math.PI*2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.fillStyle = p.c;
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-      ctx.fill();
-
-      p.x += p.vx;
-      p.y += p.vy;
-      if (p.x < -10) p.x = width + 10;
-      if (p.x > width + 10) p.x = -10;
-      if (p.y < -10) p.y = height + 10;
-      if (p.y > height + 10) p.y = -10;
-    });
-
-    requestAnimationFrame(draw);
-  }
-
-  create();
-  draw();
-})();
-
-// -----------------------------
-// Scroll reveal for .fade-up elements
-// -----------------------------
-(function () {
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.12 });
-
-  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
-})();
-
-// -----------------------------
-// Smooth scroll for nav links
-// -----------------------------
-document.querySelectorAll('.nav-link').forEach(link => {
-  link.addEventListener('click', function (e) {
-    e.preventDefault();
-    const href = this.getAttribute('href');
-    if (!href || href.charAt(0) !== '#') return;
-    const target = document.querySelector(href);
-    if (target) target.scrollIntoView({ behavior: 'smooth' });
-  });
-});
-
-// -----------------------------
-// Modal: open/close mint modal
-// -----------------------------
-const mintModal = document.getElementById('mint-modal');
-const openHeroBtn = document.getElementById('btn-start-minting-hero');
-const openMintBtn = document.getElementById('btn-start-minting');
-const closeMintBtn = document.getElementById('mint-modal-close');
-
-function showMintModal() {
-  if (!mintModal) return;
-  mintModal.classList.add('active');
-  mintModal.setAttribute('aria-hidden', 'false');
-}
-
-function hideMintModal() {
-  if (!mintModal) return;
-  mintModal.classList.remove('active');
-  mintModal.setAttribute('aria-hidden', 'true');
-}
-
-if (openHeroBtn) openHeroBtn.addEventListener('click', showMintModal);
-if (openMintBtn) openMintBtn.addEventListener('click', showMintModal);
-if (closeMintBtn) closeMintBtn.addEventListener('click', hideMintModal);
-if (mintModal) {
-  mintModal.addEventListener('click', (e) => {
-    if (e.target === mintModal) hideMintModal();
-  });
-  // close on Escape
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') hideMintModal();
-  });
-}
-
-// -----------------------------
-// Whitepaper / Technical docs buttons
-// -----------------------------
-const btnWhitepaper = document.getElementById('btn-download-whitepaper');
-const btnTechDocs = document.getElementById('btn-technical-docs');
-const footerWhite = document.getElementById('footer-whitepaper');
-const footerTech = document.getElementById('footer-techdocs');
-
-if (btnWhitepaper) btnWhitepaper.addEventListener('click', () => {
-  window.location.href = 'whitepaper.html';
-});
-if (btnTechDocs) btnTechDocs.addEventListener('click', () => {
-  window.location.href = 'technical-overview.html';
-});
-if (footerWhite) footerWhite.addEventListener('click', (e) => {
-  e.preventDefault();
-  window.location.href = 'whitepaper.html';
-});
-if (footerTech) footerTech.addEventListener('click', (e) => {
-  e.preventDefault();
-  window.location.href = 'technical-overview.html';
-});
-
-// -----------------------------
-// Email CTAs
-// -----------------------------
-function mailToAnton(subject) {
-  const subj = subject ? `?subject=${encodeURIComponent(subject)}` : '';
-  window.location.href = `mailto:anton@enrg.network${subj}`;
-}
-
-const btnGetStarted = document.getElementById('btn-get-started');
-const btnContact = document.getElementById('btn-contact');
-const btnBecomePartner = document.getElementById('btn-become-partner');
-
-if (btnGetStarted) btnGetStarted.addEventListener('click', () => mailToAnton());
-if (btnContact) btnContact.addEventListener('click', () => mailToAnton());
-if (btnBecomePartner) btnBecomePartner.addEventListener('click', () => mailToAnton('Partnership'));
-
-// -----------------------------
-// Mint simulation with realistic fee breakdown + ПРОВЕРОЧНЫЙ ALERT
-// -----------------------------
-function runMintSimulation() {
-  const energyBar = document.getElementById('sim-energy-bar');
-  const enrgBar = document.getElementById('sim-enrg-bar');
-  const energyValue = document.getElementById('sim-energy-value');
-  const enrgValue = document.getElementById('sim-enrg-value');
-  const feed = document.getElementById('console-feed');
-
-  if (!energyBar || !enrgBar || !energyValue || !enrgValue) return;
-
-  // ---------- ПРОВЕРОЧНЫЙ ALERT ----------
-  alert("🚀 Симуляция запущена! Сейчас сгенерируем энергию...");
-
-  // ---------- ВРЕМЕННАЯ БОЕВАЯ РАСКРАСКА ПОЛОС ----------
-  energyBar.style.backgroundColor = '#ff3333';
-  energyBar.style.border = '2px solid white';
-  energyBar.style.height = '20px';
-  enrgBar.style.backgroundColor = '#33aaff';
-  enrgBar.style.border = '2px solid white';
-  enrgBar.style.height = '20px';
-
-  // ---------- ОСНОВНАЯ ЛОГИКА ----------
-  const energyKwh = Math.floor(Math.random() * 500) + 1;
-  const multipliers = [1.0, 0.8, 0.5];
-  const sourceMultiplier = multipliers[Math.floor(Math.random() * multipliers.length)];
-  const sourceNames = { 1.0: 'Solar', 0.8: 'Wind', 0.5: 'Hydro' };
-  const source = sourceNames[sourceMultiplier];
-  const effectiveEnergyKwh = energyKwh * sourceMultiplier;
-  const enrgMinted = (effectiveEnergyKwh / 1000).toFixed(3);
-  const protocolFeePercent = 15;
-  const protocolFeeEnrg = (Number(enrgMinted) * (protocolFeePercent / 100)).toFixed(3);
-  const netEnrgReceived = (Number(enrgMinted) - Number(protocolFeeEnrg)).toFixed(3);
-  const buybackBurn = (Number(protocolFeeEnrg) * 0.20).toFixed(3);
-  const stakingRewards = (Number(protocolFeeEnrg) * 0.40).toFixed(3);
-  const daoReserve = (Number(protocolFeeEnrg) * 0.30).toFixed(3);
-  const emergencyFund = (Number(protocolFeeEnrg) * 0.10).toFixed(3);
-
-  // Сброс и анимация
-  energyBar.style.width = '0%';
-  enrgBar.style.width = '0%';
-  energyValue.textContent = '0';
-  enrgValue.textContent = '0';
-
-  setTimeout(() => {
-    const energyPercent = Math.min(100, (energyKwh / 500) * 100);
-    energyBar.style.width = energyPercent + '%';
-    energyValue.textContent = energyKwh.toFixed(0);
-  }, 60);
-
-  setTimeout(() => {
-    const enrgPercent = Math.min(100, (Number(enrgMinted) / 0.5) * 100);
-    enrgBar.style.width = enrgPercent + '%';
-    enrgValue.textContent = enrgMinted;
-  }, 420);
-
-  if (feed) {
-    const p = document.createElement('div');
-    const ts = new Date().toISOString().split('T')[1].split('.')[0];
-    p.textContent = `[${ts}] Simulation: ${energyKwh}kWh (${source}, ×${sourceMultiplier}) → ${enrgMinted} ENRG (Fee: ${protocolFeeEnrg})`;
-    feed.appendChild(p);
-    feed.scrollTop = feed.scrollHeight;
-    if (feed.children.length > 40) feed.removeChild(feed.firstChild);
-  }
-
-  console.log('[ENRG Simulator]', {
-    energyInput: `${energyKwh} kWh`,
-    source: source,
-    sourceMultiplier: sourceMultiplier,
-    effectiveEnergy: `${effectiveEnergyKwh.toFixed(1)} kWh`,
-    enrgMinted: enrgMinted,
-    protocolFee: `${protocolFeeEnrg} (${protocolFeePercent}%)`,
-    netReceived: netEnrgReceived,
-    feeBreakdown: {
-      'Buyback & Burn (20%)': buybackBurn,
-      'Staking Rewards (40%)': stakingRewards,
-      'DAO Reserve (30%)': daoReserve,
-      'Emergency Fund (10%)': emergencyFund
-    }
-  });
-}
-
-// -----------------------------
-// Надёжная привязка кнопок симулятора (ждём полной загрузки DOM)
-// -----------------------------
-function bindSimulationButtons() {
-  const btnSim = document.getElementById('btn-simulate-mint');
-  const btnSimModal = document.getElementById('btn-simulate-mint-modal');
-
-  if (btnSim) {
-    btnSim.addEventListener('click', runMintSimulation);
-    console.log('[ENRG] Кнопка btn-simulate-mint привязана');
-  } else {
-    console.warn('[ENRG] Кнопка btn-simulate-mint НЕ НАЙДЕНА в DOM');
-  }
-
-  if (btnSimModal) {
-    btnSimModal.addEventListener('click', () => {
-      runMintSimulation();
-    });
-    console.log('[ENRG] Кнопка btn-simulate-mint-modal привязана');
-  } else {
-    console.warn('[ENRG] Кнопка btn-simulate-mint-modal НЕ НАЙДЕНА в DOM');
-  }
-}
-
-// Ждём полной загрузки DOM, затем привязываем кнопки
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', bindSimulationButtons);
-} else {
-  bindSimulationButtons();
-}
-
-// -----------------------------
-// Live console fake feed & history rows (visual only)
-// -----------------------------
-(function () {
-  const feed = document.getElementById('console-feed');
-  const historyBody = document.getElementById('history-body');
-  const producers = ['Node-12A', 'Farm-07', 'Solar-Grid-21', 'Hydro-03', 'Biogas-09'];
-
-  function addFeedLine() {
-    if (!feed) return;
-    const p = document.createElement('div');
-    const prod = producers[Math.floor(Math.random() * producers.length)];
-    const action = ['minted', 'reported', 'staked', 'updated'][Math.floor(Math.random() * 4)];
-    const unit = Math.random() > 0.85 ? 'MWh' : 'kWh';
-    const amount = (Math.random() * (unit === 'kWh' ? 800 : 4) + 10).toFixed(1);
-    const ts = new Date().toISOString().split('T')[1].split('.')[0];
-    p.textContent = `[${ts}] ${prod} ${action} ${amount} ${unit}`;
-    feed.appendChild(p);
-    feed.scrollTop = feed.scrollHeight;
-    if (feed.children.length > 40) feed.removeChild(feed.firstChild);
-  }
-
-  function addHistoryRow() {
-    if (!historyBody) return;
-    const tr = document.createElement('tr');
-    const now = new Date();
-    const ts = now.toISOString().replace('T', ' ').split('.')[0];
-    const prod = producers[Math.floor(Math.random() * producers.length)];
-    const energy = (Math.random() * 500 + 50).toFixed(1);
-    const enrg = (energy / 1000).toFixed(3);
-    tr.innerHTML = `<td>${ts}</td><td>${prod}</td><td>${energy}</td><td>${enrg}</td>`;
-    historyBody.prepend(tr);
-    if (historyBody.children.length > 20) historyBody.removeChild(historyBody.lastChild);
-  }
-
-  // initial
-  for (let i = 0; i < 6; i++) addFeedLine();
-  for (let i = 0; i < 5; i++) addHistoryRow();
-
-  setInterval(addFeedLine, 2500);
-  setInterval(addHistoryRow, 7000);
-})();
-
-// -----------------------------
-// Solana on-chain data fetching (unchanged)
-// -----------------------------
-(async function () {
-  const defaultValues = { totalEnergyMWh: 2056, activeProducers: 150, totalStakedENRG: 65000 };
-  const programId = 'CcRjGroz7tsDAroZayWak58KtfAczJ7vbPddnRJDSeL4';
-  const rpcUrl = 'http://127.0.0.1:8899';
-
-  function base64ToBytes(base64Str) {
-    const binaryString = atob(base64Str);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
-    return bytes;
-  }
-  function readU64LE(bytes, offset) {
-    if (offset + 8 > bytes.length) return 0n;
-    let value = 0n;
-    for (let i = 0; i < 8; i++) value += BigInt(bytes[offset + i]) << BigInt(i * 8);
-    return value;
-  }
-  function parseAccount(data) { const bytes = base64ToBytes(data); return { energyWh: readU64LE(bytes, 56), staked: readU64LE(bytes, 40), dataSize: bytes.length }; }
-
-  async function fetchAllAccounts() {
-    try {
-      console.log(`[ENRG] Fetching all program accounts from ${rpcUrl}`);
-      const response = await fetch(rpcUrl, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'getProgramAccounts', params: [programId, { encoding: 'base64' }] })
+      particles.forEach(p => {
+        const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r*4);
+        gradient.addColorStop(0, p.c);
+        gradient.addColorStop(1, 'transparent');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r*4, 0, Math.PI*2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.fillStyle = p.c;
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+        ctx.fill();
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < -10) p.x = width + 10;
+        if (p.x > width + 10) p.x = -10;
+        if (p.y < -10) p.y = height + 10;
+        if (p.y > height + 10) p.y = -10;
       });
-      const result = await response.json();
-      if (result.error) { console.warn(`[ENRG] RPC error: ${result.error.message}`); return null; }
-      if (!result.result || !Array.isArray(result.result)) { console.warn('[ENRG] No accounts found'); return null; }
-      console.log(`[ENRG] Fetched ${result.result.length} accounts`);
-      return result.result;
-    } catch (error) { console.warn(`[ENRG] RPC fetch failed: ${error.message}`); return null; }
-  }
-
-  async function computeMetrics() {
-    const accounts = await fetchAllAccounts();
-    if (!accounts) return defaultValues;
-    let totalEnergyWh = 0n, totalStaked = 0n, producerCount = 0;
-    for (const account of accounts) {
-      try {
-        const data = account.account.data[0];
-        if (typeof data !== 'string' || data.length === 0) continue;
-        const parsed = parseAccount(data);
-        if (parsed.energyWh > 0n && parsed.energyWh < 100000000000000n) { totalEnergyWh += parsed.energyWh; producerCount++; }
-        if (parsed.staked > 0n && parsed.staked < 10000000000000000n) totalStaked += parsed.staked;
-      } catch (e) {}
+      requestAnimationFrame(draw);
     }
-    const totalEnergyMWh = Math.round(Number(totalEnergyWh) / 1_000_000);
-    return {
-      totalEnergyMWh: totalEnergyMWh > 0 ? totalEnergyMWh : defaultValues.totalEnergyMWh,
-      activeProducers: producerCount > 0 ? producerCount : defaultValues.activeProducers,
-      totalStakedENRG: Number(totalStaked) > 0 ? Number(totalStaked) : defaultValues.totalStakedENRG
-    };
-  }
 
-  function updateDOM(metrics) {
-    const counterElements = document.querySelectorAll('.counter');
-    if (counterElements.length >= 1) counterElements[0].setAttribute('data-target', metrics.totalEnergyMWh);
-    if (counterElements.length >= 2) counterElements[1].setAttribute('data-target', metrics.activeProducers);
-    if (counterElements.length >= 3) counterElements[2].setAttribute('data-target', metrics.totalStakedENRG);
-    const producersCounter = document.getElementById('producers-counter');
-    if (producersCounter) producersCounter.setAttribute('data-target', metrics.activeProducers);
-  }
+    createParticles();
+    draw();
+  })();
 
-  async function initializeMetrics() { const metrics = await computeMetrics(); updateDOM(metrics); }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initializeMetrics);
-  else initializeMetrics();
-})();
-
-// -----------------------------
-// Counters (count-up animation)
-// -----------------------------
-(function () {
-  function animateCounter(el) {
-    const target = parseInt(el.getAttribute('data-target'), 10);
-    if (isNaN(target)) return;
-    let start = null;
-    const duration = 1400;
-    function step(ts) {
-      if (!start) start = ts;
-      const progress = Math.min((ts - start) / duration, 1);
-      const value = Math.floor(progress * target);
-      el.textContent = value.toLocaleString();
-      if (progress < 1) requestAnimationFrame(step);
+  // ---------- Fade-Up Scroll Animation ----------
+  (function initFadeUp() {
+    const els = $$('.fade-up');
+    if (!els.length) return;
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.2 });
+      els.forEach(el => observer.observe(el));
+    } else {
+      els.forEach(el => el.classList.add('in-view'));
     }
-    requestAnimationFrame(step);
-  }
+  })();
 
-  const counters = document.querySelectorAll('.counter, #producers-counter');
-  const obs = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        animateCounter(entry.target);
-        obs.unobserve(entry.target);
+  // ---------- Metric Counters (Hero) ----------
+  (function initMetrics() {
+    const counters = $$('.counter, #producers-counter');
+    if (!counters.length) return;
+
+    function animate(el) {
+      const rawTarget = el.getAttribute('data-target');
+      let target;
+      if (rawTarget) {
+        target = parseInt(rawTarget, 10);
+      } else {
+        const textNum = el.textContent.replace(/[^\d]/g, '');
+        target = parseInt(textNum, 10) || 0;
+      }
+      if (!target) return;
+
+      const duration = 1500;
+      const startTime = performance.now();
+      function step(ts) {
+        const progress = Math.min((ts - startTime) / duration, 1);
+        el.textContent = Math.floor(progress * target).toLocaleString();
+        if (progress < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          animate(entry.target);
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.3 });
+
+    counters.forEach(el => obs.observe(el));
+  })();
+
+  // ---------- Live Feed ----------
+  (function initLiveFeed() {
+    const feed = $('#console-feed');
+    if (!feed) return;
+    const producers = ['Node-01','SolarRig-12','WindFarm-7B','HydroUnit-3C','Rooftop-Alpha','GridEdge-09'];
+    const actions = ['reported','minted','staked','verified','streamed','settled'];
+    const units = ['kWh','MWh'];
+
+    function addLine(text) {
+      const div = document.createElement('div');
+      div.className = 'console-line';
+      div.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+      feed.appendChild(div);
+      while (feed.children.length > 40) feed.removeChild(feed.firstChild);
+      feed.scrollTop = feed.scrollHeight;
+    }
+
+    function produce() {
+      const prod = producers[Math.floor(Math.random() * producers.length)];
+      const act = actions[Math.floor(Math.random() * actions.length)];
+      const unit = units[Math.floor(Math.random() * units.length)];
+      const value = unit === 'kWh' ? Math.floor(Math.random() * 900 + 5) : (Math.random() * 10 + 0.1).toFixed(1);
+      addLine(`${prod} ${act} ${value} ${unit}`);
+      setTimeout(produce, Math.floor(Math.random() * 3000) + 2000);
+    }
+
+    addLine('Bootstrapping ENRG live feed...');
+    setTimeout(produce, 2000);
+  })();
+
+  // ---------- Modal ----------
+  (function initModal() {
+    const modal = $('#mint-modal');
+    if (!modal) return;
+    const openBtns = ['#btn-start-minting-hero', '#btn-start-minting']
+      .map(id => $(id)).filter(Boolean);
+
+    function open() {
+      modal.classList.add('active');
+      modal.setAttribute('aria-hidden', 'false');
+      modal.style.display = 'flex';
+    }
+    function close() {
+      modal.classList.remove('active');
+      modal.setAttribute('aria-hidden', 'true');
+      modal.style.display = 'none';
+    }
+
+    openBtns.forEach(btn => btn.addEventListener('click', open));
+
+    const closeBtn = modal.querySelector('.modal-close');
+    if (closeBtn) closeBtn.addEventListener('click', close);
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) close();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') close();
+    });
+  })();
+
+  // ---------- Minting Simulation ----------
+  (function initSimulation() {
+    const energyBar = $('#sim-energy-bar');
+    const enrgBar = $('#sim-enrg-bar');
+    const energyVal = $('#sim-energy-value');
+    const enrgVal = $('#sim-enrg-value');
+    const feed = $('#console-feed');
+    const histBody = $('#history-body');
+
+    const sources = [
+      { name: 'Solar', mult: 1.0 },
+      { name: 'Wind', mult: 0.8 },
+      { name: 'Hydro', mult: 0.5 }
+    ];
+
+    function animateBar(bar, percent) {
+      if (!bar) return;
+      bar.style.transition = 'width 0.6s ease';
+      bar.style.width = '0%';
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          bar.style.width = `${Math.min(100, Math.max(0, percent))}%`;
+        });
+      });
+    }
+
+    function appendLog(text) {
+      if (!feed) return;
+      const div = document.createElement('div');
+      div.className = 'console-line';
+      div.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+      feed.appendChild(div);
+      while (feed.children.length > 40) feed.removeChild(feed.firstChild);
+      feed.scrollTop = feed.scrollHeight;
+    }
+
+    function appendHistory(kWh, sourceName, enrg) {
+      if (!histBody) return;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${new Date().toLocaleString()}</td><td>${sourceName}</td><td>${kWh} kWh</td><td>${enrg.toFixed(3)} ENRG</td>`;
+      histBody.prepend(tr);
+      while (histBody.children.length > 20) histBody.removeChild(histBody.lastChild);
+    }
+
+    function simulate() {
+      const kWh = Math.floor(Math.random() * 500) + 1;
+      const src = sources[Math.floor(Math.random() * sources.length)];
+      const effective = kWh * src.mult;
+      const enrg = effective / 1000;
+      const fee = enrg * 0.15;
+      const breakdown = {
+        'Buyback & Burn': (fee * 0.2).toFixed(3),
+        'Staking Rewards': (fee * 0.4).toFixed(3),
+        'DAO Reserve': (fee * 0.3).toFixed(3),
+        'Emergency Fund': (fee * 0.1).toFixed(3)
+      };
+
+      animateBar(energyBar, (kWh / 500) * 100);
+      animateBar(enrgBar, (enrg / 0.5) * 100);
+
+      if (energyVal) energyVal.textContent = kWh;
+      if (enrgVal) enrgVal.textContent = enrg.toFixed(3);
+
+      const logMsg = `Simulation: ${kWh}kWh (${src.name}, ×${src.mult}) → ${enrg.toFixed(3)} ENRG (Fee: ${fee.toFixed(3)})`;
+      appendLog(logMsg);
+      console.log('[ENRG Simulation]', { kWh, source: src.name, enrg, fee, breakdown });
+      appendHistory(kWh, src.name, enrg);
+    }
+
+    ['#btn-simulate-mint', '#btn-simulate-mint-modal']
+      .map(id => $(id))
+      .filter(Boolean)
+      .forEach(btn => btn.addEventListener('click', simulate));
+  })();
+
+  // ---------- Smooth Scroll Navigation ----------
+  (function initNav() {
+    $$('.nav-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        const href = link.getAttribute('href');
+        if (!href || !href.startsWith('#')) return;
+        const target = $(href);
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+
+    const dashBtn = $('#open-dashboard');
+    if (dashBtn) {
+      dashBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = $('#dashboard');
+        if (target) target.scrollIntoView({ behavior: 'smooth' });
+      });
+    }
+  })();
+
+  // ---------- Wallet Connect (Phantom) ----------
+  (function initWallet() {
+    const connectBtn = $('#nav-connect');
+    if (!connectBtn) return;
+
+    connectBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      if (window.solana && window.solana.isPhantom) {
+        try {
+          const resp = await window.solana.connect();
+          alert('Wallet connected: ' + resp.publicKey.toString());
+        } catch (err) {
+          alert('Connection failed: ' + err.message);
+        }
+      } else {
+        window.open('https://phantom.app/', '_blank');
       }
     });
-  }, { threshold: 0.4 });
-
-  counters.forEach(c => obs.observe(c));
-})();
-
-// -----------------------------
-// Auto update copyright year
-// -----------------------------
-(function () {
-  const yearEl = document.getElementById('year');
-  if (yearEl) yearEl.textContent = new Date().getFullYear();
+  })();
 })();
