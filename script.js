@@ -1,5 +1,16 @@
-// ENRG - DePIN Energy Dashboard interactivity
-// Does NOT modify index.html or style.css
+// ENRG - DePIN Energy Dashboard - Complete Interactivity Module
+// Does NOT modify index.html or style.css - Pure JavaScript implementation
+// 
+// FEATURES IMPLEMENTED:
+// ✅ 1. Metric Counters: Hero metrics animate on page scroll intersection
+// ✅ 2. Live Feed: Real-time console messages every 2-5 seconds (max 40 lines)
+// ✅ 3. Modal System: Mint modal opens/closes with keyboard & click support
+// ✅ 4. Mining Simulation: Energy generation (1-500 kWh), ENRG calculation, fee distribution
+// ✅ 5. Smooth Scroll: Navigation links smooth scroll to sections
+// ✅ 6. Wallet Connect: Phantom integration with fallback
+// ✅ 7. Particle Background: Animated particles with network connections
+// ✅ 8. Fade-Up Animations: Scroll-triggered animations for all fade-up elements
+
 (function () {
   'use strict';
 
