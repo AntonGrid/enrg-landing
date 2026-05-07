@@ -702,4 +702,37 @@
   };
 
   init();
+  // ---------- Mobile Adaptation ----------
+  (function initMobileAdaptation() {
+    if (window.innerWidth >= 768) return; // Only apply to mobile
+
+    // Ensure all fade-up elements are visible on mobile
+    $$('.fade-up').forEach(el => el.classList.add('visible'));
+
+    // Adjust metrics grid to single column on very small screens
+    const metricsGrid = $('.metrics-grid');
+    if (metricsGrid) {
+      metricsGrid.style.gridTemplateColumns = 'minmax(0, 1fr)';
+    }
+
+    // Ensure sections are displayed properly
+    $$('.section').forEach(section => {
+      section.style.display = 'block';
+      section.style.height = 'auto';
+      section.style.overflow = 'visible';
+    });
+
+    // Adjust hero grid if needed
+    const heroGrid = $('.hero-grid');
+    if (heroGrid) {
+      heroGrid.style.gridTemplateColumns = 'minmax(0, 1fr)';
+    }
+
+    // Make sure main content is scrollable
+    const pageShell = $('.page-shell');
+    if (pageShell) {
+      pageShell.style.overflow = 'visible';
+      pageShell.style.height = 'auto';
+    }
+  })();
 })();
