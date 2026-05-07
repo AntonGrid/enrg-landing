@@ -804,16 +804,39 @@
     const overlay = createElement('div', { className: 'enrg-energy-overlay', id: 'enrg-energy-overlay' });
     overlay.appendChild(createElement('div', { className: 'enrg-energy-ring' }));
     overlay.appendChild(createElement('svg', { className: 'enrg-energy-path', viewBox: '0 0 220 220', xmlns: 'http://www.w3.org/2000/svg', html: `<path d="M20,180 C80,80 140,80 200,20" fill="none" stroke="rgba(0,229,255,0.35)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="200" cy="20" r="8" fill="#00E5FF"/><circle cx="20" cy="180" r="8" fill="#FF6B00"/>` }));
+
+    const targets = {
+        'energy-1': '#dashboard',
+        'energy-2': '#minting',
+        'energy-3': '#tokenomics'
+    };
+    const labels = {
+        'energy-1': 'Future Grid',
+        'energy-2': 'IoT Flow',
+        'energy-3': 'Clean Power'
+    };
+
     const nodes = [
-      { class: 'energy-1', symbol: '⚡', label: 'Future Grid' },
-      { class: 'energy-2', symbol: '🔋', label: 'IoT Flow' },
-      { class: 'energy-3', symbol: '🌐', label: 'Clean Power' },
+        { class: 'energy-1', symbol: '⚡', label: 'Future Grid' },
+        { class: 'energy-2', symbol: '🔋', label: 'IoT Flow' },
+        { class: 'energy-3', symbol: '🌐', label: 'Clean Power' },
     ];
     nodes.forEach((item) => {
-      overlay.appendChild(createElement('div', {
-        className: `enrg-energy-node ${item.class}`,
-        html: `<div>${item.symbol}<span>${item.label}</span></div>`,
-      }));
+        const node = createElement('div', {
+            className: `enrg-energy-node ${item.class}`,
+            html: `<div>${item.symbol}<span>${item.label}</span></div>`,
+        });
+        node.style.cursor = 'pointer';
+        node.addEventListener('click', () => {
+            const targetSelector = targets[item.class];
+            const targetElement = targetSelector ? document.querySelector(targetSelector) : null;
+            if (targetElement) {
+                targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                alert(`${labels[item.class]}: подробности скоро появятся`);
+            }
+        });
+        overlay.appendChild(node);
     });
     refs.heroRight.appendChild(overlay);
   };
