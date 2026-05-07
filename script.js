@@ -162,6 +162,7 @@
     heroSlogan: document.querySelector('.hero-slogan'),
     heroActions: document.querySelector('.hero-actions'),
     heroGrid: document.querySelector('.hero-grid'),
+    heroRight: document.querySelector('.hero-right'),
     metricsGrid: document.querySelector('.metrics-grid'),
     footerLinks: document.querySelector('.footer-links'),
   };
@@ -228,6 +229,20 @@
       .enrg-step-card p { margin: 0; color: #9CA3AF; line-height: 1.55; }
       .enrg-step-card .step-icon { font-size: 2rem; }
       .enrg-hero-note { color: #9CA3AF; max-width: 780px; margin-top: 12px; }
+      .hero-right { position: relative; }
+      .energy-glow { position: relative; overflow: hidden; }
+      .energy-glow::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 20% 20%, rgba(0,229,255,0.2), transparent 28%), radial-gradient(circle at 80% 80%, rgba(255,107,0,0.18), transparent 24%); pointer-events: none; opacity: 0.8; transition: transform 0.8s ease; transform: scale(0.96); }
+      .energy-glow:hover::before { transform: scale(1.05); }
+      .enrg-energy-overlay { position: absolute; top: 0; right: 0; width: 100%; max-width: 320px; height: 100%; pointer-events: none; z-index: 1; }
+      .enrg-energy-node { position: absolute; width: 86px; height: 86px; border-radius: 50%; border: 1px solid rgba(59,130,246,0.22); background: rgba(1,10,21,0.72); box-shadow: 0 0 28px rgba(0,229,255,0.18); display: flex; align-items: center; justify-content: center; color: #E5E7EB; font-size: 0.85rem; text-align: center; padding: 12px; opacity: 0.95; animation: floatEnergy 7s ease-in-out infinite; }
+      .enrg-energy-node span { display: block; font-size: 0.7rem; margin-top: 8px; color: #A5F3FC; line-height: 1.2; }
+      .enrg-energy-node.energy-1 { top: 10%; right: 12%; animation-delay: 0s; }
+      .enrg-energy-node.energy-2 { top: 42%; right: 16%; animation-delay: 1.4s; }
+      .enrg-energy-node.energy-3 { bottom: 10%; right: 10%; animation-delay: 2.8s; }
+      .enrg-energy-ring { position: absolute; top: 26%; right: 18%; width: 140px; height: 140px; border-radius: 50%; border: 1px solid rgba(56,189,248,0.22); box-shadow: 0 0 48px rgba(56,189,248,0.2); animation: pulseGlow 2.8s ease-out infinite; }
+      .enrg-energy-path { position: absolute; top: 8%; right: 6%; width: 220px; height: 220px; pointer-events: none; }
+      @keyframes floatEnergy { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+      @keyframes pulseGlow { 0% { transform: scale(0.92); opacity: 0.4; } 50% { transform: scale(1.02); opacity: 0.65; } 100% { transform: scale(0.92); opacity: 0.4; } }
       .fade-up { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
       .fade-up.visible { opacity: 1; transform: translateY(0); }
       @media (max-width: 767px) {
@@ -780,6 +795,29 @@
     });
   };
 
+  const initEnergyDecorations = () => {
+    const metricCards = $$('.metric-card');
+    metricCards.forEach((card) => card.classList.add('energy-glow'));
+    if (!refs.heroRight) return;
+    refs.heroRight.style.position = 'relative';
+    if ($('#enrg-energy-overlay')) return;
+    const overlay = createElement('div', { className: 'enrg-energy-overlay', id: 'enrg-energy-overlay' });
+    overlay.appendChild(createElement('div', { className: 'enrg-energy-ring' }));
+    overlay.appendChild(createElement('svg', { className: 'enrg-energy-path', viewBox: '0 0 220 220', xmlns: 'http://www.w3.org/2000/svg', html: `<path d="M20,180 C80,80 140,80 200,20" fill="none" stroke="rgba(0,229,255,0.35)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="200" cy="20" r="8" fill="#00E5FF"/><circle cx="20" cy="180" r="8" fill="#FF6B00"/>` }));
+    const nodes = [
+      { class: 'energy-1', symbol: '⚡', label: 'Future Grid' },
+      { class: 'energy-2', symbol: '🔋', label: 'IoT Flow' },
+      { class: 'energy-3', symbol: '🌐', label: 'Clean Power' },
+    ];
+    nodes.forEach((item) => {
+      overlay.appendChild(createElement('div', {
+        className: `enrg-energy-node ${item.class}`,
+        html: `<div>${item.symbol}<span>${item.label}</span></div>`,
+      }));
+    });
+    refs.heroRight.appendChild(overlay);
+  };
+
   const logToConsoleFeed = (msg) => {
     addLiveFeedLine(msg);
   };
@@ -1176,6 +1214,7 @@
     initFooterLinks();
     initChatAssistant();
     initWalletConnect();
+    initEnergyDecorations();
     startLiveFeed();
     renderHistory();
     renderDashboardSummary();
