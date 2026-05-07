@@ -98,6 +98,197 @@
         radial-gradient(circle at 100% 0%, rgba(255, 107, 0, 0.12) 0, transparent 55%);
       opacity: 0.6; mix-blend-mode: soft-light; pointer-events: none;
     }
+    .doc-content { padding: 20px; }
+    .doc-section { margin-bottom: 40px; }
+    .doc-section h2 { color: var(--accent-cyan); font-size: 1.5rem; margin-bottom: 10px; }
+    .doc-section h3 { color: var(--accent-orange); font-size: 1.2rem; margin-bottom: 8px; }
+    .doc-section p, .doc-section ul { color: var(--text-main); line-height: 1.6; }
+    .doc-section ul { margin-left: 20px; }
+    .back-button { display: inline-block; margin-top: 20px; padding: 10px 20px; background: linear-gradient(135deg, var(--accent-cyan), var(--accent-orange)); color: #000; text-decoration: none; border-radius: 8px; font-weight: bold; }
+    .back-button:hover { opacity: 0.8; }
+  </style>
+</head>
+<body>
+  <canvas id="particle-canvas"></canvas>
+  <div class="bg-overlay"></div>
+
+  <div class="page-shell">
+    <div class="top-nav">
+      <div class="brand">
+        <div class="brand-mark">
+          <div class="brand-mark-inner">EN</div>
+        </div>
+        <div class="brand-text">
+          <div class="brand-title">ENRG Protocol</div>
+          <div class="brand-subtitle">Technical Documentation</div>
+        </div>
+      </div>
+      <div class="top-nav-cta">
+        <div class="pill">
+          <div class="pill-dot"></div>
+          <span>v2.0</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="doc-shell">
+      <div class="doc-content">
+        <div class="doc-section">
+          <h2>1. Architecture</h2>
+          <p>The ENRG protocol operates on a decentralized architecture connecting physical energy production to blockchain-based tokenization:</p>
+          <ul>
+            <li><strong>IoT Devices:</strong> Physical sensors (e.g., ESP32 + PZEM-004T) measure energy output and transmit signed data.</li>
+            <li><strong>Oracles:</strong> Verify and relay IoT data to smart contracts on Solana.</li>
+            <li><strong>Smart Contracts:</strong> Mint ENRG tokens based on verified production data.</li>
+            <li><strong>Energy Vault:</strong> Stores tokenized energy value, enabling staking, trading, and protocol fees.</li>
+          </ul>
+        </div>
+
+        <div class="doc-section">
+          <h2>2. Proof-of-Production</h2>
+          <p>ENRG implements a Proof-of-Production mechanism to ensure tokens are backed by real energy generation:</p>
+          <ul>
+            <li>IoT devices (ESP32 microcontroller with PZEM-004T energy meter) collect production data every 10 minutes.</li>
+            <li>Data is signed using Ed25519 cryptography for authenticity.</li>
+            <li>Signed data is transmitted via Wi-Fi to oracle nodes.</li>
+            <li>Oracles verify signatures and data integrity before relaying to smart contracts.</li>
+            <li>Smart contracts mint ENRG tokens proportional to verified energy output (1 ENRG = 1 MWh).</li>
+          </ul>
+        </div>
+
+        <div class="doc-section">
+          <h2>3. Smart Contracts</h2>
+          <p>The ENRG protocol consists of several Solana-based smart contracts:</p>
+          <ul>
+            <li><strong>registry:</strong> Manages device registration and producer identities.</li>
+            <li><strong>mint_enrg:</strong> Handles ENRG token minting based on oracle-verified data.</li>
+            <li><strong>vault:</strong> Stores protocol fees and manages the Energy Vault economy.</li>
+            <li><strong>buyback_burn:</strong> Executes automated buyback and burn mechanisms for deflation.</li>
+            <li><strong>staking:</strong> Allows ENRG holders to stake tokens for rewards.</li>
+            <li><strong>founder_vesting:</strong> Manages founder token vesting schedules.</li>
+          </ul>
+        </div>
+
+        <div class="doc-section">
+          <h2>4. API</h2>
+          <p>ENRG provides RESTful APIs for device management and proof submission:</p>
+          <ul>
+            <li><strong>POST /api/v1/proof/submit:</strong> Submits signed proof-of-production data from IoT devices.</li>
+            <li><strong>GET /api/v1/device/{id}/status:</strong> Retrieves the status and history of a specific device.</li>
+          </ul>
+        </div>
+
+        <div class="doc-section">
+          <h2>5. Energy Vault Economy</h2>
+          <p>The protocol collects a 15% fee on all ENRG minting, distributed as follows:</p>
+          <ul>
+            <li><strong>Buyback & Burn (20%):</strong> Tokens are bought back and permanently removed from circulation.</li>
+            <li><strong>Staking (40%):</strong> Rewards distributed to ENRG stakers.</li>
+            <li><strong>DAO Reserve (30%):</strong> Funds protocol development and governance.</li>
+            <li><strong>Emergency Fund (10%):</strong> Reserved for unforeseen protocol needs.</li>
+          </ul>
+        </div>
+
+        <div class="doc-section">
+          <h2>6. Roadmap</h2>
+          <ul>
+            <li><strong>Genesis (Q1 2024):</strong> MVP launch with basic IoT integration and token minting.</li>
+            <li><strong>Mainnet (Q2 2024):</strong> Full Solana deployment with oracle integration.</li>
+            <li><strong>Vault Growth (Q3 2024):</strong> Expansion of Energy Vault features and staking rewards.</li>
+            <li><strong>Expansion (Q4 2024):</strong> Multi-chain support and global energy producer onboarding.</li>
+          </ul>
+        </div>
+
+        <div class="doc-section">
+          <h2>7. Tokenomics</h2>
+          <ul>
+            <li><strong>Maximum Supply:</strong> 1,000,000,000 ENRG tokens (fixed cap).</li>
+            <li><strong>Backing:</strong> 1 ENRG = 1 MWh of verified energy production.</li>
+            <li><strong>Deflation:</strong> Achieved through automated Buyback & Burn mechanisms.</li>
+          </ul>
+        </div>
+
+        <div class="doc-section">
+          <h2>8. IoT Hardware Prototype</h2>
+          <ul>
+            <li><strong>Hardware:</strong> ESP32 microcontroller paired with PZEM-004T energy monitoring module.</li>
+            <li><strong>Security:</strong> Ed25519 digital signatures for data authenticity.</li>
+            <li><strong>Connectivity:</strong> Wi-Fi transmission of signed data to oracle nodes.</li>
+            <li><strong>Frequency:</strong> Data submission every 10 minutes for real-time verification.</li>
+          </ul>
+        </div>
+
+        <div class="doc-section">
+          <h2>9. Oracle Architecture</h2>
+          <ul>
+            <li><strong>Primary Oracle:</strong> Switchboard for production-grade data verification.</li>
+            <li><strong>MVP Oracle:</strong> oracle-publisher.js for initial testing and development.</li>
+            <li><strong>Production Integration:</strong> Direct CPI (Cross-Program Invocation) calls on Solana.</li>
+          </ul>
+        </div>
+
+        <div class="doc-section">
+          <h2>10. Competitive Advantages</h2>
+          <ul>
+            <li><strong>Universal Energy Support:</strong> Compatible with any energy source (solar, wind, hydro, etc.).</li>
+            <li><strong>Real MWh Backing:</strong> Tokens backed by actual energy production, not loyalty points.</li>
+            <li><strong>Buyback & Burn:</strong> Built-in deflationary mechanism.</li>
+            <li><strong>Source Multipliers:</strong> Different reward rates for various energy types.</li>
+            <li><strong>Decentralization:</strong> Fully decentralized oracle and smart contract infrastructure.</li>
+          </ul>
+        </div>
+
+        <div class="doc-section">
+          <h2>11. Security Considerations</h2>
+          <ul>
+            <li><strong>Key Storage:</strong> Secure hardware storage using ATECC608 cryptographic co-processor.</li>
+            <li><strong>Signature Verification:</strong> All data submissions require valid Ed25519 signatures.</li>
+            <li><strong>Replay Protection:</strong> Nonce-based mechanisms prevent duplicate submissions.</li>
+            <li><strong>Oracle Consensus:</strong> Multi-node verification ensures data integrity.</li>
+          </ul>
+        </div>
+
+        <a href="index.html" class="back-button">Back to main site</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Simple particle animation for cyberpunk effect
+    const canvas = document.getElementById('particle-canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const particles = [];
+    for (let i = 0; i < 50; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        r: Math.random() * 2 + 1,
+      });
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0, 229, 255, 0.5)';
+        ctx.fill();
+      });
+      requestAnimationFrame(animate);
+    }
+    animate();
+  </script>
+</body>
+</html>
     .doc-shell-inner { position: relative; z-index: 1; }
     h1, h2, h3 { color: var(--accent-cyan); letter-spacing: 0.04em; }
     h1 { font-size: clamp(1.9rem, 2.4vw, 2.4rem); margin-bottom: 10px; }
