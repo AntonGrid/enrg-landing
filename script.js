@@ -41,6 +41,11 @@
     return el;
   };
 
+  const scrollToElement = (selector) => {
+    const el = $(selector);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
+
   const defaultState = {
     step: 1,
     onboarded: false,
@@ -750,6 +755,12 @@
     refs.consoleFeed.scrollTop = refs.consoleFeed.scrollHeight;
   };
 
+  const addHistoryEntry = (entry) => {
+    const history = loadHistory();
+    history.unshift(entry);
+    saveHistory(history);
+  };
+
   const simulateMining = () => {
     const devices = loadDevices();
     const selectedDevice = devices.length ? devices[Math.floor(Math.random() * devices.length)] : null;
@@ -818,7 +829,7 @@
     renderDashboardSummary();
     renderHistory();
     if (refs.modal) {
-      setModalActive(true);
+      openModal();
       renderModal();
     }
   };
@@ -864,12 +875,59 @@
     summary.appendChild(statsRow);
   };
 
+  const renderHistory = () => {
+    if (!refs.historyBody) return;
+    const history = loadHistory();
+    refs.historyBody.innerHTML = '';
+    if (!history.length) {
+      refs.historyBody.appendChild(createElement('p', { textContent: 'No mining history yet. Simulate or register a device to start.', style: 'color:var(--text-muted);text-align:center;padding:20px;' }));
+      return;
+    }
+    const table = createElement('table', { style: 'width:100%;border-collapse:collapse;' }, []);
+    const thead = createElement('thead', {}, [
+      createElement('tr', {}, [
+        createElement('th', { textContent: 'Timestamp', style: 'text-align:left;padding:10px;border-bottom:1px solid rgba(148,163,184,0.2);' }),
+        createElement('th', { textContent: 'Device', style: 'text-align:left;padding:10px;border-bottom:1px solid rgba(148,163,184,0.2);' }),
+        createElement('th', { textContent: 'Source', style: 'text-align:left;padding:10px;border-bottom:1px solid rgba(148,163,184,0.2);' }),
+        createElement('th', { textContent: 'kWh', style: 'text-align:right;padding:10px;border-bottom:1px solid rgba(148,163,184,0.2);' }),
+        createElement('th', { textContent: 'ENRG', style: 'text-align:right;padding:10px;border-bottom:1px solid rgba(148,163,184,0.2);' }),
+        createElement('th', { textContent: 'Fee', style: 'text-align:right;padding:10px;border-bottom:1px solid rgba(148,163,184,0.2);' }),
+      ]),
+    ]);
+    table.appendChild(thead);
+    const tbody = createElement('tbody', {}, []);
+    history.forEach((entry) => {
+      const row = createElement('tr', {}, [
+        createElement('td', { textContent: new Date(entry.timestamp).toLocaleString(), style: 'padding:10px;border-bottom:1px solid rgba(148,163,184,0.1);' }),
+        createElement('td', { textContent: entry.deviceName, style: 'padding:10px;border-bottom:1px solid rgba(148,163,184,0.1);' }),
+        createElement('td', { textContent: entry.source, style: 'padding:10px;border-bottom:1px solid rgba(148,163,184,0.1);' }),
+        createElement('td', { textContent: entry.kWh, style: 'text-align:right;padding:10px;border-bottom:1px solid rgba(148,163,184,0.1);' }),
+        createElement('td', { textContent: entry.enrg.toFixed(3), style: 'text-align:right;padding:10px;border-bottom:1px solid rgba(148,163,184,0.1);' }),
+        createElement('td', { textContent: entry.fee.toFixed(3), style: 'text-align:right;padding:10px;border-bottom:1px solid rgba(148,163,184,0.1);' }),
+      ]);
+      tbody.appendChild(row);
+    });
+    table.appendChild(tbody);
+    refs.historyBody.appendChild(table);
+  };
+
   const handleGetStarted = () => {
     if (state.onboarded) {
       scrollToElement('#dashboard');
       return;
     }
     openModal();
+  };
+
+  const openModal = () => {
+    if (!refs.modal) return;
+    refs.modal.setAttribute('aria-hidden', 'false');
+    renderModal();
+  };
+
+  const closeModal = () => {
+    if (!refs.modal) return;
+    refs.modal.setAttribute('aria-hidden', 'true');
   };
 
   const initModalEvents = () => {
