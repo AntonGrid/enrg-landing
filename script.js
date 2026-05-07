@@ -221,6 +221,8 @@
       .enrg-step-card p { margin: 0; color: #9CA3AF; line-height: 1.55; }
       .enrg-step-card .step-icon { font-size: 2rem; }
       .enrg-hero-note { color: #9CA3AF; max-width: 780px; margin-top: 12px; }
+      .fade-up { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+      .fade-up.visible { opacity: 1; transform: translateY(0); }
       @media (max-width: 767px) {
         .enrg-chat-panel { right: 12px; bottom: 78px; width: calc(100% - 24px); }
         .enrg-step-card { min-height: auto; }
@@ -1113,6 +1115,30 @@
     });
   };
 
+  const initFadeUpAnimations = () => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+    $$('.fade-up').forEach((el) => observer.observe(el));
+  };
+
+  const initMetricScrollAnimation = () => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          updateMetricCounters();
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.5 });
+    const metricsSection = $('.metrics-grid') || $('.hero-right');
+    if (metricsSection) observer.observe(metricsSection);
+  };
+
   const init = () => {
     injectStyles();
     initBackground();
@@ -1131,6 +1157,8 @@
     renderDashboardSummary();
     updateMetricCounters();
     applyResponsiveLayout();
+    initFadeUpAnimations();
+    initMetricScrollAnimation();
     window.addEventListener('resize', applyResponsiveLayout);
   };
 
