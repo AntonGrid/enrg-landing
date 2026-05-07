@@ -27,6 +27,13 @@
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
 
+  const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+  const formatNumber = (value, decimals = 0) =>
+    value.toLocaleString(undefined, {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    });
+
   const createElement = (tag, props = {}, children = []) => {
     const el = document.createElement(tag);
     Object.entries(props).forEach(([key, value]) => {
@@ -753,6 +760,15 @@
     }
   };
 
+  const initWalletConnect = () => {
+    const btn = $('#connect-wallet');
+    if (!btn) return;
+    btn.addEventListener('click', async (event) => {
+      event.preventDefault();
+      await handleWalletConnect();
+    });
+  };
+
   const animateBar = (bar, percent) => {
     if (!bar) return;
     bar.style.transition = 'width 0.8s ease';
@@ -762,6 +778,10 @@
         bar.style.width = `${Math.min(100, Math.max(0, percent))}%`;
       });
     });
+  };
+
+  const logToConsoleFeed = (msg) => {
+    addLiveFeedLine(msg);
   };
 
   const addLiveFeedLine = (text) => {
@@ -827,14 +847,14 @@
 
   const startLiveFeed = () => {
     const tick = () => {
-      const producer = liveFeedSources[Math.floor(Math.random() * liveFeedSources.length)];
-      const action = liveFeedActions[Math.floor(Math.random() * liveFeedActions.length)];
-      const unit = liveFeedUnits[Math.floor(Math.random() * liveFeedUnits.length)];
+      const producer = liveFeedSources[randInt(0, liveFeedSources.length - 1)];
+      const action = liveFeedActions[randInt(0, liveFeedActions.length - 1)];
+      const unit = liveFeedUnits[randInt(0, liveFeedUnits.length - 1)];
       const value = unit === 'kWh'
-        ? Math.floor(Math.random() * 900 + 10)
+        ? randInt(10, 900)
         : (Math.random() * 9 + 0.5).toFixed(1);
       addLiveFeedLine(`${producer} ${action} ${value} ${unit}`);
-      setTimeout(tick, Math.floor(Math.random() * 3000) + 2000);
+      setTimeout(tick, randInt(2000, 5000));
     };
     tick();
   };
@@ -1098,20 +1118,23 @@
     }
   };
 
+  const animateMetric = (el, target, duration = 2000) => {
+    if (!el) return;
+    const startTime = performance.now();
+    const step = (now) => {
+      const progress = Math.min((now - startTime) / duration, 1);
+      el.textContent = formatNumber(Math.floor(progress * target));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  };
+
   const updateMetricCounters = () => {
     const metricEls = $$('.counter');
     if (!metricEls.length) return;
-    const targets = metricEls.map((el) => parseInt(el.dataset.target, 10) || 0);
-    metricEls.forEach((el, index) => {
-      const target = targets[index];
-      const duration = 1500;
-      const start = performance.now();
-      const step = (now) => {
-        const progress = Math.min((now - start) / duration, 1);
-        el.textContent = Math.floor(progress * target).toLocaleString('en-US');
-        if (progress < 1) requestAnimationFrame(step);
-      };
-      requestAnimationFrame(step);
+    metricEls.forEach((el) => {
+      const target = parseInt(el.dataset.target, 10) || 0;
+      animateMetric(el, target);
     });
   };
 
@@ -1152,6 +1175,7 @@
     initPartnerContactButtons();
     initFooterLinks();
     initChatAssistant();
+    initWalletConnect();
     startLiveFeed();
     renderHistory();
     renderDashboardSummary();
@@ -1162,5 +1186,9 @@
     window.addEventListener('resize', applyResponsiveLayout);
   };
 
-  init();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();
