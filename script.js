@@ -2,6 +2,23 @@
 (function () {
   'use strict';
 
+  // ========== MODAL HELPERS (moved to top to fix closeModal reference) ==========
+  const openModal = () => {
+    if (!refs.modal) return;
+    refs.modal.classList.add('active');
+    refs.modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    renderModal();
+  };
+
+  const closeModal = () => {
+    if (!refs.modal) return;
+    refs.modal.classList.remove('active');
+    refs.modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  };
+  // =============================================================================
+
   const STORAGE_STATE = 'enrgState';
   const STORAGE_USER = 'enrgUser';
   const STORAGE_DEVICES = 'enrgDevices';
@@ -917,21 +934,6 @@
       return;
     }
     openModal();
-  };
-
-  const openModal = () => {
-    if (!refs.modal) return;
-    refs.modal.classList.add('active');
-    refs.modal.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-    renderModal();
-  };
-
-  const closeModal = () => {
-    if (!refs.modal) return;
-    refs.modal.classList.remove('active');
-    refs.modal.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
   };
 
   const initModalEvents = () => {
