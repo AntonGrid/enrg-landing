@@ -114,32 +114,32 @@
   const state = loadState();
 
   const refs = {
-    modal: $('#mint-modal'),
-    modalBody: $('#mint-modal .modal-body'),
-    modalHeaderTitle: $('#mint-modal-title'),
-    modalClose: $('#mint-modal-close'),
-    heroStart: $('#btn-start-minting-hero'),
-    heroStartAlt: $('#btn-start-minting'),
-    headerStart: $('#btn-get-started'),
-    downloadWhitepaper: $('#btn-download-whitepaper'),
-    technicalDocs: $('#btn-technical-docs'),
-    dashboard: $('#dashboard'),
-    historyBody: $('#history-body'),
-    consoleFeed: $('#console-feed'),
-    simEnergyBar: $('#sim-energy-bar'),
-    simEnrgBar: $('#sim-enrg-bar'),
-    simEnergyValue: $('#sim-energy-value'),
-    simEnrgValue: $('#sim-enrg-value'),
-    simulateButtons: [$('#btn-simulate-mint'), $('#btn-simulate-mint-modal')].filter(Boolean),
-    becomePartner: $('#btn-become-partner'),
-    contactButton: $('#btn-contact'),
-    heroTitle: $('.hero-title'),
-    heroTagline: $('.hero-tagline'),
-    heroSlogan: $('.hero-slogan'),
-    heroActions: $('.hero-actions'),
-    heroGrid: $('.hero-grid'),
-    metricsGrid: $('.metrics-grid'),
-    footerLinks: $('.footer-links'),
+    modal: document.getElementById('mint-modal'),
+    modalBody: document.querySelector('.modal-body'),
+    modalHeaderTitle: document.getElementById('mint-modal-title'),
+    modalClose: document.getElementById('mint-modal-close'),
+    heroStart: document.getElementById('btn-start-minting-hero'),
+    heroStartAlt: document.getElementById('btn-start-minting'),
+    headerStart: document.getElementById('btn-get-started'),
+    downloadWhitepaper: document.getElementById('btn-download-whitepaper'),
+    technicalDocs: document.getElementById('btn-technical-docs'),
+    dashboard: document.getElementById('dashboard'),
+    historyBody: document.getElementById('history-body'),
+    consoleFeed: document.getElementById('console-feed'),
+    simEnergyBar: document.getElementById('sim-energy-bar'),
+    simEnrgBar: document.getElementById('sim-enrg-bar'),
+    simEnergyValue: document.getElementById('sim-energy-value'),
+    simEnrgValue: document.getElementById('sim-enrg-value'),
+    simulateButtons: [document.getElementById('btn-simulate-mint'), document.getElementById('btn-simulate-mint-modal')].filter(Boolean),
+    becomePartner: document.getElementById('btn-become-partner'),
+    contactButton: document.getElementById('btn-contact'),
+    heroTitle: document.querySelector('.hero-title'),
+    heroTagline: document.querySelector('.hero-tagline'),
+    heroSlogan: document.querySelector('.hero-slogan'),
+    heroActions: document.querySelector('.hero-actions'),
+    heroGrid: document.querySelector('.hero-grid'),
+    metricsGrid: document.querySelector('.metrics-grid'),
+    footerLinks: document.querySelector('.footer-links'),
   };
 
   const energySources = [
@@ -986,6 +986,32 @@
     }
   };
 
+  const initSimulateButtons = () => {
+    refs.simulateButtons.forEach(button => {
+      if (button) {
+        button.addEventListener('click', (event) => {
+          event.preventDefault();
+          simulateMining();
+        });
+      }
+    });
+  };
+
+  const initPartnerContactButtons = () => {
+    if (refs.becomePartner) {
+      refs.becomePartner.addEventListener('click', (event) => {
+        event.preventDefault();
+        openEmailContact();
+      });
+    }
+    if (refs.contactButton) {
+      refs.contactButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        openEmailContact();
+      });
+    }
+  };
+
   const initFooterLinks = () => {
     if (!refs.footerLinks) return;
     const external = [
@@ -1094,6 +1120,8 @@
     initStartButtons();
     initNavigationLinks();
     initDocumentationButtons();
+    initSimulateButtons();
+    initPartnerContactButtons();
     initFooterLinks();
     initChatAssistant();
     startLiveFeed();
