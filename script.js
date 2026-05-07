@@ -113,6 +113,10 @@
     heroStart: $('#btn-start-minting-hero'),
     heroStartAlt: $('#btn-start-minting'),
     headerStart: $('#btn-get-started'),
+    downloadWhitepaper: $('#btn-download-whitepaper'),
+    technicalDocs: $('#btn-technical-docs'),
+    becomePartner: $('#btn-become-partner'),
+    contactButton: $('#btn-contact'),
     dashboard: $('#dashboard'),
     historyBody: $('#history-body'),
     consoleFeed: $('#console-feed'),
@@ -150,6 +154,44 @@
   const scrollToDashboard = () => {
     if (refs.dashboard) {
       refs.dashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const openDocumentationPage = (href) => {
+    if (!href) return;
+    window.location.assign(href);
+  };
+
+  const openEmailContact = () => {
+    window.location.assign('mailto:anton@enrg.network');
+  };
+
+  const initDocumentationButtons = () => {
+    const linkMap = [
+      { button: refs.downloadWhitepaper, href: 'whitepaper.html' },
+      { button: refs.technicalDocs, href: 'technical-overview.html' },
+    ];
+
+    linkMap.forEach(({ button, href }) => {
+      if (!button) return;
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        openDocumentationPage(href);
+      });
+    });
+
+    if (refs.becomePartner) {
+      refs.becomePartner.addEventListener('click', (event) => {
+        event.preventDefault();
+        openEmailContact();
+      });
+    }
+
+    if (refs.contactButton) {
+      refs.contactButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        openEmailContact();
+      });
     }
   };
 
@@ -696,6 +738,7 @@
     initSimulationButtons();
     initNavigationLinks();
     initStartButtons();
+    initDocumentationButtons();
     initWalletButton();
     renderHistory();
     renderDashboardSummary();
