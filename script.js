@@ -921,13 +921,17 @@
 
   const openModal = () => {
     if (!refs.modal) return;
+    refs.modal.classList.add('active');
     refs.modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
     renderModal();
   };
 
   const closeModal = () => {
     if (!refs.modal) return;
+    refs.modal.classList.remove('active');
     refs.modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
   };
 
   const initModalEvents = () => {
