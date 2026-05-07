@@ -93,14 +93,14 @@
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
-            entry.target.classList.add('in-view');
+            entry.target.classList.add('visible');
             observer.unobserve(entry.target);
           }
         });
       }, { threshold: 0.2 });
       els.forEach(el => observer.observe(el));
     } else {
-      els.forEach(el => el.classList.add('in-view'));
+      els.forEach(el => el.classList.add('visible'));
     }
   })();
 
@@ -303,23 +303,37 @@
     }
   })();
 
-  // ---------- Wallet Connect (Phantom) ----------
-  (function initWallet() {
-    const connectBtn = $('#nav-connect');
-    if (!connectBtn) return;
+  // ---------- Mobile Adaptation ----------
+  (function initMobileAdaptation() {
+    if (window.innerWidth >= 768) return; // Only apply to mobile
 
-    connectBtn.addEventListener('click', async (e) => {
-      e.preventDefault();
-      if (window.solana && window.solana.isPhantom) {
-        try {
-          const resp = await window.solana.connect();
-          alert('Wallet connected: ' + resp.publicKey.toString());
-        } catch (err) {
-          alert('Connection failed: ' + err.message);
-        }
-      } else {
-        window.open('https://phantom.app/', '_blank');
-      }
+    // Ensure all fade-up elements are visible on mobile
+    $$('.fade-up').forEach(el => el.classList.add('visible'));
+
+    // Adjust metrics grid to single column on very small screens
+    const metricsGrid = $('.metrics-grid');
+    if (metricsGrid) {
+      metricsGrid.style.gridTemplateColumns = 'minmax(0, 1fr)';
+    }
+
+    // Ensure sections are displayed properly
+    $$('.section').forEach(section => {
+      section.style.display = 'block';
+      section.style.height = 'auto';
+      section.style.overflow = 'visible';
     });
+
+    // Adjust hero grid if needed
+    const heroGrid = $('.hero-grid');
+    if (heroGrid) {
+      heroGrid.style.gridTemplateColumns = 'minmax(0, 1fr)';
+    }
+
+    // Make sure main content is scrollable
+    const pageShell = $('.page-shell');
+    if (pageShell) {
+      pageShell.style.overflow = 'visible';
+      pageShell.style.height = 'auto';
+    }
   })();
 })();
