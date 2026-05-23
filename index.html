@@ -5,6 +5,10 @@
   <title>ENRG – DePIN Energy Command Center</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
+  <!-- Solana Web3.js CDN -->
+  <script src="https://unpkg.com/@solana/web3.js@1.95.0/lib/index.iife.js"></script>
+  <!-- Phantom Wallet Adapter for Solana -->
+  <script src="https://unpkg.com/@solana/wallet-adapter-wallets@0.19.15/umd/index.js"></script>
 </head>
 <body>
   <canvas id="particle-canvas"></canvas>
@@ -28,8 +32,9 @@
       <a href="#history" class="nav-link">HISTORY</a>
       <a href="#settings" class="nav-link">SETTINGS</a>
     </nav>
-    <div class="nav-cta">
-      <button class="btn-outline" id="btn-get-started">Get Started</button>
+    <div class="nav-cta" style="display: flex; gap: 10px; align-items: center;">
+      <button class="btn-outline" id="btn-connect-wallet">Connect Wallet</button>
+      <button class="btn-primary" id="btn-get-started">Get Started</button>
     </div>
   </header>
 
@@ -105,10 +110,6 @@
     <section id="dashboard" class="section glass-section fade-up">
       <h2>Dashboard Overview</h2>
       <p class="section-slogan"><strong>From Electrons to Yield – ENRG Owns the Full Stack.</strong></p>
-      <!-- Existing "How It Works" and overview text should remain here -->
-      <p>
-        <!-- TODO: existing landing page "How It Works" content preserved by user -->
-      </p>
     </section>
 
     <!-- MINTING -->
@@ -155,9 +156,6 @@
     <!-- HISTORY -->
     <section id="history" class="section glass-section fade-up">
       <h2>History</h2>
-      <p>
-        <!-- Existing history / previous activity content preserved by user -->
-      </p>
       <div class="history-table-wrap">
         <table class="history-table" aria-describedby="history">
           <thead>
@@ -178,9 +176,6 @@
     <!-- TOKENOMICS -->
     <section id="tokenomics" class="section glass-section fade-up">
       <h2>Tokenomics</h2>
-      <p>
-        <!-- Existing tokenomics text preserved by user -->
-      </p>
       <div class="tokenomics-grid">
         <div class="tokenomics-cards">
           <div class="token-card">
@@ -198,7 +193,6 @@
         </div>
         <div class="tokenomics-chart chart-container">
           <div class="chart-title">Protocol Fee Distribution</div>
-          <!-- SVG chart preserved visually -->
           <svg viewBox="0 0 260 160" aria-hidden="true">
             <defs>
               <linearGradient id="pieCyan" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -210,46 +204,17 @@
                 <stop offset="100%" stop-color="#FDBA74"/>
               </linearGradient>
             </defs>
-
             <circle cx="80" cy="80" r="50" fill="none" stroke="#1F2937" stroke-width="16"/>
-
-            <circle cx="80" cy="80" r="50"
-                    fill="none"
-                    stroke="url(#pieOrange)"
-                    stroke-width="16"
-                    stroke-dasharray="62.8 314"
-                    stroke-dashoffset="0"/>
-
-            <circle cx="80" cy="80" r="50"
-                    fill="none"
-                    stroke="url(#pieCyan)"
-                    stroke-width="16"
-                    stroke-dasharray="125.6 314"
-                    stroke-dashoffset="-62.8"/>
-
-            <circle cx="80" cy="80" r="50"
-                    fill="none"
-                    stroke="#22C55E"
-                    stroke-width="16"
-                    stroke-dasharray="94.2 314"
-                    stroke-dashoffset="-188.4"/>
-
-            <circle cx="80" cy="80" r="50"
-                    fill="none"
-                    stroke="#FACC15"
-                    stroke-width="16"
-                    stroke-dasharray="31.4 314"
-                    stroke-dashoffset="-282.6"/>
-
+            <circle cx="80" cy="80" r="50" fill="none" stroke="url(#pieOrange)" stroke-width="16" stroke-dasharray="62.8 314" stroke-dashoffset="0"/>
+            <circle cx="80" cy="80" r="50" fill="none" stroke="url(#pieCyan)" stroke-width="16" stroke-dasharray="125.6 314" stroke-dashoffset="-62.8"/>
+            <circle cx="80" cy="80" r="50" fill="none" stroke="#22C55E" stroke-width="16" stroke-dasharray="94.2 314" stroke-dashoffset="-188.4"/>
+            <circle cx="80" cy="80" r="50" fill="none" stroke="#FACC15" stroke-width="16" stroke-dasharray="31.4 314" stroke-dashoffset="-282.6"/>
             <rect x="150" y="40" width="8" height="8" fill="url(#pieOrange)"/>
             <text x="164" y="47" fill="#E5E7EB" font-size="9">20% Buyback &amp; Burn</text>
-
             <rect x="150" y="60" width="8" height="8" fill="url(#pieCyan)"/>
             <text x="164" y="67" fill="#E5E7EB" font-size="9">40% Staking Rewards</text>
-
             <rect x="150" y="80" width="8" height="8" fill="#22C55E"/>
             <text x="164" y="87" fill="#E5E7EB" font-size="9">30% DAO Reserve</text>
-
             <rect x="150" y="100" width="8" height="8" fill="#FACC15"/>
             <text x="164" y="107" fill="#E5E7EB" font-size="9">10% Emergency Fund</text>
           </svg>
@@ -343,17 +308,73 @@
   </div>
 
   <footer>
-  <div class="footer-links">
-    <a href="whitepaper.html">White Paper</a>
-    <a href="technical-overview.html">Technical Documentation</a>
-    <a href="mailto:anton@enrg.network">Contact</a>
-    <a href="https://x.com/ENRG_Protocol" target="_blank" rel="noreferrer">Twitter</a>
-    <a href="https://discord.gg/enrg" target="_blank" rel="noreferrer">Discord</a>
-  </div>
-  <div class="footer-copy">
-    © 2026 Anton Grid. All rights reserved.
-  </div>
-</footer>
+    <div class="footer-links">
+      <a href="whitepaper.html">White Paper</a>
+      <a href="technical-overview.html">Technical Documentation</a>
+      <a href="mailto:anton@enrg.network">Contact</a>
+      <a href="https://x.com/ENRG_Protocol" target="_blank" rel="noreferrer">Twitter</a>
+      <a href="https://discord.gg/enrg" target="_blank" rel="noreferrer">Discord</a>
+    </div>
+    <div class="footer-copy">
+      © 2026 Anton Grid. All rights reserved.
+    </div>
+  </footer>
+
+  <!-- Ваш основной скрипт -->
   <script src="script.js"></script>
+  <!-- Дополнительный скрипт для подключения кошелька (добавим логику) -->
+  <script>
+    // Ждём загрузки страницы и уже существующего script.js, затем расширяем
+    document.addEventListener('DOMContentLoaded', function() {
+      // Находим кнопку кошелька
+      const connectBtn = document.getElementById('btn-connect-wallet');
+      if (!connectBtn) return;
+      
+      let walletConnected = false;
+      let walletAddress = '';
+      
+      connectBtn.addEventListener('click', async function() {
+        // Проверяем наличие Phantom
+        if (!window.solana || !window.solana.isPhantom) {
+          alert('Phantom wallet not detected. Please install Phantom from https://phantom.app/');
+          window.open('https://phantom.app/', '_blank');
+          return;
+        }
+        
+        try {
+          // Запрашиваем подключение
+          const resp = await window.solana.connect();
+          walletConnected = true;
+          walletAddress = resp.publicKey.toString();
+          // Меняем текст кнопки на адрес
+          connectBtn.textContent = walletAddress.slice(0, 4) + '...' + walletAddress.slice(-4);
+          connectBtn.disabled = true;
+          // Добавляем событие в ленту
+          const consoleFeed = document.getElementById('console-feed');
+          if (consoleFeed) {
+            const line = document.createElement('div');
+            line.className = 'console-line';
+            line.textContent = `[${new Date().toLocaleTimeString()}] Wallet connected: ${walletAddress}`;
+            consoleFeed.appendChild(line);
+            consoleFeed.scrollTop = consoleFeed.scrollHeight;
+          }
+          // Можно сохранить в localStorage
+          localStorage.setItem('enrgWallet', walletAddress);
+        } catch (err) {
+          console.error('Wallet connection error:', err);
+          alert('Failed to connect wallet: ' + err.message);
+        }
+      });
+      
+      // Проверяем сохранённый кошелёк
+      const saved = localStorage.getItem('enrgWallet');
+      if (saved && connectBtn) {
+        connectBtn.textContent = saved.slice(0, 4) + '...' + saved.slice(-4);
+        connectBtn.disabled = true;
+        walletConnected = true;
+        walletAddress = saved;
+      }
+    });
+  </script>
 </body>
 </html>
