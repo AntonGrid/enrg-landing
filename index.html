@@ -5,7 +5,7 @@
   <title>ENRG – DePIN Energy Command Center</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
-  <!-- Solana Web3.js CDN для работы с кошельком -->
+  <!-- Solana Web3.js CDN -->
   <script src="https://unpkg.com/@solana/web3.js@1.95.0/lib/index.iife.js"></script>
 </head>
 <body>
@@ -104,16 +104,19 @@
       </div>
     </section>
 
-    <!-- DASHBOARD -->
+    <!-- DASHBOARD (with wallet info added) -->
     <section id="dashboard" class="section glass-section fade-up">
       <h2>Dashboard Overview</h2>
       <p class="section-slogan"><strong>From Electrons to Yield – ENRG Owns the Full Stack.</strong></p>
-      <!-- НОВЫЙ БЛОК ДЛЯ КОШЕЛЬКА -->
+      <!-- Добавленный блок кошелька -->
       <div id="wallet-info" style="margin-top: 20px; padding: 16px; background: rgba(0,0,0,0.5); border-radius: 16px; border: 1px solid rgba(0,229,255,0.2);">
         <div>🔗 <strong>Wallet:</strong> <span id="wallet-address-display">Not connected</span></div>
         <div>💰 <strong>Balance:</strong> <span id="wallet-balance">— SOL</span></div>
       </div>
-      <!-- Остальное содержимое Dashboard добавится скриптом -->
+      <!-- Existing "How It Works" and overview text should remain here -->
+      <p>
+        <!-- TODO: existing landing page "How It Works" content preserved by user -->
+      </p>
     </section>
 
     <!-- MINTING -->
