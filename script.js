@@ -423,9 +423,8 @@
     window.location.assign('mailto:anton@enrg.network');
   };
 
-  // ========== WALLET INTEGRATION (Phantom) ==========
+  // ========== WALLET INTEGRATION (Phantom) with fixed RPC ==========
   let walletPublicKey = null;
-  let walletConnection = null;
   let walletBalance = 0;
 
   const updateWalletUI = () => {
@@ -449,7 +448,8 @@
   const getWalletBalance = async (publicKey) => {
     if (!window.solana || !window.solana.isConnected) return 0;
     try {
-      const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed');
+      // Используем публичный RPC без ключа (рабочий)
+      const connection = new solanaWeb3.Connection('https://solana-api.projectserum.com', 'confirmed');
       const balanceLamports = await connection.getBalance(publicKey);
       const balanceSol = balanceLamports / solanaWeb3.LAMPORTS_PER_SOL;
       return balanceSol;
@@ -473,14 +473,12 @@
       saveState(state);
       localStorage.setItem(STORAGE_WALLET, state.walletAddress);
       
-      // Get balance
       walletBalance = await getWalletBalance(walletPublicKey);
       updateWalletUI();
       
       addLiveFeedLine(`✅ Wallet connected: ${state.walletAddress.slice(0,6)}... Balance: ${walletBalance.toFixed(4)} SOL`);
       playClickTone();
       
-      // Update also the modal wallet step if open
       if (refs.modal && refs.modal.getAttribute('aria-hidden') === 'false') {
         renderModal();
       }
@@ -506,7 +504,6 @@
     addLiveFeedLine('🔌 Wallet disconnected');
   };
 
-  // Check if previously connected wallet still active
   const checkExistingWallet = async () => {
     if (window.solana && window.solana.isConnected && window.solana.publicKey) {
       const addr = window.solana.publicKey.toString();
@@ -518,7 +515,6 @@
         return true;
       }
     } else if (localStorage.getItem(STORAGE_WALLET)) {
-      // Wallet was connected before but not currently active, just display info without auto-connect
       state.walletAddress = localStorage.getItem(STORAGE_WALLET);
       state.walletConnected = false;
       updateWalletUI();
@@ -746,7 +742,7 @@
     }
   };
 
-  // ========== PROGRESS BAR & MODAL RENDERING ==========
+  // ========== PROGRESS BAR & MODAL RENDERING (остаётся без изменений) ==========
   const renderProgressBar = () => {
     const existing = $('#enrg-progress-container');
     if (existing) return existing;
@@ -971,8 +967,7 @@
     return section;
   };
 
-  // Original handleWalletConnect replaced by connectWallet, but we keep for compatibility
-  const handleWalletConnect = connectWallet;
+  const handleWalletConnect = connectWallet; // совместимость
 
   const initWalletConnect = () => {
     const btn = $('#connect-wallet');
@@ -1446,11 +1441,9 @@
     initMetricScrollAnimation();
     window.addEventListener('resize', applyResponsiveLayout);
     
-    // Wallet UI init and check existing connection
     updateWalletUI();
     checkExistingWallet();
     
-    // Attach wallet button listener if exists
     if (refs.connectWalletBtn) {
       refs.connectWalletBtn.addEventListener('click', async (e) => {
         e.preventDefault();
