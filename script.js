@@ -1,8 +1,9 @@
 // ENRG advanced landing page: animations, onboarding, docs, simulation, chat, and responsive UX
+// + интеграция Phantom Wallet (подключение, отображение баланса, обновление UI)
 (function () {
   'use strict';
 
-  // ========== MODAL HELPERS (moved to top to fix closeModal reference) ==========
+  // ========== MODAL HELPERS ==========
   const openModal = () => {
     if (!refs.modal) return;
     refs.modal.classList.add('active');
@@ -17,13 +18,15 @@
     refs.modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
   };
-  // =============================================================================
 
+  // ========== STORAGE KEYS ==========
   const STORAGE_STATE = 'enrgState';
   const STORAGE_USER = 'enrgUser';
   const STORAGE_DEVICES = 'enrgDevices';
   const STORAGE_HISTORY = 'enrgMiningHistory';
+  const STORAGE_WALLET = 'enrgWalletConnected';
 
+  // ========== DOM HELPERS ==========
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
 
@@ -70,6 +73,7 @@
     if (el) el.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // ========== STATE MANAGEMENT ==========
   const defaultState = {
     step: 1,
     onboarded: false,
@@ -137,7 +141,7 @@
 
   const state = loadState();
 
-  // Объект refs заполняется после проверки существования элементов
+  // ========== REFS (DOM elements) ==========
   const refs = {
     modal: null,
     modalBody: null,
@@ -166,9 +170,13 @@
     heroRight: null,
     metricsGrid: null,
     footerLinks: null,
+    // Wallet specific
+    connectWalletBtn: null,
+    walletAddressDisplay: null,
+    walletBalanceSpan: null,
   };
 
-  // Привязываем ссылки на DOM, если элементов нет – остаётся null
+  // Привязываем ссылки на DOM
   (function resolveRefs() {
     refs.modal = document.getElementById('mint-modal');
     refs.modalBody = document.querySelector('.modal-body');
@@ -200,8 +208,13 @@
     refs.heroRight = document.querySelector('.hero-right');
     refs.metricsGrid = document.querySelector('.metrics-grid');
     refs.footerLinks = document.querySelector('.footer-links');
+    // Wallet elements
+    refs.connectWalletBtn = document.getElementById('btn-connect-wallet');
+    refs.walletAddressDisplay = document.getElementById('wallet-address-display');
+    refs.walletBalanceSpan = document.getElementById('wallet-balance');
   })();
 
+  // ========== CONSTANTS ==========
   const energySources = [
     { name: 'Solar', multiplier: 1.0, color: '#FFD166' },
     { name: 'Wind', multiplier: 0.8, color: '#9BF6FF' },
@@ -232,11 +245,12 @@
         oscillator.start();
         oscillator.stop(context.currentTime + 0.12);
       } catch (error) {
-        // ignore audio errors on unsupported browsers
+        // ignore audio errors
       }
     };
   })();
 
+  // ========== INJECT STYLES (chat, progress bar, energy nodes) ==========
   const injectStyles = () => {
     const style = createElement('style', { type: 'text/css' });
     style.textContent = `
@@ -288,6 +302,7 @@
     document.head.appendChild(style);
   };
 
+  // ========== BACKGROUND ANIMATIONS ==========
   const initBackground = () => {
     const particleCanvas = $('#particle-canvas');
     if (!particleCanvas) return;
@@ -295,17 +310,10 @@
     const gridCanvas = createElement('canvas', { id: 'enrg-grid-canvas', className: 'enrg-grid-canvas' });
     document.body.insertBefore(gridCanvas, particleCanvas.nextSibling);
 
-    const canvases = [
-      { canvas: particleCanvas, particles: [], zIndex: -3 },
-      { canvas: gridCanvas, particles: [], zIndex: -2 },
-    ];
-
-    canvases.forEach(({ canvas }) => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      canvas.style.width = '100%';
-      canvas.style.height = '100%';
-    });
+    particleCanvas.width = window.innerWidth;
+    particleCanvas.height = window.innerHeight;
+    gridCanvas.width = window.innerWidth;
+    gridCanvas.height = window.innerHeight;
 
     const particleCtx = particleCanvas.getContext('2d');
     const gridCtx = gridCanvas.getContext('2d');
@@ -403,7 +411,6 @@
       drawParticles();
       requestAnimationFrame(animate);
     };
-
     animate();
   };
 
@@ -416,7 +423,110 @@
     window.location.assign('mailto:anton@enrg.network');
   };
 
-  // ========== ВИРТУАЛЬНЫЙ СЧЁТЧИК – динамическое создание, если нет в HTML ==========
+  // ========== WALLET INTEGRATION (Phantom) ==========
+  let walletPublicKey = null;
+  let walletConnection = null;
+  let walletBalance = 0;
+
+  const updateWalletUI = () => {
+    if (refs.walletAddressDisplay) {
+      if (state.walletConnected && state.walletAddress) {
+        const short = state.walletAddress.slice(0, 4) + '...' + state.walletAddress.slice(-4);
+        refs.walletAddressDisplay.textContent = short;
+      } else {
+        refs.walletAddressDisplay.textContent = 'Not connected';
+      }
+    }
+    if (refs.walletBalanceSpan) {
+      if (state.walletConnected && walletBalance !== null) {
+        refs.walletBalanceSpan.textContent = `${walletBalance.toFixed(4)} SOL`;
+      } else {
+        refs.walletBalanceSpan.textContent = '— SOL';
+      }
+    }
+  };
+
+  const getWalletBalance = async (publicKey) => {
+    if (!window.solana || !window.solana.isConnected) return 0;
+    try {
+      const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed');
+      const balanceLamports = await connection.getBalance(publicKey);
+      const balanceSol = balanceLamports / solanaWeb3.LAMPORTS_PER_SOL;
+      return balanceSol;
+    } catch (err) {
+      console.warn('Balance fetch error:', err);
+      return 0;
+    }
+  };
+
+  const connectWallet = async () => {
+    if (!window.solana || !window.solana.isPhantom) {
+      alert('Phantom wallet not found. Please install Phantom from https://phantom.app/');
+      window.open('https://phantom.app/', '_blank');
+      return false;
+    }
+    try {
+      const resp = await window.solana.connect();
+      walletPublicKey = resp.publicKey;
+      state.walletConnected = true;
+      state.walletAddress = walletPublicKey.toString();
+      saveState(state);
+      localStorage.setItem(STORAGE_WALLET, state.walletAddress);
+      
+      // Get balance
+      walletBalance = await getWalletBalance(walletPublicKey);
+      updateWalletUI();
+      
+      addLiveFeedLine(`✅ Wallet connected: ${state.walletAddress.slice(0,6)}... Balance: ${walletBalance.toFixed(4)} SOL`);
+      playClickTone();
+      
+      // Update also the modal wallet step if open
+      if (refs.modal && refs.modal.getAttribute('aria-hidden') === 'false') {
+        renderModal();
+      }
+      return true;
+    } catch (error) {
+      console.error('Wallet connection error:', error);
+      addLiveFeedLine(`❌ Wallet connection failed: ${error.message}`);
+      return false;
+    }
+  };
+
+  const disconnectWallet = () => {
+    if (window.solana && window.solana.isConnected) {
+      window.solana.disconnect();
+    }
+    state.walletConnected = false;
+    state.walletAddress = '';
+    walletPublicKey = null;
+    walletBalance = 0;
+    saveState(state);
+    localStorage.removeItem(STORAGE_WALLET);
+    updateWalletUI();
+    addLiveFeedLine('🔌 Wallet disconnected');
+  };
+
+  // Check if previously connected wallet still active
+  const checkExistingWallet = async () => {
+    if (window.solana && window.solana.isConnected && window.solana.publicKey) {
+      const addr = window.solana.publicKey.toString();
+      if (addr === state.walletAddress) {
+        walletPublicKey = window.solana.publicKey;
+        state.walletConnected = true;
+        walletBalance = await getWalletBalance(walletPublicKey);
+        updateWalletUI();
+        return true;
+      }
+    } else if (localStorage.getItem(STORAGE_WALLET)) {
+      // Wallet was connected before but not currently active, just display info without auto-connect
+      state.walletAddress = localStorage.getItem(STORAGE_WALLET);
+      state.walletConnected = false;
+      updateWalletUI();
+    }
+    return false;
+  };
+
+  // ========== ENSURE SIMULATION ELEMENTS ==========
   const ensureSimulationElements = () => {
     let mintingSection = document.getElementById('minting');
     if (!mintingSection) {
@@ -434,12 +544,10 @@
       }
     }
 
-    // Заголовок симулятора
     if (!mintingSection.querySelector('h2')) {
       mintingSection.appendChild(createElement('h2', { textContent: 'Virtual Energy Meter' }));
     }
 
-    // Контейнер для полос и значений
     let simContainer = mintingSection.querySelector('.sim-container');
     if (!simContainer) {
       simContainer = createElement('div', {
@@ -449,7 +557,6 @@
       mintingSection.appendChild(simContainer);
     }
 
-    // Energy bar
     if (!document.getElementById('sim-energy-bar')) {
       const wrapper = createElement('div', {});
       wrapper.appendChild(createElement('p', { textContent: 'Energy (kWh)' }));
@@ -461,7 +568,6 @@
       simContainer.appendChild(wrapper);
     }
 
-    // ENRG bar
     if (!document.getElementById('sim-enrg-bar')) {
       const wrapper = createElement('div', {});
       wrapper.appendChild(createElement('p', { textContent: 'ENRG' }));
@@ -473,7 +579,6 @@
       simContainer.appendChild(wrapper);
     }
 
-    // Кнопка симуляции
     if (!document.getElementById('btn-simulate-mint')) {
       const btn = createElement('button', {
         id: 'btn-simulate-mint',
@@ -485,7 +590,6 @@
       mintingSection.appendChild(btn);
     }
 
-    // Консоль
     if (!document.getElementById('console-feed')) {
       const feed = createElement('div', {
         id: 'console-feed',
@@ -494,7 +598,6 @@
       mintingSection.appendChild(feed);
     }
 
-    // Обновляем ссылки после создания
     refs.simEnergyBar = document.getElementById('sim-energy-bar');
     refs.simEnrgBar = document.getElementById('sim-enrg-bar');
     refs.simEnergyValue = document.getElementById('sim-energy-value');
@@ -505,9 +608,7 @@
       if (btn) refs.simulateButtons.push(btn);
     }
   };
-  // ==================================================================================
 
-  // Остальной код остаётся практически без изменений, только добавляем проверки на null
   const updateHeroContent = () => {
     if (refs.heroTitle) refs.heroTitle.textContent = 'Tokenize Your Energy Production. Earn Real Value.';
     if (refs.heroTagline) refs.heroTagline.textContent = 'Connect any power source to the ENRG protocol, verify production via IoT, and mint deflationary tokens on Solana.';
@@ -606,27 +707,13 @@
     });
 
     const items = [
-      {
-        icon: '⚡',
-        title: 'Connect Your Source',
-        description: 'Register your solar panel, wind turbine, or hydro generator to tokenize production.',
-      },
-      {
-        icon: '🔗',
-        title: 'Verify & Mint',
-        description: 'Our IoT oracle verifies energy output and mints ENRG tokens on-chain.',
-      },
-      {
-        icon: '💰',
-        title: 'Earn & Trade',
-        description: 'Receive tokens in a wallet, stake them, and join the energy economy.',
-      },
+      { icon: '⚡', title: 'Connect Your Source', description: 'Register your solar panel, wind turbine, or hydro generator to tokenize production.' },
+      { icon: '🔗', title: 'Verify & Mint', description: 'Our IoT oracle verifies energy output and mints ENRG tokens on-chain.' },
+      { icon: '💰', title: 'Earn & Trade', description: 'Receive tokens in a wallet, stake them, and join the energy economy.' },
     ];
 
     items.forEach((item) => {
-      const card = createElement('div', {
-        className: 'enrg-step-card',
-      });
+      const card = createElement('div', { className: 'enrg-step-card' });
       card.appendChild(createElement('div', { className: 'step-icon', textContent: item.icon }));
       card.appendChild(createElement('h3', { textContent: item.title }));
       card.appendChild(createElement('p', { textContent: item.description }));
@@ -659,19 +746,7 @@
     }
   };
 
-  // Остальные функции остаются без изменений, только с проверками на null.
-  // (renderProgressBar, updateProgress, renderModal, renderInviteChoiceStep, renderInviteCodeStep,
-  // renderRegistrationStep, renderWalletStep, renderDeviceStep, renderDashboardStep,
-  // handleWalletConnect, initWalletConnect, animateBar, addLiveFeedLine, addHistoryEntry,
-  // simulateMining, startLiveFeed, resetOnboarding, renderDashboardSummary, renderHistory,
-  // handleGetStarted, initModalEvents, initStartButtons, initNavigationLinks,
-  // initDocumentationButtons, initSimulateButtons, initPartnerContactButtons, initFooterLinks,
-  // initChatAssistant, generateChatReply, applyResponsiveLayout, animateMetric, updateMetricCounters,
-  // initFadeUpAnimations, initMetricScrollAnimation)
-
-  // Поскольку код огромный, я полностью копирую оставшиеся функции из твоего файла, но добавляю проверки на существование элементов.
-  // Ниже полная копия оставшихся функций с защитой:
-
+  // ========== PROGRESS BAR & MODAL RENDERING ==========
   const renderProgressBar = () => {
     const existing = $('#enrg-progress-container');
     if (existing) return existing;
@@ -679,7 +754,7 @@
     const container = createElement('div', { id: 'enrg-progress-container', style: 'margin-bottom:24px;' }, []);
     const stepLabels = ['Access', 'Wallet', 'Device', 'Dashboard'];
     const stepRow = createElement('div', { className: 'enrg-progress-steps' }, []);
-    stepLabels.forEach((label) => {
+    stepLabels.forEach(() => {
       stepRow.appendChild(createElement('div', { className: 'enrg-progress-step' }));
     });
     const bar = createElement('div', { className: 'enrg-progress-bar-container' }, [
@@ -821,7 +896,7 @@
     const actionRow = createElement('div', { style: 'display:flex;flex-wrap:wrap;gap:12px;margin-top:18px;' }, []);
     const connectButton = createElement('button', { type: 'button', className: 'btn-primary', textContent: 'Connect Phantom' });
     connectButton.addEventListener('click', async () => {
-      await handleWalletConnect();
+      await connectWallet();
     });
     const skipButton = createElement('button', { type: 'button', className: 'btn-secondary', textContent: 'Skip for now' });
     skipButton.addEventListener('click', () => {
@@ -896,35 +971,17 @@
     return section;
   };
 
-  const handleWalletConnect = async () => {
-    if (window.solana && window.solana.isPhantom) {
-      try {
-        const resp = await window.solana.connect();
-        state.walletConnected = true;
-        state.walletAddress = resp.publicKey.toString();
-        saveState(state);
-        const user = loadUser() || {};
-        user.walletAddress = state.walletAddress;
-        saveUser(user);
-        addLiveFeedLine(`Wallet connected: ${state.walletAddress}`);
-        state.step = 3;
-        saveState(state);
-        renderModal();
-      } catch (error) {
-        alert('Wallet connection failed: ' + (error?.message || error));
-      }
-    } else {
-      window.open('https://phantom.app/', '_blank', 'noopener');
-    }
-  };
+  // Original handleWalletConnect replaced by connectWallet, but we keep for compatibility
+  const handleWalletConnect = connectWallet;
 
   const initWalletConnect = () => {
     const btn = $('#connect-wallet');
-    if (!btn) return;
-    btn.addEventListener('click', async (event) => {
-      event.preventDefault();
-      await handleWalletConnect();
-    });
+    if (btn) {
+      btn.addEventListener('click', async (event) => {
+        event.preventDefault();
+        await connectWallet();
+      });
+    }
   };
 
   const animateBar = (bar, percent) => {
@@ -1367,7 +1424,6 @@
   const init = () => {
     injectStyles();
     initBackground();
-    // Сначала создаём элементы симуляции, если их нет
     ensureSimulationElements();
     updateHeroContent();
     createHowItWorksSection();
@@ -1389,6 +1445,22 @@
     initFadeUpAnimations();
     initMetricScrollAnimation();
     window.addEventListener('resize', applyResponsiveLayout);
+    
+    // Wallet UI init and check existing connection
+    updateWalletUI();
+    checkExistingWallet();
+    
+    // Attach wallet button listener if exists
+    if (refs.connectWalletBtn) {
+      refs.connectWalletBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        if (state.walletConnected) {
+          disconnectWallet();
+        } else {
+          await connectWallet();
+        }
+      });
+    }
   };
 
   if (document.readyState === 'loading') {
