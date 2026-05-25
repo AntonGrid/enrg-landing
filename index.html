@@ -108,15 +108,12 @@
     <section id="dashboard" class="section glass-section fade-up">
       <h2>Dashboard Overview</h2>
       <p class="section-slogan"><strong>From Electrons to Yield – ENRG Owns the Full Stack.</strong></p>
-      <!-- Добавленный блок кошелька -->
+      <!-- Wallet info block -->
       <div id="wallet-info" style="margin-top: 20px; padding: 16px; background: rgba(0,0,0,0.5); border-radius: 16px; border: 1px solid rgba(0,229,255,0.2);">
         <div>🔗 <strong>Wallet:</strong> <span id="wallet-address-display">Not connected</span></div>
         <div>💰 <strong>Balance:</strong> <span id="wallet-balance">— SOL</span></div>
       </div>
-      <!-- Existing "How It Works" and overview text should remain here -->
-      <p>
-        <!-- TODO: existing landing page "How It Works" content preserved by user -->
-      </p>
+      <!-- Existing dashboard content will be appended here by script.js -->
     </section>
 
     <!-- MINTING -->
@@ -206,7 +203,6 @@
         </div>
         <div class="tokenomics-chart chart-container">
           <div class="chart-title">Protocol Fee Distribution</div>
-          <!-- SVG chart preserved visually -->
           <svg viewBox="0 0 260 160" aria-hidden="true">
             <defs>
               <linearGradient id="pieCyan" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -220,44 +216,17 @@
             </defs>
 
             <circle cx="80" cy="80" r="50" fill="none" stroke="#1F2937" stroke-width="16"/>
-
-            <circle cx="80" cy="80" r="50"
-                    fill="none"
-                    stroke="url(#pieOrange)"
-                    stroke-width="16"
-                    stroke-dasharray="62.8 314"
-                    stroke-dashoffset="0"/>
-
-            <circle cx="80" cy="80" r="50"
-                    fill="none"
-                    stroke="url(#pieCyan)"
-                    stroke-width="16"
-                    stroke-dasharray="125.6 314"
-                    stroke-dashoffset="-62.8"/>
-
-            <circle cx="80" cy="80" r="50"
-                    fill="none"
-                    stroke="#22C55E"
-                    stroke-width="16"
-                    stroke-dasharray="94.2 314"
-                    stroke-dashoffset="-188.4"/>
-
-            <circle cx="80" cy="80" r="50"
-                    fill="none"
-                    stroke="#FACC15"
-                    stroke-width="16"
-                    stroke-dasharray="31.4 314"
-                    stroke-dashoffset="-282.6"/>
+            <circle cx="80" cy="80" r="50" fill="none" stroke="url(#pieOrange)" stroke-width="16" stroke-dasharray="62.8 314" stroke-dashoffset="0"/>
+            <circle cx="80" cy="80" r="50" fill="none" stroke="url(#pieCyan)" stroke-width="16" stroke-dasharray="125.6 314" stroke-dashoffset="-62.8"/>
+            <circle cx="80" cy="80" r="50" fill="none" stroke="#22C55E" stroke-width="16" stroke-dasharray="94.2 314" stroke-dashoffset="-188.4"/>
+            <circle cx="80" cy="80" r="50" fill="none" stroke="#FACC15" stroke-width="16" stroke-dasharray="31.4 314" stroke-dashoffset="-282.6"/>
 
             <rect x="150" y="40" width="8" height="8" fill="url(#pieOrange)"/>
             <text x="164" y="47" fill="#E5E7EB" font-size="9">20% Buyback &amp; Burn</text>
-
             <rect x="150" y="60" width="8" height="8" fill="url(#pieCyan)"/>
             <text x="164" y="67" fill="#E5E7EB" font-size="9">40% Staking Rewards</text>
-
             <rect x="150" y="80" width="8" height="8" fill="#22C55E"/>
             <text x="164" y="87" fill="#E5E7EB" font-size="9">30% DAO Reserve</text>
-
             <rect x="150" y="100" width="8" height="8" fill="#FACC15"/>
             <text x="164" y="107" fill="#E5E7EB" font-size="9">10% Emergency Fund</text>
           </svg>
