@@ -176,7 +176,6 @@
     walletBalanceSpan: null,
   };
 
-  // Привязываем ссылки на DOM
   (function resolveRefs() {
     refs.modal = document.getElementById('mint-modal');
     refs.modalBody = document.querySelector('.modal-body');
@@ -250,7 +249,6 @@
     };
   })();
 
-  // ========== INJECT STYLES (chat, progress bar, energy nodes) ==========
   const injectStyles = () => {
     const style = createElement('style', { type: 'text/css' });
     style.textContent = `
@@ -302,7 +300,6 @@
     document.head.appendChild(style);
   };
 
-  // ========== BACKGROUND ANIMATIONS ==========
   const initBackground = () => {
     const particleCanvas = $('#particle-canvas');
     if (!particleCanvas) return;
@@ -423,7 +420,7 @@
     window.location.assign('mailto:anton@enrg.network');
   };
 
-  // ========== WALLET INTEGRATION (Phantom) with fixed RPC ==========
+  // ========== WALLET INTEGRATION with fixed RPC ==========
   let walletPublicKey = null;
   let walletBalance = 0;
 
@@ -448,8 +445,8 @@
   const getWalletBalance = async (publicKey) => {
     if (!window.solana || !window.solana.isConnected) return 0;
     try {
-      // Используем публичный RPC без ключа (рабочий)
-      const connection = new solanaWeb3.Connection('https://solana-api.projectserum.com', 'confirmed');
+      // Исправленный RPC эндпоинт (Ankr - стабильный)
+      const connection = new solanaWeb3.Connection('https://rpc.ankr.com/solana', 'confirmed');
       const balanceLamports = await connection.getBalance(publicKey);
       const balanceSol = balanceLamports / solanaWeb3.LAMPORTS_PER_SOL;
       return balanceSol;
@@ -742,7 +739,7 @@
     }
   };
 
-  // ========== PROGRESS BAR & MODAL RENDERING (остаётся без изменений) ==========
+  // ========== PROGRESS BAR & MODAL RENDERING ==========
   const renderProgressBar = () => {
     const existing = $('#enrg-progress-container');
     if (existing) return existing;
@@ -967,7 +964,7 @@
     return section;
   };
 
-  const handleWalletConnect = connectWallet; // совместимость
+  const handleWalletConnect = connectWallet;
 
   const initWalletConnect = () => {
     const btn = $('#connect-wallet');
