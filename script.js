@@ -1,4 +1,27 @@
-// ENRG advanced landing page: animations, onboarding, docs, simulation, chat, and responsive UX
+  
+// === ЗАГРУЗКА РЕАЛЬНЫХ МЕТРИК С ОРАКУЛА ===
+async function loadStats() {
+  try {
+    const response = await fetch('https://enrg-oracle.onrender.com/api/v1/stats');
+    if (!response.ok) throw new Error('Failed to fetch stats');
+    const data = await response.json();
+    // Обновляем счётчики на странице
+    const energyElement = document.querySelector('.metric-value .counter[data-target]');
+    const producersElement = document.getElementById('producers-counter');
+    if (energyElement) {
+      energyElement.textContent = data.total_energy_mwh || 0;
+    }
+    if (producersElement) {
+      producersElement.textContent = data.active_producers || 0;
+    }
+    // Также можно обновить другие метрики, если они есть
+    console.log('Stats updated:', data);
+  } catch (err) {
+    console.warn('Stats fetch error:', err);
+  }
+}
+// Вызываем при загрузке страницы
+document.addEventListener('DOMContentLoaded', loadStats);
 // + интеграция Phantom Wallet (подключение, отображение баланса, обновление UI)
 (function () {
   'use strict';
@@ -1459,3 +1482,33 @@
     init();
   }
 })();
+
+// === ЗАГРУЗКА РЕАЛЬНЫХ МЕТРИК С ОРАКУЛА ===
+async function loadStats() {
+  try {
+    // Для локальной разработки используй localhost, для продакшена — адрес на Render
+    const baseUrl = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://enrg-oracle.onrender.com';
+    const response = await fetch(`${baseUrl}/api/v1/stats`);
+    if (!response.ok) throw new Error('Failed to fetch stats');
+    const data = await response.json();
+
+    // Обновляем счётчики на странице
+    const energyElement = document.getElementById('total-energy');
+    const producersElement = document.getElementById('producers-counter');
+
+    if (energyElement) {
+      energyElement.textContent = data.total_energy_mwh || 0;
+    }
+    if (producersElement) {
+      producersElement.textContent = data.active_producers || 0;
+    }
+
+    // Можно также обновить другие метрики, если они есть
+    console.log('Stats updated:', data);
+  } catch (err) {
+    console.warn('Stats fetch error:', err);
+  }
+}
+
+// Вызываем при загрузке страницы (добавляем к существующему DOMContentLoaded)
+document.addEventListener('DOMContentLoaded', loadStats);
