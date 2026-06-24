@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Дашборд устройства — ENRG</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Дашборд ENRG: статус устройства, накопленная энергия, баланс SRC, кошелёк и участие в пулах.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="dashboard">
+<nav class="navbar">
+    <a href="index.html" data-page-link="home">🏠 Главная</a>
+    <a href="register.html" data-page-link="register">📝 Регистрация</a>
+    <a href="dashboard.html" data-page-link="dashboard" data-auth="only">📊 Дашборд</a>
+    <a href="#" id="logoutLink" data-auth="only">🚪 Выйти</a>
+</nav>
+
+<main>
+    <section class="glass-section">
+        <h2>Ваше устройство 🔌</h2>
+        <div class="metric-card">
+            <p><strong>Device ID:</strong> <span id="devId">—</span></p>
+        </div>
+        <div class="metric-card">
+            <p><strong>Накопленная энергия:</strong> <span id="energy">—</span> Wh</p>
+        </div>
+        <div class="metric-card">
+            <p><strong>Баланс SRC:</strong> <span id="balance">—</span></p>
+        </div>
+        <button class="btn-primary" id="refreshBtn">🔄 Обновить</button>
+    </section>
+
+    <section class="glass-section">
+        <h3>Участие в пуле 🌊</h3>
+        <p>Скоро здесь появится интерфейс для участия в пулах и распределения наград.</p>
+        <ul>
+            <li>📈 Просмотр доходности пулов</li>
+            <li>⚙️ Настройка стратегии участия</li>
+            <li>🔁 Автоматическое реинвестирование (планируется)</li>
+        </ul>
+    </section>
+
+    <section class="glass-section">
+        <h3>Кошелёк 💳</h3>
+        <p id="walletStatus">Кошелёк не подключен.</p>
+        <button class="btn-primary" id="connectWalletBtn">Подключить Phantom</button>
+        <p style="font-size:0.9rem; opacity:0.8;">
+            Для подключения нужен Phantom Wallet в браузере.  
+            После интеграции кошелёк будет связан с устройством и пулами.
+        </p>
+    </section>
+</main>
+
+<script>
+const ENRG_DEVICE_API_BASE = "https://enrg-oracle.onrender.com/api/v1/device";
+
+function getStoredDevice() {
+    return {
+        id: localStorage.getItem("enrgDeviceId"),
+        pubKey: localStorage.getItem("enrgPublicKey"),
+    };
+}
+
+function clearStoredDevice() {
+    localStorage.removeItem("enrgDeviceId");
+    localStorage.removeItem("enrgPublicKey");
+}
+
+function initNav() {
+    const { id, pubKey } = getStoredDevice();
+    const isAuth = Boolean(id && pubKey);
+
+    const links = document.querySelectorAll("nav a[data-page-link]");
+    const currentPage = document.body.dataset.page;
+    links.forEach(link => {
+        if (link.dataset.pageLink === currentPage) {
+            link.classList.add("active");
+        } else {
+            link.classList.remove("active");
+        }
+    });
+
+    document.querySelectorAll("[data-auth='only']").forEach(el => {
+        el.style.display = isAuth ? "inline-block" : "none";
+    });
+
+    const registerLink = document.querySelector("a[data-page-link='register']");
+    if (registerLink) {
+        registerLink.style.display = isAuth ? "none" : "inline-block";
+    }
+
+    const logoutLink = document.getElementById("logoutLink");
+    if (logoutLink) {
+        logoutLink.addEventListener("click", (e) => {
+            e.preventDefault();
+            clearStoredDevice();
+            window.location.href = "index.html";
+        });
+    }
+}
+
+async function loadDeviceData(deviceId) {
+    const energyEl = document.getElementById("energy");
+    const balanceEl = document.getElementById("balance");
+
+    try {
+        const statusRes = await fetch(`${ENRG_DEVICE_API_BASE}/${encodeURIComponent(deviceId)}/status`);
+        if (statusRes.ok) {
+            const status = await statusRes.json();
+            energyEl.textContent = status.energy_wh ?? "0";
+        } else {
+            energyEl.textContent = "—";
+        }
+    } catch (e) {
+        console.warn("Ошибка загрузки статуса устройства", e);
+        energyEl.textContent = "—";
+    }
+
+    try {
+        const balanceRes = await fetch(`${ENRG_DEVICE_API_BASE}/${encodeURIComponent(deviceId)}/balance`);
+        if (balanceRes.ok) {
+            const balance = await balanceRes.json();
+            balanceEl.textContent = balance.balance ?? "0";
+        } else {
+            balanceEl.textContent = "—";
+        }
+    } catch (e) {
+        console.warn("Ошибка загрузки баланса устройства", e);
+        balanceEl.textContent = "—";
+    }
+}
+
+async function connectPhantom() {
+    const walletStatus = document.getElementById("walletStatus");
+
+    if (!window.solana || !window.solana.isPhantom) {
+        alert("Phantom Wallet не найден. Установи расширение Phantom в браузер.");
+        walletStatus.textContent = "Phantom не установлен.";
+        return;
+    }
+
+    try {
+        const resp = await window.solana.connect();
+        const address = resp.publicKey.toString();
+        walletStatus.textContent = `Кошелёк подключен: ${address}`;
+        // Здесь в будущем:
+        // - отправка адреса кошелька на бэкенд
+        // - привязка устройства к кошельку
+        // - настройка участия в пулах
+    } catch (err) {
+        console.error(err);
+        walletStatus.textContent = "Подключение отменено или произошла ошибка.";
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const { id, pubKey } = getStoredDevice();
+    if (!id || !pubKey) {
+        window.location.href = "register.html";
+        return;
+    }
+
+    initNav();
+
+    const devIdEl = document.getElementById("devId");
+    if (devIdEl) devIdEl.textContent = id;
+
+    const refreshBtn = document.getElementById("refreshBtn");
+    if (refreshBtn) {
+        refreshBtn.addEventListener("click", () => loadDeviceData(id));
+    }
+
+    const connectWalletBtn = document.getElementById("connectWalletBtn");
+    if (connectWalletBtn) {
+        connectWalletBtn.addEventListener("click", connectPhantom);
+    }
+
+    loadDeviceData(id);
+});
+</script>
+</body>
+</html>
