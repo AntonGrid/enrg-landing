@@ -1,337 +1,124 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <title>ENRG – DePIN Energy Command Center</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="style.css" />
-  <!-- Solana Web3.js CDN -->
-  <script src="https://unpkg.com/@solana/web3.js@1.95.0/lib/index.iife.js"></script>
+    <meta charset="UTF-8">
+    <title>ENRG – Энергетический командный центр DePIN</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="ENRG – DePIN-платформа для управления энергетическими устройствами, накопленной энергией и участием в пулах.">
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
-  <canvas id="particle-canvas"></canvas>
-  <div class="bg-overlay"></div>
+<body data-page="home">
+<nav class="navbar">
+    <a href="index.html" data-page-link="home">🏠 Главная</a>
+    <a href="register.html" data-page-link="register">📝 Регистрация</a>
+    <a href="dashboard.html" data-page-link="dashboard" data-auth="only">📊 Дашборд</a>
+    <a href="#" id="logoutLink" data-auth="only">🚪 Выйти</a>
+</nav>
 
-  <!-- FIXED NAV -->
-  <header class="top-nav">
-    <div class="nav-left">
-      <div class="brand-mark">
-        <div class="brand-mark-inner">EN</div>
-      </div>
-      <div class="brand-text">
-        <div class="brand-title">ENRG Protocol</div>
-        <div class="brand-subtitle">DePIN Energy Dashboard</div>
-      </div>
-    </div>
-    <nav class="nav-links">
-      <a href="#home" class="nav-link">HOME</a>
-      <a href="#dashboard" class="nav-link">DASHBOARD</a>
-      <a href="#minting" class="nav-link">MINTING</a>
-      <a href="#history" class="nav-link">HISTORY</a>
-      <a href="#settings" class="nav-link">SETTINGS</a>
-    </nav>
-    <div class="nav-cta" style="display: flex; gap: 10px; align-items: center;">
-      <button class="btn-outline" id="btn-connect-wallet">Connect Wallet</button>
-      <button class="btn-primary" id="btn-get-started">Get Started</button>
-    </div>
-  </header>
+<header class="glass-section">
+    <h1>ENRG ⚡</h1>
+    <p>Энергетический командный центр DePIN: регистрируй устройства, накапливай энергию, подключай кошелёк и участвуй в пулах.</p>
+    <a class="btn-primary" id="startBtn">Начать →</a>
+</header>
 
-  <main class="page-shell">
-
-    <!-- HERO / HOME -->
-    <section id="home" class="section hero-section fade-up">
-      <div class="hero-grid">
-        <div class="hero-left">
-          <div class="hero-logo-wrap">
-            <svg class="hero-logo" viewBox="0 0 160 160" aria-hidden="true">
-              <defs>
-                <radialGradient id="logoGrad" cx="30%" cy="0%" r="100%">
-                  <stop offset="0%" stop-color="#00E5FF"/>
-                  <stop offset="50%" stop-color="#0B1120"/>
-                  <stop offset="100%" stop-color="#000000"/>
-                </radialGradient>
-                <linearGradient id="logoRing" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#00E5FF"/>
-                  <stop offset="100%" stop-color="#FF6B00"/>
-                </linearGradient>
-              </defs>
-              <circle cx="80" cy="80" r="68" fill="url(#logoGrad)" stroke="url(#logoRing)" stroke-width="5"/>
-              <path d="M45 100 L45 55 L65 55 C78 55 87 63 87 76 C87 89 78 96 65 96 L55 96 L55 100 Z
-                       M55 86 L65 86 C71 86 75 82 75 76 C75 70 71 66 65 66 L55 66 Z"
-                    fill="#00E5FF"/>
-              <path d="M95 100 L95 55 L107 55 L107 100 Z" fill="#FF6B00"/>
-            </svg>
-            <div class="hero-logo-glow" aria-hidden="true"></div>
-          </div>
-          <h1 class="hero-title">Live DePIN Energy Command Center</h1>
-          <p class="hero-tagline">
-            Monitor production, mint ENRG, and track protocol health in real time.
-          </p>
-          <p class="hero-slogan">
-            <strong>The Only DePIN Protocol with Buyback &amp; Burn – Backed by Real MWh, Not Loyalty Points.</strong>
-          </p>
-          <div class="hero-actions">
-            <button class="btn-primary" id="btn-start-minting-hero">Start Minting</button>
-            <button class="btn-secondary" id="btn-download-whitepaper">Download White Paper</button>
-            <button class="btn-secondary" id="btn-technical-docs">Technical Documentation</button>
-          </div>
-          <p class="hero-social-proof">
-            Join <span id="producers-counter" data-target="1200">0</span>+ energy producers already connected.
-          </p>
-        </div>
-        <div class="hero-right">
-          <div class="metrics-grid">
+<main>
+    <section class="glass-section">
+        <h2>Метрики сети 📡</h2>
+        <div class="metrics-grid">
             <div class="metric-card">
-              <div class="metric-label">Total Energy</div>
-              <div class="metric-value"><span class="counter" id="total-energy" data-target="2056">0</span> MWh</div>
+                <h3>Общая энергия</h3>
+                <p><span id="totalEnergy">—</span> MWh</p>
             </div>
             <div class="metric-card">
-              <div class="metric-label">Active Producers</div>
-              <div class="metric-value"><span class="counter" data-target="150">0</span></div>
+                <h3>Активные продюсеры</h3>
+                <p><span id="activeProducers">—</span></p>
             </div>
-            <div class="metric-card">
-              <div class="metric-label">ENRG Staked</div>
-              <div class="metric-value"><span class="counter" data-target="65000">0</span></div>
-            </div>
-          </div>
-          <div class="mini-console">
-            <div class="console-header">Live Feed</div>
-            <div class="console-body" id="console-feed" aria-live="polite">
-              <!-- Live log lines injected by JS -->
-            </div>
-          </div>
         </div>
-      </div>
     </section>
 
-    <!-- DASHBOARD (with wallet info added) -->
-    <section id="dashboard" class="section glass-section fade-up">
-      <h2>Dashboard Overview</h2>
-      <p class="section-slogan"><strong>From Electrons to Yield – ENRG Owns the Full Stack.</strong></p>
-      <!-- Wallet info block -->
-      <div id="wallet-info" style="margin-top: 20px; padding: 16px; background: rgba(0,0,0,0.5); border-radius: 16px; border: 1px solid rgba(0,229,255,0.2);">
-        <div>🔗 <strong>Wallet:</strong> <span id="wallet-address-display">Not connected</span></div>
-        <div>💰 <strong>Balance:</strong> <span id="wallet-balance">— SOL</span></div>
-      </div>
-      <!-- Existing dashboard content will be appended here by script.js -->
+    <section class="glass-section">
+        <h2>Как это работает 🔍</h2>
+        <ul>
+            <li>🔌 Регистрируешь устройство и получаешь уникальный <strong>device_id</strong>.</li>
+            <li>⚡ Устройство накапливает энергию, статус виден в дашборде.</li>
+            <li>💳 Подключаешь кошелёк (Phantom) и связываешь его с устройством.</li>
+            <li>🌊 Участвуешь в пулах и получаешь вознаграждения (скоро).</li>
+        </ul>
     </section>
+</main>
 
-    <!-- MINTING -->
-    <section id="minting" class="section glass-section fade-up">
-      <div class="section-header">
-        <h2>Minting Console</h2>
-        <p>Connect your production, simulate energy flows, and visualize ENRG minting.</p>
-      </div>
-      <div class="minting-layout">
-        <div class="minting-left">
-          <p class="section-slogan"><strong>Proof-of-Production in One Glance.</strong></p>
-          <p>
-            Use the simulator to see how your energy output converts into ENRG and protocol fees.
-          </p>
-          <button class="btn-primary" id="btn-start-minting">Start Minting</button>
-        </div>
-        <div class="minting-right">
-          <div class="mint-sim">
-            <div class="sim-header">Minting Simulator</div>
-            <div class="sim-bars">
-              <div class="sim-bar">
-                <span class="sim-label">Energy Input (kWh)</span>
-                <div class="sim-bar-track">
-                  <div class="sim-bar-fill" id="sim-energy-bar" style="width:0%"></div>
-                </div>
-              </div>
-              <div class="sim-bar">
-                <span class="sim-label">ENRG Minted</span>
-                <div class="sim-bar-track">
-                  <div class="sim-bar-fill sim-bar-fill-secondary" id="sim-enrg-bar" style="width:0%"></div>
-                </div>
-              </div>
-            </div>
-            <div class="sim-output">
-              <div>Energy: <span id="sim-energy-value">0</span> kWh</div>
-              <div>ENRG: <span id="sim-enrg-value">0</span></div>
-            </div>
-            <button class="btn-secondary" id="btn-simulate-mint">Simulate Mint</button>
-          </div>
-        </div>
-      </div>
-    </section>
+<script>
+const ENRG_API_BASE = "https://enrg-oracle.onrender.com";
 
-    <!-- HISTORY -->
-    <section id="history" class="section glass-section fade-up">
-      <h2>History</h2>
-      <p>
-        <!-- Existing history / previous activity content preserved by user -->
-      </p>
-      <div class="history-table-wrap">
-        <table class="history-table" aria-describedby="history">
-          <thead>
-            <tr>
-              <th>Timestamp</th>
-              <th>Producer</th>
-              <th>Energy (kWh)</th>
-              <th>ENRG Minted</th>
-            </tr>
-          </thead>
-          <tbody id="history-body">
-            <!-- Rows injected by JS -->
-          </tbody>
-        </table>
-      </div>
-    </section>
+function getStoredDevice() {
+    return {
+        id: localStorage.getItem("enrgDeviceId"),
+        pubKey: localStorage.getItem("enrgPublicKey"),
+    };
+}
 
-    <!-- TOKENOMICS -->
-    <section id="tokenomics" class="section glass-section fade-up">
-      <h2>Tokenomics</h2>
-      <p>
-        <!-- Existing tokenomics text preserved by user -->
-      </p>
-      <div class="tokenomics-grid">
-        <div class="tokenomics-cards">
-          <div class="token-card">
-            <h3>Max Supply</h3>
-            <p>1,000,000,000 ENRG (fixed cap)</p>
-          </div>
-          <div class="token-card">
-            <h3>Scale</h3>
-            <p>1 ENRG = 1 MWh (1,000 kWh)</p>
-          </div>
-          <div class="token-card">
-            <h3>Protocol Fee</h3>
-            <p>15% of every mint (20% Buyback, 40% Staking, 30% DAO, 10% Emergency).</p>
-          </div>
-        </div>
-        <div class="tokenomics-chart chart-container">
-          <div class="chart-title">Protocol Fee Distribution</div>
-          <svg viewBox="0 0 260 160" aria-hidden="true">
-            <defs>
-              <linearGradient id="pieCyan" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#00E5FF"/>
-                <stop offset="100%" stop-color="#38BDF8"/>
-              </linearGradient>
-              <linearGradient id="pieOrange" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#FF6B00"/>
-                <stop offset="100%" stop-color="#FDBA74"/>
-              </linearGradient>
-            </defs>
+function clearStoredDevice() {
+    localStorage.removeItem("enrgDeviceId");
+    localStorage.removeItem("enrgPublicKey");
+}
 
-            <circle cx="80" cy="80" r="50" fill="none" stroke="#1F2937" stroke-width="16"/>
-            <circle cx="80" cy="80" r="50" fill="none" stroke="url(#pieOrange)" stroke-width="16" stroke-dasharray="62.8 314" stroke-dashoffset="0"/>
-            <circle cx="80" cy="80" r="50" fill="none" stroke="url(#pieCyan)" stroke-width="16" stroke-dasharray="125.6 314" stroke-dashoffset="-62.8"/>
-            <circle cx="80" cy="80" r="50" fill="none" stroke="#22C55E" stroke-width="16" stroke-dasharray="94.2 314" stroke-dashoffset="-188.4"/>
-            <circle cx="80" cy="80" r="50" fill="none" stroke="#FACC15" stroke-width="16" stroke-dasharray="31.4 314" stroke-dashoffset="-282.6"/>
+function initNav() {
+    const { id, pubKey } = getStoredDevice();
+    const isAuth = Boolean(id && pubKey);
 
-            <rect x="150" y="40" width="8" height="8" fill="url(#pieOrange)"/>
-            <text x="164" y="47" fill="#E5E7EB" font-size="9">20% Buyback &amp; Burn</text>
-            <rect x="150" y="60" width="8" height="8" fill="url(#pieCyan)"/>
-            <text x="164" y="67" fill="#E5E7EB" font-size="9">40% Staking Rewards</text>
-            <rect x="150" y="80" width="8" height="8" fill="#22C55E"/>
-            <text x="164" y="87" fill="#E5E7EB" font-size="9">30% DAO Reserve</text>
-            <rect x="150" y="100" width="8" height="8" fill="#FACC15"/>
-            <text x="164" y="107" fill="#E5E7EB" font-size="9">10% Emergency Fund</text>
-          </svg>
-        </div>
-      </div>
-    </section>
+    const links = document.querySelectorAll("nav a[data-page-link]");
+    const currentPage = document.body.dataset.page;
+    links.forEach(link => {
+        if (link.dataset.pageLink === currentPage) {
+            link.classList.add("active");
+        } else {
+            link.classList.remove("active");
+        }
+    });
 
-    <!-- ENERGY VAULT -->
-    <section id="energy-vault" class="section glass-section fade-up">
-      <h2>Energy Vault</h2>
-      <p class="section-slogan"><strong>Every MWh Minted Feeds the Vault. Every Fee Feeds Scarcity.</strong></p>
-      <div class="vault-flow">
-        <div class="vault-node">Revenue</div>
-        <div class="vault-arrow">→</div>
-        <div class="vault-node">Buyback &amp; Burn</div>
-        <div class="vault-arrow">→</div>
-        <div class="vault-node">Scarcity</div>
-        <div class="vault-arrow">→</div>
-        <div class="vault-node">Value Growth</div>
-      </div>
-    </section>
+    document.querySelectorAll("[data-auth='only']").forEach(el => {
+        el.style.display = isAuth ? "inline-block" : "none";
+    });
 
-    <!-- ROADMAP -->
-    <section id="roadmap" class="section glass-section fade-up">
-      <h2>Roadmap</h2>
-      <div class="roadmap-wrapper">
-        <div class="roadmap-timeline">
-          <div class="roadmap-item passed">
-            <div class="roadmap-node"><span class="checkmark">✓</span></div>
-            <div class="roadmap-card">
-              <div class="roadmap-phase">Phase I</div>
-              <div class="roadmap-title">Genesis / Prototype</div>
-              <div class="roadmap-desc">Build IoT prototype, deploy core contracts on testnet, validate oracle pipeline.</div>
-            </div>
-          </div>
-          <div class="roadmap-item current">
-            <div class="roadmap-node"></div>
-            <div class="roadmap-card">
-              <div class="roadmap-phase">Phase II</div>
-              <div class="roadmap-title">Mainnet &amp; Vault Launch</div>
-              <div class="roadmap-desc">Launch ENRG on Solana mainnet, onboard producers, bootstrap staking.</div>
-            </div>
-          </div>
-          <div class="roadmap-item upcoming">
-            <div class="roadmap-node"></div>
-            <div class="roadmap-card">
-              <div class="roadmap-phase">Phase III</div>
-              <div class="roadmap-title">Global DePIN Expansion</div>
-              <div class="roadmap-desc">Integrate with DePIN networks, energy retailers, and financial protocols.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+    const registerLink = document.querySelector("a[data-page-link='register']");
+    if (registerLink) {
+        registerLink.style.display = isAuth ? "none" : "inline-block";
+    }
 
-    <!-- PARTNERS -->
-    <section id="partners" class="section glass-section fade-up">
-      <h2>Partners</h2>
-      <p>We are integrating with infrastructure providers, DePIN networks, and energy innovators.</p>
-      <div class="partners-grid">
-        <div class="partner-logo">LOGO 1</div>
-        <div class="partner-logo">LOGO 2</div>
-        <div class="partner-logo">LOGO 3</div>
-        <div class="partner-logo">LOGO 4</div>
-      </div>
-      <button class="btn-primary" id="btn-become-partner">Become a Partner</button>
-    </section>
+    const logoutLink = document.getElementById("logoutLink");
+    if (logoutLink) {
+        logoutLink.addEventListener("click", (e) => {
+            e.preventDefault();
+            clearStoredDevice();
+            window.location.href = "index.html";
+        });
+    }
+}
 
-    <!-- SETTINGS -->
-    <section id="settings" class="section glass-section fade-up">
-      <h2>Settings &amp; Contact</h2>
-      <p>For integrations, support, or investor inquiries, reach out directly.</p>
-      <button class="btn-secondary" id="btn-contact">Get Started</button>
-    </section>
+function initStartButton() {
+    const { id, pubKey } = getStoredDevice();
+    const startBtn = document.getElementById("startBtn");
+    if (!startBtn) return;
+    startBtn.href = (id && pubKey) ? "dashboard.html" : "register.html";
+}
 
-  </main>
+async function loadNetworkMetrics() {
+    try {
+        const res = await fetch(ENRG_API_BASE + "/api/v1/stats");
+        if (!res.ok) throw new Error("Bad response");
+        const data = await res.json();
+        document.getElementById("totalEnergy").textContent = data.total_energy_mwh ?? "0";
+        document.getElementById("activeProducers").textContent = data.active_producers ?? "0";
+    } catch (e) {
+        console.warn("Не удалось загрузить метрики сети", e);
+    }
+}
 
-  <!-- MINT MODAL -->
-  <div class="modal-backdrop" id="mint-modal" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mint-modal-title">
-      <div class="modal-header">
-        <h3 id="mint-modal-title">Start Minting</h3>
-        <button class="modal-close" id="mint-modal-close" aria-label="Close">×</button>
-      </div>
-      <div class="modal-body">
-        <p>Connect your energy source and run a live Proof-of-Production session.</p>
-        <p><strong>This is a simulator.</strong> Use it to understand how ENRG minting works before going live.</p>
-        <button class="btn-primary" id="btn-simulate-mint-modal">Run Simulation</button>
-      </div>
-    </div>
-  </div>
-
-  <footer>
-    <div class="footer-links">
-      <a href="whitepaper.html">White Paper</a>
-      <a href="technical-overview.html">Technical Documentation</a>
-      <a href="mailto:anton@enrg.network">Contact</a>
-      <a href="https://x.com/ENRG_Protocol" target="_blank" rel="noreferrer">Twitter</a>
-      <a href="https://discord.gg/enrg" target="_blank" rel="noreferrer">Discord</a>
-    </div>
-    <div class="footer-copy">
-      © 2026 Anton Grid. All rights reserved.
-    </div>
-  </footer>
-
-  <script src="script.js"></script>
+document.addEventListener("DOMContentLoaded", () => {
+    initNav();
+    initStartButton();
+    loadNetworkMetrics();
+});
+</script>
 </body>
 </html>
