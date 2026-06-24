@@ -686,7 +686,11 @@ document.addEventListener('DOMContentLoaded', loadStats);
       refs.heroActions.parentNode.insertBefore(badgeContainer, refs.heroActions);
     }
 
-// Metrics updated dynamically from API
+    const newMetrics = [
+      { label: 'Total Energy Tokenized', target: 4250, suffix: 'MWh' },
+      { label: 'Active Producers', target: 198, suffix: '' },
+      { label: 'ENRG Staked', target: 88000, suffix: '' },
+    ];
     const metricCards = $$('.metric-card');
     metricCards.forEach((card, index) => {
       const target = newMetrics[index];
@@ -1508,4 +1512,3 @@ async function loadStats() {
 
 // Вызываем при загрузке страницы (добавляем к существующему DOMContentLoaded)
 document.addEventListener('DOMContentLoaded', loadStats);
-document.addEventListener("DOMContentLoaded", loadStats);
