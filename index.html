@@ -7,6 +7,8 @@
     <meta name="description" content="ENRG – DePIN-native energy protocol. Connect any power source, verify production via IoT, and mint deflationary SRC tokens on Solana. 1 SRC = 1 MWh.">
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <!-- Solana Web3 for real blockchain transactions -->
+    <script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js" defer></script>
 </head>
 <body>
     <canvas id="particle-canvas"></canvas>
@@ -32,6 +34,7 @@
         </div>
         <div class="nav-cta">
             <button type="button" class="btn-outline" id="btn-connect-wallet">Connect Wallet</button>
+            <span id="wallet-address-display" style="font-size:0.8rem;color:var(--text-muted);display:none;"></span>
         </div>
     </nav>
 
@@ -70,25 +73,29 @@
                         <button type="button" class="btn-outline" id="btn-download-whitepaper">Read White Paper</button>
                         <button type="button" class="btn-outline" id="btn-technical-docs">Technical Documentation</button>
                     </div>
-                    <p class="hero-social-proof"><span id="hero-producers">0</span>+ active producers · <span id="hero-energy">0</span> MWh tokenized</p>
+                    <p class="hero-social-proof">
+                        <span id="hero-producers">0</span>+ active producers ·
+                        <span id="hero-energy">0</span> MWh tokenized ·
+                        <span id="api-status" style="color:var(--accent-orange);">Connecting to network...</span>
+                    </p>
                 </div>
                 <div class="hero-right" id="hero-right">
                     <div class="metrics-grid" id="metrics-grid">
                         <div class="metric-card">
                             <div class="metric-label">Total Energy Tokenized</div>
-                            <div class="metric-value"><span class="counter" data-target="4250">0</span> MWh</div>
+                            <div class="metric-value"><span class="counter" data-target="0">0</span> MWh</div>
                         </div>
                         <div class="metric-card">
                             <div class="metric-label">Active Producers</div>
-                            <div class="metric-value"><span class="counter" data-target="198">0</span></div>
+                            <div class="metric-value"><span class="counter" data-target="0">0</span></div>
                         </div>
                         <div class="metric-card">
-                            <div class="metric-label">SRC Staked</div>
-                            <div class="metric-value"><span class="counter" data-target="88000">0</span> SRC</div>
+                            <div class="metric-label">SRC Supply</div>
+                            <div class="metric-value"><span class="counter" data-target="0">0</span> SRC</div>
                         </div>
                     </div>
                     <div class="mini-console">
-                        <div class="console-header">⏺ Live Network Feed</div>
+                        <div class="console-header">⏺ Live Network Feed <span id="api-indicator" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#FACC15;margin-left:8px;"></span></div>
                         <div class="console-body" id="console-feed">
                             <div class="console-line">[--:--:--] ENRG oracle initializing...</div>
                         </div>

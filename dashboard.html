@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <title>Dashboard — ENRG Protocol | SRC Token</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="ENRG Dashboard: device status, accumulated energy, wallet balance, and pool participation.">
+    <meta name="description" content="ENRG Dashboard: device status, accumulated energy, wallet balance, and mining history.">
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js" defer></script>
 </head>
 <body>
     <canvas id="particle-canvas"></canvas>
@@ -26,22 +27,29 @@
             <a href="technical-overview.html" class="nav-link" target="_blank">Docs</a>
         </div>
         <div class="nav-cta">
-            <button type="button" class="btn-outline" id="logoutBtn">Logout</button>
+            <span id="wallet-address-display" style="color:var(--text-muted);font-size:0.8rem;margin-right:12px;display:none;"></span>
+            <button type="button" class="btn-outline" id="connectWalletBtn">Connect Phantom</button>
+            <button type="button" class="btn-outline" id="logoutBtn" style="margin-left:8px;">Logout</button>
         </div>
     </nav>
 
     <div class="page-shell">
         <section class="hero-section section fade-up">
             <h1>Device Dashboard</h1>
-            <p class="section-slogan">Monitor your energy production, wallet, and pool participation.</p>
+            <p class="section-slogan">Monitor your energy production, SRC balance, and mining activity in real time.</p>
         </section>
 
+        <!-- Device Info -->
         <section class="section glass-section fade-up">
-            <h2>Device Info</h2>
+            <h2>📟 Device Info</h2>
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:12px;">
                 <div class="metric-card">
                     <div class="metric-label">Device ID</div>
                     <div class="metric-value" id="devId">—</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Status</div>
+                    <div class="metric-value" id="devStatus">—</div>
                 </div>
                 <div class="metric-card">
                     <div class="metric-label">Accumulated Energy</div>
@@ -49,33 +57,62 @@
                 </div>
                 <div class="metric-card">
                     <div class="metric-label">SRC Balance</div>
-                    <div class="metric-value"><span id="balance">—</span></div>
+                    <div class="metric-value"><span id="balance">—</span> SRC</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">SOL Balance</div>
+                    <div class="metric-value"><span id="solBalance">—</span> SOL</div>
                 </div>
             </div>
-            <div style="margin-top:16px;">
+            <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;">
                 <button type="button" class="btn-primary" id="refreshBtn">↻ Refresh</button>
+                <button type="button" class="btn-primary" id="mintTestBtn">⚡ Mint Test (1 Wh)</button>
+            </div>
+            <p id="mintResult" style="margin-top:12px;font-size:0.9rem;"></p>
+        </section>
+
+        <!-- Mining History -->
+        <section class="section glass-section fade-up">
+            <h2>⛏️ Mining History</h2>
+            <div class="history-table-wrap" style="margin-top:12px;">
+                <table class="history-table" id="historyTable">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Energy (Wh)</th>
+                            <th>SRC Minted</th>
+                            <th>Status</th>
+                            <th>Signature</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyBody">
+                        <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px;">No mining history yet. Start mining on the <a href="index.html#minting" style="color:var(--accent);">main page</a>.</td></tr>
+                    </tbody>
+                </table>
             </div>
         </section>
 
+        <!-- Wallet -->
         <section class="section glass-section fade-up">
-            <h2>Pool Participation</h2>
-            <p class="section-slogan">Coming soon: pool interface for yield strategies and reward distribution.</p>
-            <ul style="margin-left:1.2rem;color:var(--text-muted);">
-                <li>📈 Pool yield overview</li>
-                <li>⚙️ Participation strategy configuration</li>
-                <li>🔁 Auto-compounding (planned)</li>
-            </ul>
-        </section>
-
-        <section class="section glass-section fade-up">
-            <h2>Wallet</h2>
+            <h2>👛 Wallet</h2>
             <p id="walletStatus" style="color:var(--text-muted);">Wallet not connected.</p>
-            <div style="margin-top:12px;">
-                <button type="button" class="btn-primary" id="connectWalletBtn">Connect Phantom</button>
+            <div style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap;">
+                <button type="button" class="btn-primary" id="connectWalletBtn2">Connect Phantom</button>
             </div>
-            <p style="font-size:0.85rem;color:var(--text-muted);margin-top:12px;">
-                Phantom Wallet browser extension required. After connection, the wallet will be linked to your device and pools.
-            </p>
+            <div style="margin-top:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+                <div class="metric-card">
+                    <div class="metric-label">Wallet Address</div>
+                    <div class="metric-value" id="walletAddress" style="font-size:0.75rem;word-break:break-all;">—</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">SRC Balance</div>
+                    <div class="metric-value"><span id="walletSrcBalance">—</span> SRC</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">SOL Balance</div>
+                    <div class="metric-value"><span id="walletSolBalance">—</span> SOL</div>
+                </div>
+            </div>
         </section>
     </div>
 
@@ -91,13 +128,30 @@
     </footer>
 
     <script>
-    const SRC_API_BASE = (() => {
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            return 'http://localhost:3000';
-        }
-        return 'https://enrg-oracle.onrender.com';
-    })();
+    // ============================================================
+    // Configuration
+    // ============================================================
+    const CONFIG = {
+        API_BASE: (() => {
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                return 'http://localhost:3000';
+            }
+            return 'https://enrg-oracle.onrender.com';
+        })(),
+        SOLANA_RPC: 'https://api.devnet.solana.com',
+        SRC_MINT: 'EsaKY8C3EZeRLL1wG5UECAnDWjbLfWJr7jL3pBLmpFfW',
+        SRC_DECIMALS: 6,
+    };
 
+    // ============================================================
+    // State
+    // ============================================================
+    let walletPublicKey = null;
+    let connection = null;
+
+    // ============================================================
+    // Storage helpers
+    // ============================================================
     function getStoredDevice() {
         return {
             id: localStorage.getItem('enrgDeviceId'),
@@ -110,84 +164,415 @@
         localStorage.removeItem('enrgPublicKey');
     }
 
-    async function loadDeviceData(deviceId) {
-        const energyEl = document.getElementById('energy');
-        const balanceEl = document.getElementById('balance');
-
-        try {
-            const statusRes = await fetch(`${SRC_API_BASE}/api/v1/device/${encodeURIComponent(deviceId)}/status`);
-            if (statusRes.ok) {
-                const status = await statusRes.json();
-                energyEl.textContent = status.energy_wh ?? '0';
-            } else {
-                energyEl.textContent = '—';
-            }
-        } catch (e) {
-            console.warn('Error loading device status:', e);
-            energyEl.textContent = '—';
+    // ============================================================
+    // API fetch
+    // ============================================================
+    async function apiFetch(path, options = {}) {
+        const url = CONFIG.API_BASE + path;
+        const res = await fetch(url, {
+            headers: { 'Content-Type': 'application/json', ...options.headers },
+            ...options,
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({ error: res.statusText }));
+            throw new Error(err.error || `HTTP ${res.status}`);
         }
+        return res.json();
+    }
 
+    // ============================================================
+    // Solana helpers
+    // ============================================================
+    async function getSrcBalance(publicKey) {
+        if (!connection) connection = new solanaWeb3.Connection(CONFIG.SOLANA_RPC);
         try {
-            const balanceRes = await fetch(`${SRC_API_BASE}/api/v1/device/${encodeURIComponent(deviceId)}/balance`);
-            if (balanceRes.ok) {
-                const balance = await balanceRes.json();
-                balanceEl.textContent = balance.balance ?? '0';
-            } else {
-                balanceEl.textContent = '—';
-            }
+            const mintPubkey = new solanaWeb3.PublicKey(CONFIG.SRC_MINT);
+            const tokenAccounts = await connection.getTokenAccountsByOwner(publicKey, { mint: mintPubkey });
+            if (tokenAccounts.value.length === 0) return 0;
+            const accountInfo = await connection.getTokenAccountBalance(tokenAccounts.value[0].pubkey);
+            return Number(accountInfo.value.uiAmount) || 0;
         } catch (e) {
-            console.warn('Error loading device balance:', e);
-            balanceEl.textContent = '—';
+            console.warn('Error fetching SRC balance:', e);
+            return null;
         }
     }
 
-    async function connectPhantom() {
-        const walletStatus = document.getElementById('walletStatus');
+    async function getSolBalance(publicKey) {
+        if (!connection) connection = new solanaWeb3.Connection(CONFIG.SOLANA_RPC);
+        try {
+            const bal = await connection.getBalance(publicKey);
+            return bal / solanaWeb3.LAMPORTS_PER_SOL;
+        } catch (e) {
+            console.warn('Error fetching SOL balance:', e);
+            return null;
+        }
+    }
+
+    // ============================================================
+    // Wallet
+    // ============================================================
+    function updateWalletUI() {
+        const display = document.getElementById('wallet-address-display');
+        const btn = document.getElementById('connectWalletBtn');
+        const btn2 = document.getElementById('connectWalletBtn2');
+        const status = document.getElementById('walletStatus');
+        const addr = document.getElementById('walletAddress');
+
+        if (walletPublicKey) {
+            const addrStr = walletPublicKey.toString();
+            const short = addrStr.slice(0, 4) + '..' + addrStr.slice(-4);
+            if (display) { display.textContent = short; display.style.display = 'inline'; }
+            if (btn) btn.textContent = 'Disconnect';
+            if (btn2) btn2.textContent = 'Disconnect';
+            if (status) status.textContent = `✅ Wallet connected: ${addrStr}`;
+            if (addr) addr.textContent = addrStr;
+        } else {
+            if (display) display.style.display = 'none';
+            if (btn) btn.textContent = 'Connect Phantom';
+            if (btn2) btn2.textContent = 'Connect Phantom';
+            if (status) status.textContent = 'Wallet not connected.';
+            if (addr) addr.textContent = '—';
+        }
+    }
+
+    async function connectWallet() {
         if (!window.solana || !window.solana.isPhantom) {
             alert('Phantom Wallet not found. Please install the Phantom browser extension.');
-            walletStatus.textContent = 'Phantom not installed.';
             return;
         }
         try {
+            if (walletPublicKey) {
+                await window.solana.disconnect();
+                walletPublicKey = null;
+                updateWalletUI();
+                document.getElementById('walletSrcBalance').textContent = '—';
+                document.getElementById('walletSolBalance').textContent = '—';
+                return;
+            }
             const resp = await window.solana.connect();
-            const address = resp.publicKey.toString();
-            walletStatus.textContent = `Wallet connected: ${address}`;
+            walletPublicKey = resp.publicKey;
+            updateWalletUI();
+            await refreshWalletBalances();
         } catch (err) {
-            console.error(err);
-            walletStatus.textContent = 'Connection cancelled or error occurred.';
+            console.error('Wallet connection error:', err);
         }
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    async function checkExistingWallet() {
+        if (window.solana && window.solana.isPhantom) {
+            try {
+                const resp = await window.solana.connect({ onlyIfTrusted: true });
+                walletPublicKey = resp.publicKey;
+                updateWalletUI();
+                await refreshWalletBalances();
+            } catch (e) {
+                // Not previously trusted
+            }
+        }
+    }
+
+    async function refreshWalletBalances() {
+        if (!walletPublicKey) return;
+        const srcEl = document.getElementById('walletSrcBalance');
+        const solEl = document.getElementById('walletSolBalance');
+        const balanceEl = document.getElementById('balance');
+        const solBalanceEl = document.getElementById('solBalance');
+
+        const srcBal = await getSrcBalance(walletPublicKey);
+        const solBal = await getSolBalance(walletPublicKey);
+
+        if (srcBal !== null) {
+            const srcStr = srcBal.toFixed(6);
+            srcEl.textContent = srcStr;
+            if (balanceEl) balanceEl.textContent = srcStr;
+        }
+        if (solBal !== null) {
+            const solStr = solBal.toFixed(4);
+            solEl.textContent = solStr;
+            if (solBalanceEl) solBalanceEl.textContent = solStr;
+        }
+    }
+
+    // ============================================================
+    // Device data
+    // ============================================================
+    async function loadDeviceData(deviceId) {
+        const energyEl = document.getElementById('energy');
+        const statusEl = document.getElementById('devStatus');
+
+        try {
+            const data = await apiFetch(`/api/v1/device/${encodeURIComponent(deviceId)}/status`);
+            energyEl.textContent = data.energy_wh ?? '0';
+
+            // Determine device status
+            const state = data.state || 'active';
+            const statusMap = {
+                'active': { text: '✅ Active', color: '#22c55e' },
+                'offline': { text: '⏸️ Offline', color: '#6b7280' },
+                'quarantine': { text: '⚠️ Quarantine', color: '#ff6b6b' },
+                'unregistered': { text: '📋 Unregistered', color: '#facc15' },
+                'provisioned': { text: '🔧 Provisioned', color: '#0ea5e9' },
+                'claimed': { text: '🔗 Claimed', color: '#a855f7' },
+                'revoked': { text: '🚫 Revoked', color: '#ef4444' },
+            };
+            const info = statusMap[state.toLowerCase()] || { text: state, color: '#6b7280' };
+            statusEl.innerHTML = `<span style="color:${info.color}">${info.text}</span>`;
+        } catch (e) {
+            console.warn('Error loading device status:', e);
+            energyEl.textContent = '—';
+            statusEl.textContent = '⚠️ Offline';
+        }
+    }
+
+    // ============================================================
+    // Mining history
+    // ============================================================
+    function loadMiningHistory() {
+        const tbody = document.getElementById('historyBody');
+        if (!tbody) return;
+
+        try {
+            const raw = localStorage.getItem('enrgMiningHistory');
+            const history = raw ? JSON.parse(raw) : [];
+
+            if (history.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px;">No mining history yet. Start mining on the <a href="index.html#minting" style="color:var(--accent);">main page</a>.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            // Show latest first
+            const sorted = [...history].reverse();
+            for (const entry of sorted) {
+                const tr = document.createElement('tr');
+                const time = new Date(entry.timestamp).toLocaleString();
+                const energy = entry.energy_wh || entry.energyWh || '0';
+                const src = (entry.energy_wh || entry.energyWh || 0) / 1000000;
+                const status = entry.status || 'simulated';
+                const sig = entry.signature || entry.txSig || '—';
+
+                const statusMap = {
+                    'confirmed': { text: '✅ Confirmed', color: '#22c55e' },
+                    'simulated': { text: '🔄 Simulated', color: '#facc15' },
+                    'failed': { text: '❌ Failed', color: '#ef4444' },
+                    'pending': { text: '⏳ Pending', color: '#0ea5e9' },
+                };
+                const si = statusMap[status] || { text: status, color: '#6b7280' };
+
+                tr.innerHTML = `
+                    <td>${time}</td>
+                    <td>${energy}</td>
+                    <td>${src.toFixed(6)}</td>
+                    <td><span style="color:${si.color}">${si.text}</span></td>
+                    <td style="font-size:0.7rem;max-width:120px;overflow:hidden;text-overflow:ellipsis;">${sig}</td>
+                `;
+                tbody.appendChild(tr);
+            }
+        } catch (e) {
+            console.warn('Error loading mining history:', e);
+        }
+    }
+
+    // ============================================================
+    // Mint test transaction
+    // ============================================================
+    async function sendMintTransaction(deviceId) {
+        const resultEl = document.getElementById('mintResult');
+        resultEl.textContent = '⏳ Sending mint transaction...';
+        resultEl.style.color = 'var(--text-muted)';
+
+        if (!walletPublicKey) {
+            resultEl.textContent = '⚠️ Please connect your Phantom wallet first.';
+            resultEl.style.color = '#ff6b6b';
+            return;
+        }
+
+        if (!connection) connection = new solanaWeb3.Connection(CONFIG.SOLANA_RPC);
+
+        try {
+            const energyWh = 1; // 1 Wh test
+            const nonce = Math.floor(Date.now() / 1000);
+            const timestamp = Math.floor(Date.now() / 1000);
+
+            // Build OracleReport
+            const deviceIdBytes = new TextEncoder().encode(deviceId.padEnd(32, '\0')).slice(0, 32);
+            const timestampBytes = new Uint8Array(8);
+            const energyBytes = new Uint8Array(8);
+            const nonceBytes = new Uint8Array(8);
+            const view = new DataView(timestampBytes.buffer);
+            view.setBigUint64(0, BigInt(timestamp), true);
+            new DataView(energyBytes.buffer).setBigUint64(0, BigInt(energyWh), true);
+            new DataView(nonceBytes.buffer).setBigUint64(0, BigInt(nonce), true);
+
+            // Placeholder signature (32 bytes of zeros — oracle would sign in production)
+            const signature = new Uint8Array(64).fill(0);
+
+            const reportData = new Uint8Array(32 + 8 + 8 + 8 + 64);
+            reportData.set(deviceIdBytes, 0);
+            reportData.set(timestampBytes, 32);
+            reportData.set(energyBytes, 40);
+            reportData.set(nonceBytes, 48);
+            reportData.set(signature, 56);
+
+            // Program ID
+            const programId = new solanaWeb3.PublicKey('EsaKY8C3EZeRLL1wG5UECAnDWjbLfWJr7jL3pBLmpFfW');
+
+            // PDA seeds
+            const vaultSeed = Buffer.from('vault');
+            const producerSeed = Buffer.from('producer');
+            const [vaultPda] = solanaWeb3.PublicKey.findProgramAddressSync([vaultSeed], programId);
+            const [producerPda] = solanaWeb3.PublicKey.findProgramAddressSync([producerSeed, walletPublicKey.toBytes()], programId);
+
+            // Fund PDAs
+            const buybackSeed = Buffer.from('buyback');
+            const stakingSeed = Buffer.from('staking');
+            const daoSeed = Buffer.from('dao');
+            const emergencySeed = Buffer.from('emergency');
+            const [buybackPda] = solanaWeb3.PublicKey.findProgramAddressSync([buybackSeed, vaultPda.toBytes()], programId);
+            const [stakingPda] = solanaWeb3.PublicKey.findProgramAddressSync([stakingSeed, vaultPda.toBytes()], programId);
+            const [daoPda] = solanaWeb3.PublicKey.findProgramAddressSync([daoSeed, vaultPda.toBytes()], programId);
+            const [emergencyPda] = solanaWeb3.PublicKey.findProgramAddressSync([emergencySeed, vaultPda.toBytes()], programId);
+
+            // SRC mint
+            const srcMint = new solanaWeb3.PublicKey(CONFIG.SRC_MINT);
+
+            // Get or create token account
+            const tokenAccounts = await connection.getTokenAccountsByOwner(walletPublicKey, { mint: srcMint });
+            let userTokenAccount;
+            if (tokenAccounts.value.length > 0) {
+                userTokenAccount = tokenAccounts.value[0].pubkey;
+            } else {
+                resultEl.textContent = '⚠️ No SRC token account found. Please create one first.';
+                resultEl.style.color = '#ffaa00';
+                return;
+            }
+
+            // Anchor discriminator for "global:mint_energy"
+            const discriminator = new Uint8Array([175, 27, 214, 22, 207, 172, 142, 101]);
+
+            // Build instruction data: discriminator + report
+            const instructionData = new Uint8Array(8 + reportData.length);
+            instructionData.set(discriminator, 0);
+            instructionData.set(reportData, 8);
+
+            const keys = [
+                { pubkey: vaultPda, isSigner: false, isWritable: true },
+                { pubkey: producerPda, isSigner: false, isWritable: true },
+                { pubkey: userTokenAccount, isSigner: false, isWritable: true },
+                { pubkey: srcMint, isSigner: false, isWritable: true },
+                { pubkey: buybackPda, isSigner: false, isWritable: true },
+                { pubkey: stakingPda, isSigner: false, isWritable: true },
+                { pubkey: daoPda, isSigner: false, isWritable: true },
+                { pubkey: emergencyPda, isSigner: false, isWritable: true },
+                { pubkey: walletPublicKey, isSigner: true, isWritable: true },
+                { pubkey: solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false },
+                { pubkey: solanaWeb3.SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
+                { pubkey: solanaWeb3.SYSVAR_INSTRUCTIONS_PUBKEY, isSigner: false, isWritable: false },
+            ];
+
+            const instruction = new solanaWeb3.TransactionInstruction({
+                keys,
+                programId,
+                data: Buffer.from(instructionData),
+            });
+
+            // Get recent blockhash
+            const { blockhash } = await connection.getLatestBlockhash();
+            const tx = new solanaWeb3.Transaction({ recentBlockhash: blockhash, feePayer: walletPublicKey });
+            tx.add(instruction);
+
+            // Sign and send via Phantom
+            const signedTx = await window.solana.signTransaction(tx);
+            const txSig = await connection.sendRawTransaction(signedTx.serialize());
+            resultEl.textContent = `⏳ Transaction sent: ${txSig}`;
+            resultEl.style.color = '#0ea5e9';
+
+            // Wait for confirmation
+            const confirmation = await connection.confirmTransaction(txSig, 'confirmed');
+            if (confirmation.value.err) {
+                resultEl.textContent = `❌ Transaction failed: ${confirmation.value.err}`;
+                resultEl.style.color = '#ef4444';
+                // Save as failed
+                saveMiningHistory(deviceId, energyWh, nonce, 'failed', txSig);
+            } else {
+                resultEl.textContent = `✅ Mint confirmed! Signature: ${txSig}`;
+                resultEl.style.color = '#22c55e';
+                saveMiningHistory(deviceId, energyWh, nonce, 'confirmed', txSig);
+                // Refresh balances
+                await refreshWalletBalances();
+                await loadDeviceData(deviceId);
+                loadMiningHistory();
+            }
+        } catch (e) {
+            console.error('Mint transaction error:', e);
+            resultEl.textContent = `❌ Error: ${e.message}`;
+            resultEl.style.color = '#ef4444';
+        }
+    }
+
+    function saveMiningHistory(deviceId, energyWh, nonce, status, signature) {
+        try {
+            const raw = localStorage.getItem('enrgMiningHistory');
+            const history = raw ? JSON.parse(raw) : [];
+            history.push({
+                device_id: deviceId,
+                energy_wh: energyWh,
+                nonce,
+                status,
+                signature: signature || '—',
+                timestamp: Date.now(),
+            });
+            // Keep last 100 entries
+            if (history.length > 100) history.splice(0, history.length - 100);
+            localStorage.setItem('enrgMiningHistory', JSON.stringify(history));
+        } catch (e) {
+            console.warn('Error saving mining history:', e);
+        }
+    }
+
+    // ============================================================
+    // Init
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', async () => {
         const { id, pubKey } = getStoredDevice();
         if (!id || !pubKey) {
             window.location.href = 'register.html';
             return;
         }
 
+        // Set device ID
         const devIdEl = document.getElementById('devId');
         if (devIdEl) devIdEl.textContent = id;
 
-        const refreshBtn = document.getElementById('refreshBtn');
-        if (refreshBtn) {
-            refreshBtn.addEventListener('click', () => loadDeviceData(id));
-        }
+        // Check existing wallet
+        await checkExistingWallet();
 
-        const connectWalletBtn = document.getElementById('connectWalletBtn');
-        if (connectWalletBtn) {
-            connectWalletBtn.addEventListener('click', connectPhantom);
-        }
+        // Load device data
+        await loadDeviceData(id);
+        loadMiningHistory();
 
-        const logoutBtn = document.getElementById('logoutBtn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                clearStoredDevice();
-                window.location.href = 'index.html';
-            });
-        }
+        // Refresh button
+        document.getElementById('refreshBtn').addEventListener('click', async () => {
+            await loadDeviceData(id);
+            await refreshWalletBalances();
+            loadMiningHistory();
+        });
 
-        loadDeviceData(id);
+        // Mint test button
+        document.getElementById('mintTestBtn').addEventListener('click', () => {
+            sendMintTransaction(id);
+        });
+
+        // Wallet connect buttons
+        document.getElementById('connectWalletBtn').addEventListener('click', connectWallet);
+        document.getElementById('connectWalletBtn2').addEventListener('click', connectWallet);
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            clearStoredDevice();
+            window.location.href = 'index.html';
+        });
     });
     </script>
 </body>

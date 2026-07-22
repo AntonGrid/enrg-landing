@@ -1,197 +1,73 @@
-// ENRG - DePIN Energy Dashboard - Complete Interactivity Module (SRC Token)
-// Does NOT modify index.html or style.css - Pure JavaScript implementation
-// 
-// FEATURES IMPLEMENTED:
-// ✅ 1. Metric Counters: Hero metrics animate on page scroll intersection
-// ✅ 2. Live Feed: Real-time console messages every 2-5 seconds (max 40 lines)
-// ✅ 3. Modal System: Mint modal opens/closes with keyboard & click support
-// ✅ 4. Mining Simulation: Energy generation (1-500 kWh), SRC calculation, fee distribution
-// ✅ 5. Smooth Scroll: Navigation links smooth scroll to sections
-// ✅ 6. Wallet Connect: Phantom integration with fallback
-// ✅ 7. Particle Background: Animated particles with network connections
-// ✅ 8. Fade-Up Animations: Scroll-triggered animations for all fade-up elements
+// ENRG - DePIN Energy Dashboard - Production Module
+// Real API integration, Solana blockchain, Phantom wallet
+// ============================================================
 
 (function () {
   'use strict';
 
-  // ========== MODAL HELPERS ==========
-  const openModal = () => {
-    if (!refs.modal) return;
-    refs.modal.classList.add('active');
-    refs.modal.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-    renderModal();
-  };
-
-  const closeModal = () => {
-    if (!refs.modal) return;
-    refs.modal.classList.remove('active');
-    refs.modal.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
+  // ========== CONFIGURATION ==========
+  const CONFIG = {
+    API_BASE: (() => {
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return 'http://localhost:3000';
+      }
+      return 'https://enrg-oracle.onrender.com';
+    })(),
+    SOLANA_RPC: 'https://api.devnet.solana.com',
+    PROGRAM_ID: 'EsaKY8C3EZeRLL1wG5UECAnDWjbLfWJr7jL3pBLmpFfW',
+    PROFILE_PROGRAM_ID: 'H9GDJQhaLqHeZZmuiqL1JTCaQ4nSquKterUyFVRdL5GZ',
+    SRC_DECIMALS: 6,
+    SRC_MINT: null, // Will be fetched from API
+    METRICS_REFRESH_MS: 30000,
+    MAX_PROOF_AGE_SEC: 3600,
   };
 
   // ========== STORAGE KEYS ==========
-  const STORAGE_STATE = 'enrgState';
-  const STORAGE_USER = 'enrgUser';
-  const STORAGE_DEVICES = 'enrgDevices';
-  const STORAGE_HISTORY = 'enrgMiningHistory';
-  const STORAGE_WALLET = 'enrgWalletConnected';
+  const STORAGE = {
+    STATE: 'enrgState',
+    USER: 'enrgUser',
+    DEVICES: 'enrgDevices',
+    HISTORY: 'enrgMiningHistory',
+    WALLET: 'enrgWalletConnected',
+  };
 
   // ========== DOM HELPERS ==========
-  const $ = (selector, root = document) => root.querySelector(selector);
-  const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
-
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
   const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
-  const formatNumber = (value, decimals = 0) =>
-    value.toLocaleString(undefined, {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals,
+  const fmt = (v, d = 0) => v.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
+
+  const el = (tag, props = {}, children = []) => {
+    const e = document.createElement(tag);
+    Object.entries(props).forEach(([k, v]) => {
+      if (k === 'className') e.className = v;
+      else if (k === 'textContent') e.textContent = v;
+      else if (k === 'html') e.innerHTML = v;
+      else if (k === 'dataset') Object.entries(v).forEach(([dk, dv]) => { e.dataset[dk] = dv; });
+      else if (k === 'style') e.style.cssText = v;
+      else if (k in e) e[k] = v;
+      else e.setAttribute(k, v);
     });
-
-  const createElement = (tag, props = {}, children = []) => {
-    const el = document.createElement(tag);
-    Object.entries(props).forEach(([key, value]) => {
-      if (key === 'className') {
-        el.className = value;
-      } else if (key === 'textContent') {
-        el.textContent = value;
-      } else if (key === 'html') {
-        el.innerHTML = value;
-      } else if (key === 'dataset') {
-        Object.entries(value).forEach(([dataKey, dataValue]) => {
-          el.dataset[dataKey] = dataValue;
-        });
-      } else if (key === 'style') {
-        el.style.cssText = value;
-      } else if (key in el) {
-        el[key] = value;
-      } else {
-        el.setAttribute(key, value);
-      }
-    });
-    children.forEach((child) => {
-      if (typeof child === 'string') {
-        el.appendChild(document.createTextNode(child));
-      } else if (child) {
-        el.appendChild(child);
-      }
-    });
-    return el;
+    children.forEach(c => { if (typeof c === 'string') e.appendChild(document.createTextNode(c)); else if (c) e.appendChild(c); });
+    return e;
   };
 
-  const scrollToElement = (selector) => {
-    const el = $(selector);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
-  };
+  // ========== STATE ==========
+  const defaultState = { step: 1, onboarded: false, walletConnected: false, walletAddress: '', inviteUsed: false, requestedAccess: false };
+  const loadJSON = (key, fallback) => { try { const r = localStorage.getItem(key); return r ? JSON.parse(r) : fallback; } catch { return fallback; } };
+  const saveJSON = (key, val) => localStorage.setItem(key, JSON.stringify(val));
 
-  // ========== STATE MANAGEMENT ==========
-  const defaultState = {
-    step: 1,
-    onboarded: false,
-    walletConnected: false,
-    walletAddress: '',
-    inviteUsed: false,
-    requestedAccess: false,
-  };
+  let state = loadJSON(STORAGE.STATE, { ...defaultState });
+  let walletPublicKey = null;
+  let walletBalance = 0;
+  let srcBalance = 0;
+  let networkStats = { total_energy_mwh: 0, active_producers: 0, total_supply: 0 };
+  let apiAvailable = false;
+  let metricsInterval = null;
 
-  const loadState = () => {
-    const raw = localStorage.getItem(STORAGE_STATE);
-    if (!raw) return { ...defaultState };
-    try {
-      return { ...defaultState, ...JSON.parse(raw) };
-    } catch (error) {
-      return { ...defaultState };
-    }
-  };
-
-  const saveState = (value) => {
-    localStorage.setItem(STORAGE_STATE, JSON.stringify(value));
-  };
-
-  const loadUser = () => {
-    const raw = localStorage.getItem(STORAGE_USER);
-    if (!raw) return null;
-    try {
-      return JSON.parse(raw);
-    } catch (error) {
-      return null;
-    }
-  };
-
-  const saveUser = (user) => {
-    localStorage.setItem(STORAGE_USER, JSON.stringify(user));
-  };
-
-  const loadDevices = () => {
-    const raw = localStorage.getItem(STORAGE_DEVICES);
-    if (!raw) return [];
-    try {
-      return JSON.parse(raw);
-    } catch (error) {
-      return [];
-    }
-  };
-
-  const saveDevices = (devices) => {
-    localStorage.setItem(STORAGE_DEVICES, JSON.stringify(devices));
-  };
-
-  const loadHistory = () => {
-    const raw = localStorage.getItem(STORAGE_HISTORY);
-    if (!raw) return [];
-    try {
-      return JSON.parse(raw);
-    } catch (error) {
-      return [];
-    }
-  };
-
-  const saveHistory = (history) => {
-    localStorage.setItem(STORAGE_HISTORY, JSON.stringify(history));
-  };
-
-  const state = loadState();
-
-  // ========== REFS (DOM elements) ==========
-  const refs = {
-    modal: null,
-    modalBody: null,
-    modalHeaderTitle: null,
-    modalClose: null,
-    heroStart: null,
-    heroStartAlt: null,
-    headerStart: null,
-    downloadWhitepaper: null,
-    technicalDocs: null,
-    dashboard: null,
-    historyBody: null,
-    consoleFeed: null,
-    simEnergyBar: null,
-    simSrcBar: null,
-    simEnergyValue: null,
-    simSrcValue: null,
-    simFeeBuyback: null,
-    simFeeStaking: null,
-    simFeeDao: null,
-    simFeeEmergency: null,
-    simulateButtons: [],
-    becomePartner: null,
-    contactButton: null,
-    heroTitle: null,
-    heroTagline: null,
-    heroSlogan: null,
-    heroActions: null,
-    heroGrid: null,
-    heroRight: null,
-    metricsGrid: null,
-    footerLinks: null,
-    // Wallet specific
-    connectWalletBtn: null,
-    walletAddressDisplay: null,
-    walletBalanceSpan: null,
-  };
-
-  (function resolveRefs() {
+  // ========== REFS ==========
+  const refs = {};
+  function resolveRefs() {
     refs.modal = document.getElementById('mint-modal');
     refs.modalBody = document.querySelector('.modal-body');
     refs.modalHeaderTitle = document.getElementById('mint-modal-title');
@@ -212,10 +88,7 @@
     refs.simFeeStaking = document.getElementById('sim-fee-staking');
     refs.simFeeDao = document.getElementById('sim-fee-dao');
     refs.simFeeEmergency = document.getElementById('sim-fee-emergency');
-    refs.simulateButtons = [
-      document.getElementById('btn-simulate-mint'),
-      document.getElementById('btn-simulate-mint-modal')
-    ].filter(Boolean);
+    refs.simulateButtons = [document.getElementById('btn-simulate-mint'), document.getElementById('btn-simulate-mint-modal')].filter(Boolean);
     refs.becomePartner = document.getElementById('btn-become-partner');
     refs.contactButton = document.getElementById('btn-contact');
     refs.heroTitle = document.querySelector('.hero-title');
@@ -226,218 +99,110 @@
     refs.heroRight = document.getElementById('hero-right');
     refs.metricsGrid = document.getElementById('metrics-grid');
     refs.footerLinks = document.getElementById('footer-links');
-    // Wallet elements
     refs.connectWalletBtn = document.getElementById('btn-connect-wallet');
     refs.walletAddressDisplay = document.getElementById('wallet-address-display');
     refs.walletBalanceSpan = document.getElementById('wallet-balance');
-  })();
+    refs.heroProducers = document.getElementById('hero-producers');
+    refs.heroEnergy = document.getElementById('hero-energy');
+    refs.mintStatus = document.getElementById('mint-status');
+  }
 
-  // ========== CONSTANTS ==========
-  const energySources = [
-    { name: 'Solar', multiplier: 1.0, color: '#FFD166' },
-    { name: 'Wind', multiplier: 0.8, color: '#9BF6FF' },
-    { name: 'Hydro', multiplier: 0.5, color: '#A0C4FF' },
-  ];
-
-  const liveFeedSources = ['Node-01', 'SolarRig-12', 'WindFarm-7B', 'HydroUnit-3C', 'Rooftop-Alpha', 'GridEdge-09'];
-  const liveFeedActions = ['verified', 'minted', 'streamed', 'settled', 'synced', 'registered'];
-  const liveFeedUnits = ['kWh', 'MWh'];
-
-  const isMobile = () => window.innerWidth < 768;
-
-  const playClickTone = (() => {
-    let context = null;
-    return () => {
-      try {
-        if (!context) {
-          context = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        const oscillator = context.createOscillator();
-        const gain = context.createGain();
-        oscillator.type = 'triangle';
-        oscillator.frequency.value = 880;
-        gain.gain.setValueAtTime(0.08, context.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.12);
-        oscillator.connect(gain);
-        gain.connect(context.destination);
-        oscillator.start();
-        oscillator.stop(context.currentTime + 0.12);
-      } catch (error) {
-        // ignore audio errors
-      }
-    };
-  })();
-
-  // ========== BACKGROUND CANVAS ==========
-  const initBackground = () => {
-    const particleCanvas = document.getElementById('particle-canvas');
-    if (!particleCanvas) return;
-    particleCanvas.classList.add('enrg-particle-canvas');
-    const gridCanvas = createElement('canvas', { id: 'enrg-grid-canvas', className: 'enrg-grid-canvas' });
-    document.body.insertBefore(gridCanvas, particleCanvas.nextSibling);
-
-    particleCanvas.width = window.innerWidth;
-    particleCanvas.height = window.innerHeight;
-    gridCanvas.width = window.innerWidth;
-    gridCanvas.height = window.innerHeight;
-
-    const particleCtx = particleCanvas.getContext('2d');
-    const gridCtx = gridCanvas.getContext('2d');
-    const PARTICLE_COUNT = 80;
-    const particles = Array.from({ length: PARTICLE_COUNT }).map(() => ({
-      x: Math.random() * window.innerWidth,
-      y: Math.random() * window.innerHeight,
-      vx: (Math.random() - 0.5) * 0.2,
-      vy: (Math.random() - 0.5) * 0.2,
-      r: Math.random() * 2.2 + 1,
-      pulse: Math.random() * Math.PI * 2,
-      hue: Math.random() * 50,
-    }));
-
-    let gridOffset = 0;
-
-    const resize = () => {
-      particleCanvas.width = window.innerWidth;
-      particleCanvas.height = window.innerHeight;
-      gridCanvas.width = window.innerWidth;
-      gridCanvas.height = window.innerHeight;
-    };
-    window.addEventListener('resize', resize);
-
-    const drawGrid = () => {
-      gridCtx.clearRect(0, 0, gridCanvas.width, gridCanvas.height);
-      const step = 90;
-      gridOffset += 0.1;
-      gridCtx.strokeStyle = 'rgba(0, 229, 255, 0.06)';
-      gridCtx.lineWidth = 1;
-      for (let x = (gridOffset % step) - step; x < gridCanvas.width; x += step) {
-        gridCtx.beginPath();
-        gridCtx.moveTo(x, 0);
-        gridCtx.lineTo(x, gridCanvas.height);
-        gridCtx.stroke();
-      }
-      for (let y = (gridOffset % step) - step; y < gridCanvas.height; y += step) {
-        gridCtx.beginPath();
-        gridCtx.moveTo(0, y);
-        gridCtx.lineTo(gridCanvas.width, y);
-        gridCtx.stroke();
-      }
-      gridCtx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
-      gridCtx.lineWidth = 1.2;
-      for (let i = 0; i < 8; i++) {
-        const alpha = 0.04 - i * 0.005;
-        gridCtx.strokeStyle = `rgba(255,255,255,${alpha})`;
-        gridCtx.beginPath();
-        gridCtx.arc(gridCanvas.width / 2, gridCanvas.height / 2, 120 + i * 28 + ((gridOffset * 4) % 28), 0, Math.PI * 2);
-        gridCtx.stroke();
-      }
-    };
-
-    const drawParticles = () => {
-      particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
-      particles.forEach((particle, index) => {
-        particle.x += particle.vx;
-        particle.y += particle.vy;
-        particle.pulse += 0.03;
-        const brightness = 0.55 + Math.sin(particle.pulse) * 0.3;
-        particle.r = 1.3 + Math.sin(particle.pulse) * 0.8;
-        if (particle.x < -20) particle.x = particleCanvas.width + 20;
-        if (particle.x > particleCanvas.width + 20) particle.x = -20;
-        if (particle.y < -20) particle.y = particleCanvas.height + 20;
-        if (particle.y > particleCanvas.height + 20) particle.y = -20;
-
-        particleCtx.beginPath();
-        const gradient = particleCtx.createRadialGradient(particle.x, particle.y, 0, particle.x, particle.y, particle.r * 6);
-        gradient.addColorStop(0, `hsla(${particle.hue}, 100%, 75%, ${0.7 * brightness})`);
-        gradient.addColorStop(0.4, `hsla(${particle.hue}, 100%, 60%, ${0.2 * brightness})`);
-        gradient.addColorStop(1, 'transparent');
-        particleCtx.fillStyle = gradient;
-        particleCtx.arc(particle.x, particle.y, particle.r * 6, 0, Math.PI * 2);
-        particleCtx.fill();
-
-        for (let j = index + 1; j < particles.length; j++) {
-          const other = particles[j];
-          const dx = particle.x - other.x;
-          const dy = particle.y - other.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 180) {
-            particleCtx.strokeStyle = `rgba(0, 229, 255, ${0.08 - dist / 180 * 0.05})`;
-            particleCtx.lineWidth = 1;
-            particleCtx.beginPath();
-            particleCtx.moveTo(particle.x, particle.y);
-            particleCtx.lineTo(other.x, other.y);
-            particleCtx.stroke();
-          }
-        }
+  // ========== API ==========
+  async function apiFetch(path, options = {}) {
+    const url = `${CONFIG.API_BASE}${path}`;
+    try {
+      const res = await fetch(url, {
+        headers: { 'Content-Type': 'application/json', ...options.headers },
+        ...options,
       });
-    };
-
-    const animate = () => {
-      drawGrid();
-      drawParticles();
-      requestAnimationFrame(animate);
-    };
-    animate();
-  };
-
-  // ========== DOCUMENTATION LINKS ==========
-  const openDocumentationPage = (href) => {
-    if (!href) return;
-    window.open(href, '_blank', 'noopener');
-  };
-
-  const openEmailContact = () => {
-    window.location.assign('mailto:anton@enrg.network');
-  };
-
-  // ========== WALLET INTEGRATION ==========
-  let walletPublicKey = null;
-  let walletBalance = 0;
-
-  const updateWalletUI = () => {
-    if (refs.walletAddressDisplay) {
-      if (state.walletConnected && state.walletAddress) {
-        const short = state.walletAddress.slice(0, 4) + '...' + state.walletAddress.slice(-4);
-        refs.walletAddressDisplay.textContent = short;
-      } else {
-        refs.walletAddressDisplay.textContent = 'Not connected';
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || `HTTP ${res.status}`);
       }
+      return await res.json();
+    } catch (err) {
+      if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+        throw new Error('Network unavailable, try again later');
+      }
+      throw err;
+    }
+  }
+
+  async function loadMetrics() {
+    try {
+      const stats = await apiFetch('/api/v1/stats');
+      networkStats = stats;
+      apiAvailable = true;
+      updateMetricDisplay();
+      addLiveFeedLine(`📊 Stats updated: ${stats.total_energy_mwh} MWh, ${stats.active_producers} producers`);
+    } catch (err) {
+      apiAvailable = false;
+      addLiveFeedLine(`⚠️ API unavailable: ${err.message}`);
+    }
+  }
+
+  function updateMetricDisplay() {
+    const energyEl = document.getElementById('hero-energy');
+    const producersEl = document.getElementById('hero-producers');
+    if (energyEl) energyEl.textContent = fmt(networkStats.total_energy_mwh, 1);
+    if (producersEl) producersEl.textContent = fmt(networkStats.active_producers);
+    // Update metric cards
+    const counterEls = $$('.counter');
+    if (counterEls.length >= 3) {
+      counterEls[0].textContent = fmt(networkStats.total_energy_mwh, 1);
+      counterEls[1].textContent = fmt(networkStats.active_producers);
+      counterEls[2].textContent = fmt(networkStats.total_supply, 1);
+    }
+  }
+
+  // ========== WALLET ==========
+  async function getSrcBalance(publicKey) {
+    if (!CONFIG.SRC_MINT) return 0;
+    try {
+      const connection = new solanaWeb3.Connection(CONFIG.SOLANA_RPC, 'confirmed');
+      const tokenAccounts = await connection.getTokenAccountsByOwner(publicKey, { mint: new solanaWeb3.PublicKey(CONFIG.SRC_MINT) });
+      if (tokenAccounts.value.length > 0) {
+        const accountInfo = await connection.getTokenAccountBalance(tokenAccounts.value[0].pubkey);
+        return accountInfo.value.uiAmount || 0;
+      }
+      return 0;
+    } catch (err) {
+      console.warn('SRC balance fetch error:', err);
+      return 0;
+    }
+  }
+
+  async function getSolBalance(publicKey) {
+    try {
+      const connection = new solanaWeb3.Connection(CONFIG.SOLANA_RPC, 'confirmed');
+      const lamports = await connection.getBalance(publicKey);
+      return lamports / solanaWeb3.LAMPORTS_PER_SOL;
+    } catch { return 0; }
+  }
+
+  function updateWalletUI() {
+    if (refs.walletAddressDisplay) {
+      refs.walletAddressDisplay.textContent = state.walletConnected && state.walletAddress
+        ? `${state.walletAddress.slice(0, 4)}...${state.walletAddress.slice(-4)}`
+        : 'Not connected';
     }
     if (refs.walletBalanceSpan) {
-      if (state.walletConnected && walletBalance !== null) {
-        refs.walletBalanceSpan.textContent = `${walletBalance.toFixed(4)} SOL`;
-      } else {
-        refs.walletBalanceSpan.textContent = '— SOL';
-      }
+      refs.walletBalanceSpan.textContent = state.walletConnected
+        ? `${walletBalance.toFixed(4)} SOL · ${srcBalance.toFixed(2)} SRC`
+        : '— SOL';
     }
-    // Update connect button text
     if (refs.connectWalletBtn) {
       if (state.walletConnected) {
         refs.connectWalletBtn.textContent = 'Disconnect';
-        refs.connectWalletBtn.classList.remove('btn-outline');
-        refs.connectWalletBtn.classList.add('btn-secondary');
+        refs.connectWalletBtn.className = 'btn-secondary';
       } else {
         refs.connectWalletBtn.textContent = 'Connect Wallet';
-        refs.connectWalletBtn.classList.remove('btn-secondary');
-        refs.connectWalletBtn.classList.add('btn-outline');
+        refs.connectWalletBtn.className = 'btn-outline';
       }
     }
-  };
+  }
 
-  const getWalletBalance = async (publicKey) => {
-    if (!window.solana || !window.solana.isConnected) return 0;
-    try {
-      const connection = new solanaWeb3.Connection('https://rpc.ankr.com/solana', 'confirmed');
-      const balanceLamports = await connection.getBalance(publicKey);
-      const balanceSol = balanceLamports / solanaWeb3.LAMPORTS_PER_SOL;
-      return balanceSol;
-    } catch (err) {
-      console.warn('Balance fetch error:', err);
-      return 0;
-    }
-  };
-
-  const connectWallet = async () => {
+  async function connectWallet() {
     if (!window.solana || !window.solana.isPhantom) {
       alert('Phantom wallet not found. Please install Phantom from https://phantom.app/');
       window.open('https://phantom.app/', '_blank');
@@ -448,115 +213,173 @@
       walletPublicKey = resp.publicKey;
       state.walletConnected = true;
       state.walletAddress = walletPublicKey.toString();
-      saveState(state);
-      localStorage.setItem(STORAGE_WALLET, state.walletAddress);
-      
-      walletBalance = await getWalletBalance(walletPublicKey);
+      saveJSON(STORAGE.STATE, state);
+      localStorage.setItem(STORAGE.WALLET, state.walletAddress);
+
+      walletBalance = await getSolBalance(walletPublicKey);
+      srcBalance = await getSrcBalance(walletPublicKey);
       updateWalletUI();
-      
-      addLiveFeedLine(`✅ Wallet connected: ${state.walletAddress.slice(0,6)}... Balance: ${walletBalance.toFixed(4)} SOL`);
-      playClickTone();
-      
-      if (refs.modal && refs.modal.getAttribute('aria-hidden') === 'false') {
-        renderModal();
-      }
+      addLiveFeedLine(`✅ Wallet connected: ${state.walletAddress.slice(0, 6)}... | ${walletBalance.toFixed(4)} SOL | ${srcBalance.toFixed(2)} SRC`);
+
+      if (refs.modal && refs.modal.getAttribute('aria-hidden') === 'false') renderModal();
       return true;
     } catch (error) {
       console.error('Wallet connection error:', error);
-      addLiveFeedLine(`❌ Wallet connection failed: ${error.message}`);
+      addLiveFeedLine(`❌ Wallet connection failed`);
       return false;
     }
-  };
+  }
 
-  const disconnectWallet = () => {
-    if (window.solana && window.solana.isConnected) {
-      window.solana.disconnect();
-    }
+  function disconnectWallet() {
+    if (window.solana && window.solana.isConnected) window.solana.disconnect();
     state.walletConnected = false;
     state.walletAddress = '';
     walletPublicKey = null;
     walletBalance = 0;
-    saveState(state);
-    localStorage.removeItem(STORAGE_WALLET);
+    srcBalance = 0;
+    saveJSON(STORAGE.STATE, state);
+    localStorage.removeItem(STORAGE.WALLET);
     updateWalletUI();
     addLiveFeedLine('🔌 Wallet disconnected');
-  };
+  }
 
-  const checkExistingWallet = async () => {
+  async function checkExistingWallet() {
     if (window.solana && window.solana.isConnected && window.solana.publicKey) {
       const addr = window.solana.publicKey.toString();
       if (addr === state.walletAddress) {
         walletPublicKey = window.solana.publicKey;
         state.walletConnected = true;
-        walletBalance = await getWalletBalance(walletPublicKey);
+        walletBalance = await getSolBalance(walletPublicKey);
+        srcBalance = await getSrcBalance(walletPublicKey);
         updateWalletUI();
         return true;
       }
-    } else if (localStorage.getItem(STORAGE_WALLET)) {
-      state.walletAddress = localStorage.getItem(STORAGE_WALLET);
+    } else if (localStorage.getItem(STORAGE.WALLET)) {
+      state.walletAddress = localStorage.getItem(STORAGE.WALLET);
       state.walletConnected = false;
       updateWalletUI();
     }
     return false;
-  };
+  }
 
-  // ========== LIVE FEED ==========
-  const addLiveFeedLine = (text) => {
-    if (!refs.consoleFeed) return;
-    const line = createElement('div', {
-      className: 'console-line',
-      textContent: `[${new Date().toLocaleTimeString('en-US')}] ${text}`,
-      style: 'padding:10px 0;border-bottom:1px solid rgba(148,163,184,0.08);'
-    });
-    refs.consoleFeed.appendChild(line);
-    while (refs.consoleFeed.children.length > 40) {
-      refs.consoleFeed.removeChild(refs.consoleFeed.firstChild);
+  // ========== REAL MINT TRANSACTION ==========
+  async function sendMintTransaction(deviceId, energyWh, nonce, timestamp) {
+    if (!state.walletConnected || !walletPublicKey) {
+      addLiveFeedLine('❌ Connect wallet first to mint SRC');
+      return null;
     }
-    refs.consoleFeed.scrollTop = refs.consoleFeed.scrollHeight;
-  };
+    if (!window.solanaWeb3) {
+      addLiveFeedLine('❌ Solana Web3 library not loaded');
+      return null;
+    }
 
-  const startLiveFeed = () => {
-    const tick = () => {
-      const producer = liveFeedSources[randInt(0, liveFeedSources.length - 1)];
-      const action = liveFeedActions[randInt(0, liveFeedActions.length - 1)];
-      const unit = liveFeedUnits[randInt(0, liveFeedUnits.length - 1)];
-      const value = unit === 'kWh'
-        ? randInt(10, 900)
-        : (Math.random() * 9 + 0.5).toFixed(1);
-      addLiveFeedLine(`${producer} ${action} ${value} ${unit}`);
-      setTimeout(tick, randInt(2000, 5000));
-    };
-    tick();
-  };
+    const connection = new solanaWeb3.Connection(CONFIG.SOLANA_RPC, 'confirmed');
+    const programId = new solanaWeb3.PublicKey(CONFIG.PROGRAM_ID);
 
-  // ========== SIMULATION ==========
-  const animateBar = (bar, percent) => {
-    if (!bar) return;
-    bar.style.transition = 'width 0.8s ease';
-    bar.style.width = '0%';
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        bar.style.width = `${Math.min(100, Math.max(0, percent))}%`;
+    try {
+      addLiveFeedLine(`⏳ Sending mint transaction... (${energyWh} Wh)`);
+
+      // Build OracleReport
+      const deviceIdBytes = new solanaWeb3.PublicKey(deviceId.padEnd(44, '0').slice(0, 44));
+      const report = {
+        device_id: deviceIdBytes,
+        timestamp: new solanaWeb3.BN(timestamp),
+        energy_wh: new solanaWeb3.BN(energyWh),
+        nonce: new solanaWeb3.BN(nonce),
+        signature: new Uint8Array(64).fill(0), // Placeholder - oracle fills this
+      };
+
+      // Find PDAs
+      const [vaultPda] = solanaWeb3.PublicKey.findProgramAddressSync(
+        [Buffer.from('vault')], programId
+      );
+      const [producerPda] = solanaWeb3.PublicKey.findProgramAddressSync(
+        [Buffer.from('producer'), walletPublicKey.toBuffer()], programId
+      );
+      const [buybackPda] = solanaWeb3.PublicKey.findProgramAddressSync(
+        [Buffer.from('buyback'), vaultPda.toBuffer()], programId
+      );
+      const [stakingPda] = solanaWeb3.PublicKey.findProgramAddressSync(
+        [Buffer.from('staking'), vaultPda.toBuffer()], programId
+      );
+      const [daoPda] = solanaWeb3.PublicKey.findProgramAddressSync(
+        [Buffer.from('dao'), vaultPda.toBuffer()], programId
+      );
+      const [emergencyPda] = solanaWeb3.PublicKey.findProgramAddressSync(
+        [Buffer.from('emergency'), vaultPda.toBuffer()], programId
+      );
+
+      // Get SRC mint from vault
+      const vaultAccount = await connection.getAccountInfo(vaultPda);
+      if (!vaultAccount) {
+        addLiveFeedLine('❌ Vault not initialized on devnet');
+        return null;
+      }
+
+      // Build instruction data for mint_energy
+      // Discriminator for mint_energy (anchor)
+      const discriminator = Buffer.from([175, 27, 214, 22, 207, 172, 142, 101]); // sha256("global:mint_energy")[..8]
+      const reportData = Buffer.concat([
+        deviceIdBytes.toBuffer(),
+        Buffer.from(new solanaWeb3.BN(timestamp).toArray('le', 8)),
+        Buffer.from(new solanaWeb3.BN(energyWh).toArray('le', 8)),
+        Buffer.from(new solanaWeb3.BN(nonce).toArray('le', 8)),
+        Buffer.from(new Uint8Array(64).fill(0)), // signature placeholder
+      ]);
+      const instructionData = Buffer.concat([discriminator, reportData]);
+
+      const instruction = new solanaWeb3.TransactionInstruction({
+        programId,
+        keys: [
+          { pubkey: vaultPda, isSigner: false, isWritable: true },
+          { pubkey: walletPublicKey, isSigner: true, isWritable: false },
+          { pubkey: producerPda, isSigner: false, isWritable: true },
+          { pubkey: buybackPda, isSigner: false, isWritable: true },
+          { pubkey: stakingPda, isSigner: false, isWritable: true },
+          { pubkey: daoPda, isSigner: false, isWritable: true },
+          { pubkey: emergencyPda, isSigner: false, isWritable: true },
+          { pubkey: new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'), isSigner: false, isWritable: false },
+          { pubkey: new solanaWeb3.PublicKey('SysvarRent111111111111111111111111111111111'), isSigner: false, isWritable: false },
+        ],
+        data: instructionData,
       });
-    });
-  };
 
-  const addHistoryEntry = (entry) => {
-    const history = loadHistory();
-    history.unshift(entry);
-    saveHistory(history);
-  };
+      const transaction = new solanaWeb3.Transaction().add(instruction);
+      transaction.feePayer = walletPublicKey;
+      const { blockhash } = await connection.getLatestBlockhash('confirmed');
+      transaction.recentBlockhash = blockhash;
 
-  const simulateMining = () => {
-    const devices = loadDevices();
+      const signed = await window.solana.signTransaction(transaction);
+      const txid = await connection.sendRawTransaction(signed.serialize());
+      addLiveFeedLine(`⏳ Transaction sent: ${txid.slice(0, 8)}... Waiting for confirmation`);
+
+      const confirmation = await connection.confirmTransaction(txid, 'confirmed');
+      if (confirmation.value.err) {
+        addLiveFeedLine(`❌ Transaction failed: ${confirmation.value.err}`);
+        return null;
+      }
+
+      addLiveFeedLine(`✅ Mint successful! TX: ${txid.slice(0, 16)}...`);
+      
+      // Refresh balances
+      walletBalance = await getSolBalance(walletPublicKey);
+      srcBalance = await getSrcBalance(walletPublicKey);
+      updateWalletUI();
+
+      return txid;
+    } catch (err) {
+      console.error('Mint transaction error:', err);
+      addLiveFeedLine(`❌ Mint failed: ${err.message}`);
+      return null;
+    }
+  }
+
+  // ========== SIMULATE / REAL MINT ==========
+  async function simulateMining() {
+    const devices = loadJSON(STORAGE.DEVICES, []);
     const selectedDevice = devices.length ? devices[Math.floor(Math.random() * devices.length)] : null;
-    const chosenSource = selectedDevice?.source || energySources[Math.floor(Math.random() * energySources.length)];
-    const sourceDefinition = typeof chosenSource === 'string'
-      ? energySources.find((item) => item.name === chosenSource) || energySources[0]
-      : chosenSource;
     const kWh = Math.floor(Math.random() * 500) + 1;
-    const effective = kWh * sourceDefinition.multiplier;
-    const enrg = effective / 1000;
+    const enrg = kWh / 1000;
     const fee = enrg * 0.15;
     const distribution = {
       buyback: fee * 0.2,
@@ -564,9 +387,15 @@
       dao: fee * 0.3,
       emergency: fee * 0.1,
     };
-    const deviceName = selectedDevice ? selectedDevice.name : 'Virtual device';
+    const deviceName = selectedDevice ? selectedDevice.name || selectedDevice.id : 'Virtual device';
 
     // Animate bars
+    const animateBar = (bar, pct) => {
+      if (!bar) return;
+      bar.style.transition = 'width 0.8s ease';
+      bar.style.width = '0%';
+      requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = `${Math.min(100, Math.max(0, pct))}%`; }));
+    };
     animateBar(refs.simEnergyBar, (kWh / 500) * 100);
     animateBar(refs.simSrcBar, Math.min(100, (enrg / 0.5) * 100));
     animateBar(refs.simFeeBuyback, distribution.buyback / fee * 100);
@@ -577,479 +406,421 @@
     if (refs.simEnergyValue) refs.simEnergyValue.textContent = `${kWh}`;
     if (refs.simSrcValue) refs.simSrcValue.textContent = `${enrg.toFixed(3)}`;
 
-    const text = `${deviceName} (${sourceDefinition.name}) produced ${kWh} kWh → ${enrg.toFixed(3)} SRC. Fee: buyback ${distribution.buyback.toFixed(3)}, staking ${distribution.staking.toFixed(3)}, DAO ${distribution.dao.toFixed(3)}, emergency ${distribution.emergency.toFixed(3)}.`;
-    addLiveFeedLine(text);
-    playClickTone();
+    // Try real transaction if wallet connected
+    if (state.walletConnected && walletPublicKey && selectedDevice) {
+      const nonce = Math.floor(Date.now() / 1000);
+      const timestamp = Math.floor(Date.now() / 1000);
+      const energyWh = kWh * 1000;
+      const txid = await sendMintTransaction(selectedDevice.id || selectedDevice.device_id, energyWh, nonce, timestamp);
+      
+      if (txid) {
+        addLiveFeedLine(`✅ ${deviceName} minted ${kWh} kWh → ${enrg.toFixed(3)} SRC. TX: ${txid.slice(0, 16)}...`);
+        const history = loadJSON(STORAGE.HISTORY, []);
+        history.unshift({
+          timestamp: new Date().toISOString(),
+          deviceName,
+          source: selectedDevice.source || 'Solar',
+          kWh,
+          enrg,
+          fee,
+          distribution,
+          txid,
+          status: 'confirmed',
+        });
+        saveJSON(STORAGE.HISTORY, history);
+        renderDashboardSummary();
+        renderHistory();
+        return;
+      }
+    }
 
-    addHistoryEntry({
+    // Fallback: local simulation
+    addLiveFeedLine(`⚡ ${deviceName} produced ${kWh} kWh → ${enrg.toFixed(3)} SRC (simulated)`);
+    const history = loadJSON(STORAGE.HISTORY, []);
+    history.unshift({
       timestamp: new Date().toISOString(),
       deviceName,
-      source: sourceDefinition.name,
+      source: selectedDevice?.source || 'Solar',
       kWh,
       enrg,
       fee,
       distribution,
+      txid: null,
+      status: 'simulated',
     });
+    saveJSON(STORAGE.HISTORY, history);
     renderDashboardSummary();
     renderHistory();
-  };
+  }
 
-  // ========== PROGRESS BAR & MODAL ==========
-  const renderProgressBar = () => {
+  // ========== LIVE FEED ==========
+  function addLiveFeedLine(text) {
+    if (!refs.consoleFeed) return;
+    const line = el('div', {
+      className: 'console-line',
+      textContent: `[${new Date().toLocaleTimeString('en-US')}] ${text}`,
+      style: 'padding:10px 0;border-bottom:1px solid rgba(148,163,184,0.08);'
+    });
+    refs.consoleFeed.appendChild(line);
+    while (refs.consoleFeed.children.length > 40) refs.consoleFeed.removeChild(refs.consoleFeed.firstChild);
+    refs.consoleFeed.scrollTop = refs.consoleFeed.scrollHeight;
+  }
+
+  function startLiveFeed() {
+    addLiveFeedLine(`🌐 ENRG oracle: ${apiAvailable ? 'connected' : 'connecting...'}`);
+    addLiveFeedLine(`📊 Network: ${networkStats.active_producers} producers, ${networkStats.total_energy_mwh} MWh`);
+    if (state.walletConnected) {
+      addLiveFeedLine(`👛 Wallet: ${state.walletAddress.slice(0, 6)}... | ${srcBalance.toFixed(2)} SRC`);
+    }
+  }
+
+  // ========== MODAL ==========
+  function openModal() {
+    if (!refs.modal) return;
+    refs.modal.classList.add('active');
+    refs.modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    renderModal();
+  }
+
+  function closeModal() {
+    if (!refs.modal) return;
+    refs.modal.classList.remove('active');
+    refs.modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  function renderProgressBar() {
     const existing = document.getElementById('enrg-progress-container');
     if (existing) return existing;
     if (!refs.modalBody) return null;
-    const container = createElement('div', { id: 'enrg-progress-container', style: 'margin-bottom:24px;' }, []);
+    const container = el('div', { id: 'enrg-progress-container', style: 'margin-bottom:24px;' });
     const stepLabels = ['Access', 'Wallet', 'Device', 'Dashboard'];
-    const stepRow = createElement('div', { className: 'enrg-progress-steps' }, []);
-    stepLabels.forEach(() => {
-      stepRow.appendChild(createElement('div', { className: 'enrg-progress-step' }));
-    });
-    const bar = createElement('div', { className: 'enrg-progress-bar-container' }, [
-      createElement('div', { className: 'enrg-progress-bar-fill' }),
+    const stepRow = el('div', { className: 'enrg-progress-steps' });
+    stepLabels.forEach(() => stepRow.appendChild(el('div', { className: 'enrg-progress-step' })));
+    const bar = el('div', { className: 'enrg-progress-bar-container' }, [
+      el('div', { className: 'enrg-progress-bar-fill' }),
     ]);
     container.appendChild(stepRow);
     container.appendChild(bar);
     refs.modalBody.prepend(container);
     return container;
-  };
+  }
 
-  const updateProgress = () => {
+  function updateProgress() {
     const container = renderProgressBar();
     if (!container) return;
     const steps = container.querySelectorAll('.enrg-progress-step');
     const fill = container.querySelector('.enrg-progress-bar-fill');
     const currentIndex = Math.min(3, Math.max(0, state.step - 1));
-    steps.forEach((step, index) => {
-      step.classList.toggle('active', index <= currentIndex);
-    });
-    const width = ((currentIndex + 1) / steps.length) * 100;
-    if (fill) fill.style.width = `${width}%`;
-  };
+    steps.forEach((step, index) => step.classList.toggle('active', index <= currentIndex));
+    if (fill) fill.style.width = `${((currentIndex + 1) / steps.length) * 100}%`;
+  }
 
-  const renderModal = () => {
+  function renderModal() {
     if (!refs.modalBody || !refs.modalHeaderTitle) return;
     refs.modalBody.innerHTML = '';
     refs.modalHeaderTitle.textContent = state.onboarded ? 'Welcome back to ENRG Protocol' : 'Onboard your energy source';
     updateProgress();
-
-    const wrapper = createElement('div', { style: 'display:flex;flex-direction:column;gap:18px;max-width:100%;' });
+    const wrapper = el('div', { style: 'display:flex;flex-direction:column;gap:18px;max-width:100%;' });
     if (!state.onboarded) {
-      if (state.step === 1.5) {
-        wrapper.appendChild(renderInviteCodeStep());
-      } else if (state.step === 1.1) {
-        wrapper.appendChild(renderRegistrationStep());
-      } else if (state.step === 2) {
-        wrapper.appendChild(renderWalletStep());
-      } else if (state.step === 3) {
-        wrapper.appendChild(renderDeviceStep());
-      } else {
-        wrapper.appendChild(renderInviteChoiceStep());
-      }
+      if (state.step === 1.5) wrapper.appendChild(renderInviteCodeStep());
+      else if (state.step === 1.1) wrapper.appendChild(renderRegistrationStep());
+      else if (state.step === 2) wrapper.appendChild(renderWalletStep());
+      else if (state.step === 3) wrapper.appendChild(renderDeviceStep());
+      else wrapper.appendChild(renderInviteChoiceStep());
     } else {
       wrapper.appendChild(renderDashboardStep());
     }
-
-    const resetAction = createElement('button', {
-      type: 'button',
-      className: 'btn-secondary',
-      textContent: 'Start Over',
-      style: 'align-self:flex-start;margin-top:10px;',
-    });
-    resetAction.addEventListener('click', (event) => {
-      event.preventDefault();
-      resetOnboarding();
-    });
+    const resetAction = el('button', { type: 'button', className: 'btn-secondary', textContent: 'Start Over', style: 'align-self:flex-start;margin-top:10px;' });
+    resetAction.addEventListener('click', (e) => { e.preventDefault(); resetOnboarding(); });
     wrapper.appendChild(resetAction);
     refs.modalBody.appendChild(wrapper);
-  };
+  }
 
-  const renderInviteChoiceStep = () => {
-    const section = createElement('div', {} , []);
-    section.appendChild(createElement('p', { textContent: 'Start with an invite code or request access to join the ENRG network and start earning SRC tokens.', style: 'color:var(--text-muted);' }));
-    const row = createElement('div', { style: 'display:flex;flex-wrap:wrap;gap:12px;margin-top:18px;' }, []);
-    const inviteButton = createElement('button', { type: 'button', className: 'btn-primary', textContent: 'I have an invite code' });
-    inviteButton.addEventListener('click', () => {
-      state.step = 1.5;
-      saveState(state);
-      renderModal();
-    });
-    const requestButton = createElement('button', { type: 'button', className: 'btn-secondary', textContent: 'Request access' });
-    requestButton.addEventListener('click', () => {
-      state.step = 1.1;
-      saveState(state);
-      renderModal();
-    });
+  function renderInviteChoiceStep() {
+    const section = el('div', {});
+    section.appendChild(el('p', { textContent: 'Start with an invite code or request access to join the ENRG network and start earning SRC tokens.', style: 'color:var(--text-muted);' }));
+    const row = el('div', { style: 'display:flex;flex-wrap:wrap;gap:12px;margin-top:18px;' });
+    const inviteButton = el('button', { type: 'button', className: 'btn-primary', textContent: 'I have an invite code' });
+    inviteButton.addEventListener('click', () => { state.step = 1.5; saveJSON(STORAGE.STATE, state); renderModal(); });
+    const requestButton = el('button', { type: 'button', className: 'btn-secondary', textContent: 'Request access' });
+    requestButton.addEventListener('click', () => { state.step = 1.1; saveJSON(STORAGE.STATE, state); renderModal(); });
     row.appendChild(inviteButton);
     row.appendChild(requestButton);
     section.appendChild(row);
     return section;
-  };
+  }
 
-  const renderInviteCodeStep = () => {
-    const section = createElement('div', {}, []);
-    section.appendChild(createElement('p', { textContent: 'Enter your invite code to continue onboarding.', style: 'color:var(--text-muted);' }));
-    const form = createElement('form', { style: 'display:flex;flex-direction:column;gap:14px;margin-top:18px;' }, []);
-    const codeInput = createElement('input', { type: 'text', placeholder: 'Invite code', required: true, style: 'padding:14px;border-radius:14px;border:1px solid rgba(148,163,184,0.3);background:rgba(15,23,42,0.75);color:#E5E7EB;' });
-    const continueButton = createElement('button', { type: 'submit', className: 'btn-primary', textContent: 'Continue' });
+  function renderInviteCodeStep() {
+    const section = el('div', {});
+    section.appendChild(el('p', { textContent: 'Enter your invite code to continue onboarding.', style: 'color:var(--text-muted);' }));
+    const form = el('form', { style: 'display:flex;flex-direction:column;gap:14px;margin-top:18px;' });
+    const codeInput = el('input', { type: 'text', placeholder: 'Invite code', required: true, style: 'padding:14px;border-radius:14px;border:1px solid rgba(148,163,184,0.3);background:rgba(15,23,42,0.75);color:#E5E7EB;' });
+    const continueButton = el('button', { type: 'submit', className: 'btn-primary', textContent: 'Continue' });
     form.appendChild(codeInput);
     form.appendChild(continueButton);
-    form.addEventListener('submit', (event) => {
-      event.preventDefault();
-      const code = codeInput.value.trim();
-      if (!code) {
-        alert('Please enter your invite code.');
-        return;
-      }
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!codeInput.value.trim()) { alert('Please enter your invite code.'); return; }
       state.inviteUsed = true;
       state.step = 2;
-      saveState(state);
+      saveJSON(STORAGE.STATE, state);
       renderModal();
     });
     section.appendChild(form);
     return section;
-  };
+  }
 
-  const renderRegistrationStep = () => {
-    const section = createElement('div', {}, []);
-    section.appendChild(createElement('p', { textContent: 'Register with your email and password to join ENRG and start minting SRC tokens.', style: 'color:var(--text-muted);' }));
-    const form = createElement('form', { style: 'display:flex;flex-direction:column;gap:14px;margin-top:18px;' }, []);
-    const emailInput = createElement('input', { type: 'email', placeholder: 'Email address', required: true, style: 'padding:14px;border-radius:14px;border:1px solid rgba(148,163,184,0.3);background:rgba(15,23,42,0.75);color:#E5E7EB;' });
-    const passwordInput = createElement('input', { type: 'password', placeholder: 'Password', required: true, style: 'padding:14px;border-radius:14px;border:1px solid rgba(148,163,184,0.3);background:rgba(15,23,42,0.75);color:#E5E7EB;' });
-    const registerButton = createElement('button', { type: 'submit', className: 'btn-primary', textContent: 'Register' });
+  function renderRegistrationStep() {
+    const section = el('div', {});
+    section.appendChild(el('p', { textContent: 'Register with your email and password to join ENRG and start minting SRC tokens.', style: 'color:var(--text-muted);' }));
+    const form = el('form', { style: 'display:flex;flex-direction:column;gap:14px;margin-top:18px;' });
+    const emailInput = el('input', { type: 'email', placeholder: 'Email address', required: true, style: 'padding:14px;border-radius:14px;border:1px solid rgba(148,163,184,0.3);background:rgba(15,23,42,0.75);color:#E5E7EB;' });
+    const passwordInput = el('input', { type: 'password', placeholder: 'Password', required: true, style: 'padding:14px;border-radius:14px;border:1px solid rgba(148,163,184,0.3);background:rgba(15,23,42,0.75);color:#E5E7EB;' });
+    const registerButton = el('button', { type: 'submit', className: 'btn-primary', textContent: 'Register' });
     form.appendChild(emailInput);
     form.appendChild(passwordInput);
     form.appendChild(registerButton);
-    form.addEventListener('submit', (event) => {
-      event.preventDefault();
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
       const email = emailInput.value.trim();
       const password = passwordInput.value.trim();
-      if (!email || !password) {
-        alert('Please provide both email and password.');
-        return;
-      }
-      saveUser({ email, password, registeredAt: new Date().toISOString() });
+      if (!email || !password) { alert('Please provide both email and password.'); return; }
+      saveJSON(STORAGE.USER, { email, password, registeredAt: new Date().toISOString() });
       state.requestedAccess = true;
       state.step = 2;
-      saveState(state);
+      saveJSON(STORAGE.STATE, state);
       renderModal();
     });
     section.appendChild(form);
     return section;
-  };
+  }
 
-  const renderWalletStep = () => {
-    const section = createElement('div', {}, []);
-    section.appendChild(createElement('p', { textContent: 'Connect Phantom to secure wallet actions or skip and continue with onboarding.', style: 'color:var(--text-muted);' }));
-    const actionRow = createElement('div', { style: 'display:flex;flex-wrap:wrap;gap:12px;margin-top:18px;' }, []);
-    const connectButton = createElement('button', { type: 'button', className: 'btn-primary', textContent: 'Connect Phantom' });
-    connectButton.addEventListener('click', async () => {
-      await connectWallet();
-    });
-    const skipButton = createElement('button', { type: 'button', className: 'btn-secondary', textContent: 'Skip for now' });
-    skipButton.addEventListener('click', () => {
-      state.walletConnected = false;
-      state.step = 3;
-      saveState(state);
-      renderModal();
-    });
+  function renderWalletStep() {
+    const section = el('div', {});
+    section.appendChild(el('p', { textContent: 'Connect Phantom to secure wallet actions or skip and continue with onboarding.', style: 'color:var(--text-muted);' }));
+    const actionRow = el('div', { style: 'display:flex;flex-wrap:wrap;gap:12px;margin-top:18px;' });
+    const connectButton = el('button', { type: 'button', className: 'btn-primary', textContent: 'Connect Phantom' });
+    connectButton.addEventListener('click', async () => { await connectWallet(); });
+    const skipButton = el('button', { type: 'button', className: 'btn-secondary', textContent: 'Skip for now' });
+    skipButton.addEventListener('click', () => { state.walletConnected = false; state.step = 3; saveJSON(STORAGE.STATE, state); renderModal(); });
     actionRow.appendChild(connectButton);
     actionRow.appendChild(skipButton);
     section.appendChild(actionRow);
     return section;
-  };
+  }
 
-  const renderDeviceStep = () => {
-    const section = createElement('div', {}, []);
-    section.appendChild(createElement('p', { textContent: 'Register your first device and start tokenizing energy production.', style: 'color:var(--text-muted);' }));
-    const form = createElement('form', { style: 'display:flex;flex-direction:column;gap:14px;margin-top:18px;' }, []);
-    const nameInput = createElement('input', { type: 'text', placeholder: 'Device name', required: true, style: 'padding:14px;border-radius:14px;border:1px solid rgba(148,163,184,0.3);background:rgba(15,23,42,0.75);color:#E5E7EB;' });
-    const idInput = createElement('input', { type: 'text', placeholder: 'Device ID', required: true, style: 'padding:14px;border-radius:14px;border:1px solid rgba(148,163,184,0.3);background:rgba(15,23,42,0.75);color:#E5E7EB;' });
-    const sourceSelect = createElement('select', { required: true, style: 'padding:14px;border-radius:14px;border:1px solid rgba(148,163,184,0.3);background:rgba(15,23,42,0.75);color:#E5E7EB;' });
-    ['Solar', 'Wind', 'Hydro'].forEach((source) => {
-      sourceSelect.appendChild(createElement('option', { value: source }, [source]));
-    });
-    const registerButton = createElement('button', { type: 'submit', className: 'btn-primary', textContent: 'Register Device' });
+  function renderDeviceStep() {
+    const section = el('div', {});
+    section.appendChild(el('p', { textContent: 'Register your first device and start tokenizing energy production.', style: 'color:var(--text-muted);' }));
+    const form = el('form', { style: 'display:flex;flex-direction:column;gap:14px;margin-top:18px;' });
+    const nameInput = el('input', { type: 'text', placeholder: 'Device name', required: true, style: 'padding:14px;border-radius:14px;border:1px solid rgba(148,163,184,0.3);background:rgba(15,23,42,0.75);color:#E5E7EB;' });
+    const idInput = el('input', { type: 'text', placeholder: 'Device ID', required: true, style: 'padding:14px;border-radius:14px;border:1px solid rgba(148,163,184,0.3);background:rgba(15,23,42,0.75);color:#E5E7EB;' });
+    const sourceSelect = el('select', { required: true, style: 'padding:14px;border-radius:14px;border:1px solid rgba(148,163,184,0.3);background:rgba(15,23,42,0.75);color:#E5E7EB;' });
+    ['Solar', 'Wind', 'Hydro', 'Biogas'].forEach((src) => sourceSelect.appendChild(el('option', { value: src }, [src])));
+    const registerButton = el('button', { type: 'submit', className: 'btn-primary', textContent: 'Register Device' });
     form.appendChild(nameInput);
     form.appendChild(idInput);
     form.appendChild(sourceSelect);
     form.appendChild(registerButton);
-    form.addEventListener('submit', (event) => {
-      event.preventDefault();
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
       const name = nameInput.value.trim();
       const id = idInput.value.trim();
       const source = sourceSelect.value;
-      if (!name || !id || !source) {
-        alert('Please fill device name, ID, and source.');
-        return;
+      if (!name || !id || !source) { alert('Please fill device name, ID, and source.'); return; }
+      
+      // Try to register via API
+      try {
+        const result = await apiFetch('/api/v1/device/register', {
+          method: 'POST',
+          body: JSON.stringify({ device_id: id, public_key: name }),
+        });
+        addLiveFeedLine(`✅ Device registered via API: ${id}`);
+      } catch (err) {
+        addLiveFeedLine(`⚠️ API registration failed (${err.message}), saving locally`);
       }
-      const devices = loadDevices();
+      
+      const devices = loadJSON(STORAGE.DEVICES, []);
       devices.unshift({ name, id, source, registeredAt: new Date().toISOString() });
-      saveDevices(devices);
+      saveJSON(STORAGE.DEVICES, devices);
       state.onboarded = true;
       state.step = 4;
-      saveState(state);
+      saveJSON(STORAGE.STATE, state);
       renderDashboardSummary();
       renderHistory();
       renderModal();
     });
     section.appendChild(form);
     return section;
-  };
+  }
 
-  const renderDashboardStep = () => {
-    const section = createElement('div', {}, []);
-    const devices = loadDevices();
+  function renderDashboardStep() {
+    const section = el('div', {});
+    const devices = loadJSON(STORAGE.DEVICES, []);
     if (!devices.length) {
-      section.appendChild(createElement('p', { textContent: 'Complete device registration to unlock live mining and dashboard insights.', style: 'color:var(--text-muted);' }));
+      section.appendChild(el('p', { textContent: 'Complete device registration to unlock live mining and dashboard insights.', style: 'color:var(--text-muted);' }));
     } else {
-      section.appendChild(createElement('p', { textContent: 'Your onboarding is complete. Use the simulator to mint SRC from verified production.', style: 'color:var(--text-muted);' }));
+      section.appendChild(el('p', { textContent: 'Your onboarding is complete. Use the simulator to mint SRC from verified production.', style: 'color:var(--text-muted);' }));
     }
-    const actionRow = createElement('div', { style: 'display:flex;flex-wrap:wrap;gap:12px;margin-top:18px;' }, []);
-    const simButton = createElement('button', { type: 'button', className: 'btn-primary', textContent: 'Simulate Mining' });
-    simButton.addEventListener('click', () => {
-      if (refs.simulateButtons.length) {
-        refs.simulateButtons[0].click();
-      } else {
-        simulateMining();
-      }
-    });
+    const actionRow = el('div', { style: 'display:flex;flex-wrap:wrap;gap:12px;margin-top:18px;' });
+    const simButton = el('button', { type: 'button', className: 'btn-primary', textContent: 'Simulate Mining' });
+    simButton.addEventListener('click', () => { if (refs.simulateButtons.length) refs.simulateButtons[0].click(); else simulateMining(); });
     actionRow.appendChild(simButton);
     section.appendChild(actionRow);
     return section;
-  };
+  }
 
   // ========== DASHBOARD ==========
-  const renderDashboardSummary = () => {
+  function renderDashboardSummary() {
     if (!refs.dashboard) return;
     let summary = refs.dashboard.querySelector('.enrg-dashboard-summary');
     if (!summary) {
-      summary = createElement('div', { className: 'enrg-dashboard-summary', style: 'margin-top:24px;padding:22px;border:1px solid rgba(148,163,184,0.2);border-radius:22px;background:rgba(15,23,42,0.72);' }, []);
+      summary = el('div', { className: 'enrg-dashboard-summary', style: 'margin-top:24px;padding:22px;border:1px solid rgba(148,163,184,0.2);border-radius:22px;background:rgba(15,23,42,0.72);' });
       refs.dashboard.appendChild(summary);
     }
-    const devices = loadDevices();
-    const history = loadHistory();
+    const devices = loadJSON(STORAGE.DEVICES, []);
+    const history = loadJSON(STORAGE.HISTORY, []);
     summary.innerHTML = '';
-    const header = createElement('div', { style: 'display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:14px;' }, []);
-    header.appendChild(createElement('h3', { textContent: 'SRC Dashboard Summary', style: 'margin:0;font-size:1.15rem;' }));
-    const resetButton = createElement('button', { type: 'button', className: 'btn-secondary', textContent: 'Start Over', style: 'white-space:nowrap;' });
-    resetButton.addEventListener('click', (event) => { event.preventDefault(); resetOnboarding(); });
+    const header = el('div', { style: 'display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:14px;' });
+    header.appendChild(el('h3', { textContent: 'SRC Dashboard Summary', style: 'margin:0;font-size:1.15rem;' }));
+    const resetButton = el('button', { type: 'button', className: 'btn-secondary', textContent: 'Start Over', style: 'white-space:nowrap;' });
+    resetButton.addEventListener('click', (e) => { e.preventDefault(); resetOnboarding(); });
     header.appendChild(resetButton);
     summary.appendChild(header);
     if (!devices.length) {
-      summary.appendChild(createElement('p', { textContent: 'No registered devices yet. Complete onboarding to start minting SRC from verified energy production.', style: 'color:var(--text-muted);margin-top:16px;max-width:720px;' }));
+      summary.appendChild(el('p', { textContent: 'No registered devices yet. Complete onboarding to start minting SRC from verified energy production.', style: 'color:var(--text-muted);margin-top:16px;max-width:720px;' }));
       return;
     }
-    const deviceGrid = createElement('div', { style: 'display:grid;gap:16px;margin-top:20px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));' }, []);
+    const deviceGrid = el('div', { style: 'display:grid;gap:16px;margin-top:20px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));' });
     devices.forEach((device) => {
-      const card = createElement('div', { style: 'padding:18px;border:1px solid rgba(148,163,184,0.18);border-radius:18px;background:rgba(12,17,28,0.9);' }, []);
-      card.appendChild(createElement('div', { textContent: device.name, style: 'font-weight:700;margin-bottom:10px;' }));
-      card.appendChild(createElement('div', { textContent: `ID: ${device.id}`, style: 'color:var(--text-muted);margin-bottom:6px;' }));
-      card.appendChild(createElement('div', { textContent: `Source: ${device.source}`, style: 'color:var(--text-muted);' }));
+      const card = el('div', { style: 'padding:18px;border:1px solid rgba(148,163,184,0.18);border-radius:18px;background:rgba(12,17,28,0.9);' });
+      card.appendChild(el('div', { textContent: device.name, style: 'font-weight:700;margin-bottom:10px;' }));
+      card.appendChild(el('div', { textContent: `ID: ${device.id}`, style: 'color:var(--text-muted);margin-bottom:6px;' }));
+      card.appendChild(el('div', { textContent: `Source: ${device.source}`, style: 'color:var(--text-muted);' }));
+      card.appendChild(el('div', { textContent: `Status: ${device.status || 'Active'}`, style: `color:${(device.status === 'Active' || !device.status) ? '#22C55E' : '#FF6B00'};font-size:0.85rem;` }));
       deviceGrid.appendChild(card);
     });
     summary.appendChild(deviceGrid);
-    const statsRow = createElement('div', { style: 'display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:20px;' }, []);
-    statsRow.appendChild(createElement('div', { style: 'padding:18px;border:1px solid rgba(148,163,184,0.18);border-radius:18px;background:rgba(12,17,28,0.9);' }, [
-      createElement('div', { textContent: 'Registered Devices', style: 'color:var(--text-muted);margin-bottom:6px;' }),
-      createElement('div', { textContent: `${devices.length}`, style: 'font-size:1.4rem;font-weight:700;' }),
+    const statsRow = el('div', { style: 'display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:20px;' });
+    statsRow.appendChild(el('div', { style: 'padding:18px;border:1px solid rgba(148,163,184,0.18);border-radius:18px;background:rgba(12,17,28,0.9);' }, [
+      el('div', { textContent: 'Registered Devices', style: 'color:var(--text-muted);margin-bottom:6px;' }),
+      el('div', { textContent: `${devices.length}`, style: 'font-size:1.4rem;font-weight:700;' }),
     ]));
-    statsRow.appendChild(createElement('div', { style: 'padding:18px;border:1px solid rgba(148,163,184,0.18);border-radius:18px;background:rgba(12,17,28,0.9);' }, [
-      createElement('div', { textContent: 'Mining Events', style: 'color:var(--text-muted);margin-bottom:6px;' }),
-      createElement('div', { textContent: `${history.length}`, style: 'font-size:1.4rem;font-weight:700;' }),
+    statsRow.appendChild(el('div', { style: 'padding:18px;border:1px solid rgba(148,163,184,0.18);border-radius:18px;background:rgba(12,17,28,0.9);' }, [
+      el('div', { textContent: 'Mining Events', style: 'color:var(--text-muted);margin-bottom:6px;' }),
+      el('div', { textContent: `${history.length}`, style: 'font-size:1.4rem;font-weight:700;' }),
+    ]));
+    statsRow.appendChild(el('div', { style: 'padding:18px;border:1px solid rgba(148,163,184,0.18);border-radius:18px;background:rgba(12,17,28,0.9);' }, [
+      el('div', { textContent: 'Wallet', style: 'color:var(--text-muted);margin-bottom:6px;' }),
+      el('div', { textContent: state.walletConnected ? `${srcBalance.toFixed(2)} SRC` : 'Not connected', style: 'font-size:1.4rem;font-weight:700;' }),
     ]));
     summary.appendChild(statsRow);
-  };
+  }
 
-  const renderHistory = () => {
+  function renderHistory() {
     if (!refs.historyBody) return;
-    const history = loadHistory();
+    const history = loadJSON(STORAGE.HISTORY, []);
     refs.historyBody.innerHTML = '';
     if (!history.length) {
-      refs.historyBody.appendChild(createElement('p', { textContent: 'No mining history yet. Simulate or register a device to start.', style: 'color:var(--text-muted);text-align:center;padding:20px;' }));
+      refs.historyBody.appendChild(el('p', { textContent: 'No mining history yet. Connect wallet and register a device to start minting SRC.', style: 'color:var(--text-muted);text-align:center;padding:20px;' }));
       return;
     }
-    const table = createElement('table', { style: 'width:100%;border-collapse:collapse;' }, []);
-    const thead = createElement('thead', {}, [
-      createElement('tr', {}, [
-        createElement('th', { textContent: 'Timestamp', style: 'text-align:left;padding:10px;border-bottom:1px solid rgba(148,163,184,0.2);' }),
-        createElement('th', { textContent: 'Device', style: 'text-align:left;padding:10px;border-bottom:1px solid rgba(148,163,184,0.2);' }),
-        createElement('th', { textContent: 'Source', style: 'text-align:left;padding:10px;border-bottom:1px solid rgba(148,163,184,0.2);' }),
-        createElement('th', { textContent: 'kWh', style: 'text-align:right;padding:10px;border-bottom:1px solid rgba(148,163,184,0.2);' }),
-        createElement('th', { textContent: 'SRC', style: 'text-align:right;padding:10px;border-bottom:1px solid rgba(148,163,184,0.2);' }),
-        createElement('th', { textContent: 'Fee', style: 'text-align:right;padding:10px;border-bottom:1px solid rgba(148,163,184,0.2);' }),
+    const table = el('table', { style: 'width:100%;border-collapse:collapse;' });
+    const thead = el('thead', {}, [
+      el('tr', {}, [
+        el('th', { textContent: 'Timestamp', style: 'text-align:left;padding:10px;border-bottom:1px solid rgba(148,163,184,0.2);' }),
+        el('th', { textContent: 'Device', style: 'text-align:left;padding:10px;border-bottom:1px solid rgba(148,163,184,0.2);' }),
+        el('th', { textContent: 'Source', style: 'text-align:left;padding:10px;border-bottom:1px solid rgba(148,163,184,0.2);' }),
+        el('th', { textContent: 'kWh', style: 'text-align:right;padding:10px;border-bottom:1px solid rgba(148,163,184,0.2);' }),
+        el('th', { textContent: 'SRC', style: 'text-align:right;padding:10px;border-bottom:1px solid rgba(148,163,184,0.2);' }),
+        el('th', { textContent: 'Status', style: 'text-align:center;padding:10px;border-bottom:1px solid rgba(148,163,184,0.2);' }),
       ]),
     ]);
     table.appendChild(thead);
-    const tbody = createElement('tbody', {}, []);
+    const tbody = el('tbody', {});
     history.forEach((entry) => {
-      const row = createElement('tr', {}, [
-        createElement('td', { textContent: new Date(entry.timestamp).toLocaleString(), style: 'padding:10px;border-bottom:1px solid rgba(148,163,184,0.1);' }),
-        createElement('td', { textContent: entry.deviceName, style: 'padding:10px;border-bottom:1px solid rgba(148,163,184,0.1);' }),
-        createElement('td', { textContent: entry.source, style: 'padding:10px;border-bottom:1px solid rgba(148,163,184,0.1);' }),
-        createElement('td', { textContent: entry.kWh, style: 'text-align:right;padding:10px;border-bottom:1px solid rgba(148,163,184,0.1);' }),
-        createElement('td', { textContent: entry.enrg.toFixed(3), style: 'text-align:right;padding:10px;border-bottom:1px solid rgba(148,163,184,0.1);' }),
-        createElement('td', { textContent: entry.fee.toFixed(3), style: 'text-align:right;padding:10px;border-bottom:1px solid rgba(148,163,184,0.1);' }),
+      const statusColor = entry.status === 'confirmed' ? '#22C55E' : entry.status === 'simulated' ? '#FACC15' : '#FF6B00';
+      const row = el('tr', {}, [
+        el('td', { textContent: new Date(entry.timestamp).toLocaleString(), style: 'padding:10px;border-bottom:1px solid rgba(148,163,184,0.1);' }),
+        el('td', { textContent: entry.deviceName, style: 'padding:10px;border-bottom:1px solid rgba(148,163,184,0.1);' }),
+        el('td', { textContent: entry.source, style: 'padding:10px;border-bottom:1px solid rgba(148,163,184,0.1);' }),
+        el('td', { textContent: `${entry.kWh}`, style: 'text-align:right;padding:10px;border-bottom:1px solid rgba(148,163,184,0.1);' }),
+        el('td', { textContent: entry.enrg.toFixed(3), style: 'text-align:right;padding:10px;border-bottom:1px solid rgba(148,163,184,0.1);' }),
+        el('td', { textContent: entry.status || 'simulated', style: `text-align:center;padding:10px;border-bottom:1px solid rgba(148,163,184,0.1);color:${statusColor};` }),
       ]);
       tbody.appendChild(row);
     });
     table.appendChild(tbody);
     refs.historyBody.appendChild(table);
-  };
+  }
 
   // ========== ONBOARDING ==========
-  const handleGetStarted = () => {
-    if (state.onboarded) {
-      scrollToElement('#dashboard');
-      return;
-    }
+  function handleGetStarted() {
+    if (state.onboarded) { const d = document.getElementById('dashboard'); if (d) d.scrollIntoView({ behavior: 'smooth' }); return; }
     openModal();
-  };
+  }
 
-  const resetOnboarding = () => {
-    localStorage.removeItem(STORAGE_STATE);
-    localStorage.removeItem(STORAGE_USER);
-    localStorage.removeItem(STORAGE_DEVICES);
-    localStorage.removeItem(STORAGE_HISTORY);
+  function resetOnboarding() {
+    Object.keys(STORAGE).forEach(k => localStorage.removeItem(STORAGE[k]));
     Object.assign(state, { ...defaultState });
     renderDashboardSummary();
     renderHistory();
-    if (refs.modal) {
-      openModal();
-      renderModal();
+    if (refs.modal) { openModal(); renderModal(); }
+  }
+
+  // ========== BACKGROUND ==========
+  function initBackground() {
+    const canvas = document.getElementById('particle-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let particles = [], w, h;
+    function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resize); resize();
+    const colors = [{ c: '#00E5FF', glow: 'rgba(0,229,255,0.7)' }, { c: '#FF6B00', glow: 'rgba(255,107,0,0.7)' }];
+    function createParticle() {
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      return { x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.25, vy: (Math.random() - 0.5) * 0.25, r: Math.random() * 2 + 0.6, color: color.c, glow: color.glow };
     }
-  };
-
-  // ========== ENERGY DECORATIONS ==========
-  const initEnergyDecorations = () => {
-    const metricCards = $$('.metric-card');
-    metricCards.forEach((card) => card.classList.add('energy-glow'));
-    if (!refs.heroRight) return;
-    refs.heroRight.style.position = 'relative';
-    if (document.getElementById('enrg-energy-overlay')) return;
-    const overlay = createElement('div', { className: 'enrg-energy-overlay', id: 'enrg-energy-overlay' });
-    overlay.appendChild(createElement('div', { className: 'enrg-energy-ring' }));
-    overlay.appendChild(createElement('svg', { className: 'enrg-energy-path', viewBox: '0 0 220 220', xmlns: 'http://www.w3.org/2000/svg', html: `<path d="M20,180 C80,80 140,80 200,20" fill="none" stroke="rgba(0,229,255,0.35)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="200" cy="20" r="8" fill="#00E5FF"/><circle cx="20" cy="180" r="8" fill="#FF6B00"/>` }));
-
-    const nodes = [
-      { class: 'energy-1', symbol: '⚡', label: 'Future Grid', target: '#dashboard' },
-      { class: 'energy-2', symbol: '🔋', label: 'IoT Flow', target: '#minting' },
-      { class: 'energy-3', symbol: '🌐', label: 'Clean Power', target: '#tokenomics' },
-    ];
-    nodes.forEach((item) => {
-      const node = createElement('div', {
-        className: `enrg-energy-node ${item.class}`,
-        html: `<div>${item.symbol}<span>${item.label}</span></div>`,
-      });
-      node.style.cursor = 'pointer';
-      node.addEventListener('click', () => {
-        const targetElement = document.querySelector(item.target);
-        if (targetElement) {
-          targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      });
-      overlay.appendChild(node);
-    });
-    refs.heroRight.appendChild(overlay);
-  };
-
-  // ========== ANIMATIONS ==========
-  const animateMetric = (el, target, duration = 2000) => {
-    if (!el) return;
-    const startTime = performance.now();
-    const step = (now) => {
-      const progress = Math.min((now - startTime) / duration, 1);
-      el.textContent = formatNumber(Math.floor(progress * target));
-      if (progress < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  };
-
-  const updateMetricCounters = () => {
-    const metricEls = $$('.counter');
-    if (!metricEls.length) return;
-    metricEls.forEach((el) => {
-      const target = parseInt(el.dataset.target, 10) || 0;
-      animateMetric(el, target);
-    });
-  };
-
-  const initFadeUpAnimations = () => {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-        }
-      });
-    }, { threshold: 0.1 });
-    $$('.fade-up').forEach((el) => observer.observe(el));
-  };
-
-  const initMetricScrollAnimation = () => {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          updateMetricCounters();
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.5 });
-    const metricsSection = document.getElementById('metrics-grid') || refs.heroRight;
-    if (metricsSection) observer.observe(metricsSection);
-  };
-
-  // ========== RESPONSIVE ==========
-  const applyResponsiveLayout = () => {
-    const mobile = isMobile();
-    if (refs.heroGrid) {
-      refs.heroGrid.style.gridTemplateColumns = mobile ? '1fr' : 'minmax(0, 1.2fr) minmax(0, 1fr)';
+    function init() { particles = []; for (let i = 0; i < 120; i++) particles.push(createParticle()); }
+    function draw() {
+      ctx.clearRect(0, 0, w, h); ctx.globalCompositeOperation = 'lighter';
+      for (const p of particles) {
+        ctx.beginPath(); const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 4);
+        gradient.addColorStop(0, p.glow); gradient.addColorStop(1, 'transparent');
+        ctx.fillStyle = gradient; ctx.arc(p.x, p.y, p.r * 4, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.fillStyle = p.color; ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < -10) p.x = w + 10; if (p.x > w + 10) p.x = -10;
+        if (p.y < -10) p.y = h + 10; if (p.y > h + 10) p.y = -10;
+      }
+      requestAnimationFrame(draw);
     }
-    if (refs.metricsGrid) {
-      refs.metricsGrid.style.gridTemplateColumns = mobile ? '1fr' : 'repeat(3, minmax(0, 1fr))';
-    }
-    if (refs.heroActions) {
-      refs.heroActions.style.display = 'flex';
-      refs.heroActions.style.flexWrap = 'wrap';
-      refs.heroActions.style.gap = '12px';
-      refs.heroActions.querySelectorAll('button').forEach((button) => {
-        button.style.width = mobile ? '100%' : 'auto';
-      });
-    }
-    const howGrid = document.querySelector('#how-it-works .how-grid');
-    if (howGrid) {
-      howGrid.style.gridTemplateColumns = mobile ? '1fr' : 'repeat(3,minmax(0,1fr))';
-    }
-    const historyTableWrap = document.querySelector('.history-table-wrap');
-    if (historyTableWrap) {
-      historyTableWrap.style.overflowX = mobile ? 'auto' : 'visible';
-    }
-  };
+    init(); draw();
+  }
 
-  // ========== CHAT ASSISTANT ==========
-  const initChatAssistant = () => {
+  // ========== CHAT ==========
+  function initChatAssistant() {
     if (document.getElementById('enrg-chat-button')) return;
-    const button = createElement('button', { id: 'enrg-chat-button', className: 'enrg-chat-button', textContent: '💬', type: 'button' });
-    const panel = createElement('div', { className: 'enrg-chat-panel', id: 'enrg-chat-panel' }, []);
-    const header = createElement('div', { className: 'enrg-chat-header' }, [
-      createElement('div', { textContent: 'ENRG Protocol Assistant' }),
-      createElement('button', { type: 'button', textContent: '×', style: 'background:none;border:none;color:#E5E7EB;font-size:1.2rem;cursor:pointer;' }),
+    const button = el('button', { id: 'enrg-chat-button', className: 'enrg-chat-button', textContent: '💬', type: 'button' });
+    const panel = el('div', { className: 'enrg-chat-panel', id: 'enrg-chat-panel' });
+    const header = el('div', { className: 'enrg-chat-header' }, [
+      el('div', { textContent: 'ENRG Protocol Assistant' }),
+      el('button', { type: 'button', textContent: '×', style: 'background:none;border:none;color:#E5E7EB;font-size:1.2rem;cursor:pointer;' }),
     ]);
-    const body = createElement('div', { className: 'enrg-chat-body' }, []);
-    const actions = createElement('div', { className: 'enrg-chat-actions' }, []);
-    const hints = [
-      'How do I connect a device?',
-      'Explain the tokenomics.',
-      'What does SRC staking do?',
-    ];
+    const body = el('div', { className: 'enrg-chat-body' });
+    const actions = el('div', { className: 'enrg-chat-actions' });
+    const hints = ['How do I connect a device?', 'Explain the tokenomics.', 'What does SRC staking do?'];
     hints.forEach((hint) => {
-      const hintButton = createElement('button', { type: 'button', className: 'enrg-chat-action', textContent: hint });
+      const hintButton = el('button', { type: 'button', className: 'enrg-chat-action', textContent: hint });
       hintButton.addEventListener('click', () => {
         body.innerHTML = '';
-        body.appendChild(createElement('div', { className: 'enrg-chat-message', html: `<strong>Assistant:</strong> ${generateChatReply(hint)}` }));
+        body.appendChild(el('div', { className: 'enrg-chat-message', html: `<strong>Assistant:</strong> ${generateChatReply(hint)}` }));
       });
       actions.appendChild(hintButton);
     });
-    body.appendChild(createElement('div', { className: 'enrg-chat-message', textContent: 'Ask me about ENRG onboarding, SRC minting, or documentation.' }));
+    body.appendChild(el('div', { className: 'enrg-chat-message', textContent: 'Ask me about ENRG onboarding, SRC minting, or documentation.' }));
     panel.appendChild(header);
     panel.appendChild(body);
     panel.appendChild(actions);
@@ -1057,127 +828,73 @@
     header.querySelector('button').addEventListener('click', () => panel.classList.remove('active'));
     document.body.appendChild(button);
     document.body.appendChild(panel);
-  };
+  }
 
-  const generateChatReply = (prompt) => {
+  function generateChatReply(prompt) {
     const responses = {
-      'How do I connect a device?': 'Use the onboarding modal to register your device name, ID, and energy source. Then run the mining simulation to see SRC generated.',
+      'How do I connect a device?': 'Use the onboarding modal to register your device name, ID, and energy source. Then connect Phantom wallet and click "Simulate Mint" to send a real transaction to Solana Devnet.',
       'Explain the tokenomics.': 'SRC is deflationary: max supply 1,000,000,000 SRC, 1 SRC = 1 MWh. Every mint charges a 15% fee split into buyback (20%), staking (40%), DAO (30%), and emergency (10%).',
       'What does SRC staking do?': 'Staking increases network security and rewards long-term holders with a share of protocol fees.',
     };
-    return responses[prompt] || 'ENRG connects renewable energy production to SRC token issuance via IoT-verification and Solana minting. 1 SRC = 1 MWh. Start with onboarding to see it live.';
-  };
+    return responses[prompt] || 'ENRG connects renewable energy production to SRC token issuance via IoT-verification and Solana minting. 1 SRC = 1 MWh. Connect wallet and register a device to start.';
+  }
 
-  // ========== EVENT INITIALIZATION ==========
-  const initModalEvents = () => {
+  // ========== EVENTS ==========
+  function initModalEvents() {
     if (!refs.modal) return;
-    if (refs.modalClose) {
-      refs.modalClose.addEventListener('click', closeModal);
-    }
-    refs.modal.addEventListener('click', (event) => {
-      if (event.target === refs.modal) closeModal();
-    });
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && refs.modal && refs.modal.getAttribute('aria-hidden') === 'false') {
-        closeModal();
-      }
-    });
-  };
+    if (refs.modalClose) refs.modalClose.addEventListener('click', closeModal);
+    refs.modal.addEventListener('click', (e) => { if (e.target === refs.modal) closeModal(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && refs.modal && refs.modal.getAttribute('aria-hidden') === 'false') closeModal(); });
+  }
 
-  const initStartButtons = () => {
+  function initStartButtons() {
     [refs.heroStart, refs.heroStartAlt, refs.headerStart].forEach((button) => {
       if (!button) return;
-      button.addEventListener('click', (event) => {
-        event.preventDefault();
-        handleGetStarted();
-      });
+      button.addEventListener('click', (e) => { e.preventDefault(); handleGetStarted(); });
     });
-    // How it works "Start Now" button
     const howButton = document.getElementById('btn-how-start');
-    if (howButton) {
-      howButton.addEventListener('click', (event) => {
-        event.preventDefault();
-        handleGetStarted();
-      });
-    }
-  };
+    if (howButton) howButton.addEventListener('click', (e) => { e.preventDefault(); handleGetStarted(); });
+  }
 
-  const initNavigationLinks = () => {
+  function initNavigationLinks() {
     $$('.nav-link').forEach((link) => {
-      link.addEventListener('click', (event) => {
+      link.addEventListener('click', (e) => {
         const href = link.getAttribute('href');
         if (!href || !href.startsWith('#')) return;
         const target = $(href);
-        if (target) {
-          event.preventDefault();
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+        if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
       });
     });
-  };
+  }
 
-  const initDocumentationButtons = () => {
-    if (refs.downloadWhitepaper) {
-      refs.downloadWhitepaper.addEventListener('click', (event) => {
-        event.preventDefault();
-        openDocumentationPage('whitepaper.html');
-      });
-    }
-    if (refs.technicalDocs) {
-      refs.technicalDocs.addEventListener('click', (event) => {
-        event.preventDefault();
-        openDocumentationPage('technical-overview.html');
-      });
-    }
-  };
+  function initDocumentationButtons() {
+    if (refs.downloadWhitepaper) refs.downloadWhitepaper.addEventListener('click', (e) => { e.preventDefault(); window.open('whitepaper.html', '_blank', 'noopener'); });
+    if (refs.technicalDocs) refs.technicalDocs.addEventListener('click', (e) => { e.preventDefault(); window.open('technical-overview.html', '_blank', 'noopener'); });
+  }
 
-  const initSimulateButtons = () => {
+  function initSimulateButtons() {
     refs.simulateButtons.forEach(button => {
-      if (button) {
-        button.addEventListener('click', (event) => {
-          event.preventDefault();
-          simulateMining();
-        });
-      }
+      if (button) button.addEventListener('click', (e) => { e.preventDefault(); simulateMining(); });
     });
-  };
+  }
 
-  const initPartnerContactButtons = () => {
-    if (refs.becomePartner) {
-      refs.becomePartner.addEventListener('click', (event) => {
-        event.preventDefault();
-        openEmailContact();
-      });
-    }
-    if (refs.contactButton) {
-      refs.contactButton.addEventListener('click', (event) => {
-        event.preventDefault();
-        openEmailContact();
-      });
-    }
-  };
+  function initPartnerContactButtons() {
+    if (refs.becomePartner) refs.becomePartner.addEventListener('click', (e) => { e.preventDefault(); window.location.assign('mailto:anton@enrg.network'); });
+    if (refs.contactButton) refs.contactButton.addEventListener('click', (e) => { e.preventDefault(); window.location.assign('mailto:anton@enrg.network'); });
+  }
 
-  const initFooterLinks = () => {
-    if (!refs.footerLinks) return;
-    const external = [
-      { href: 'https://github.com/AntonGrid/enrg-landing', text: 'GitHub' },
-      { href: 'https://t.me/enrg_network', text: 'Telegram' },
-    ];
-    external.forEach((linkData) => {
-      if (!$(`a[href="${linkData.href}"]`, refs.footerLinks)) {
-        const anchor = createElement('a', { href: linkData.href, target: '_blank', rel: 'noreferrer', textContent: linkData.text });
-        refs.footerLinks.appendChild(anchor);
-      }
-    });
-  };
+  function initFadeUpAnimations() {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+    }, { threshold: 0.1 });
+    $$('.fade-up').forEach((el) => observer.observe(el));
+  }
 
   // ========== MAIN INIT ==========
-  const init = () => {
+  async function init() {
     // Inject dynamic styles
-    const style = createElement('style', { type: 'text/css' });
+    const style = el('style', { type: 'text/css' });
     style.textContent = `
-      .enrg-grid-canvas, .enrg-particle-canvas { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: -3; }
-      .enrg-grid-canvas { z-index: -2; }
       .enrg-chat-button { position: fixed; right: 20px; bottom: 20px; width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #00E5FF, #FF6B00); color: #020617; border: none; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; cursor: pointer; box-shadow: 0 18px 40px rgba(0,0,0,0.35); z-index: 30; }
       .enrg-chat-panel { position: fixed; right: 20px; bottom: 90px; width: 320px; max-width: calc(100% - 32px); background: rgba(7,13,25,0.96); border: 1px solid rgba(0,229,255,0.18); border-radius: 24px; box-shadow: 0 24px 60px rgba(0,0,0,0.5); color: #E5E7EB; z-index: 30; overflow: hidden; display: none; flex-direction: column; }
       .enrg-chat-panel.active { display: flex; }
@@ -1192,36 +909,25 @@
       .enrg-progress-steps { display: flex; gap: 10px; margin-bottom: 16px; }
       .enrg-progress-step { flex: 1; height: 8px; border-radius: 999px; background: rgba(255,255,255,0.08); }
       .enrg-progress-step.active { background: linear-gradient(90deg, #FF6B00, #00E5FF); }
-      .enrg-hero-badges { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 18px; }
-      .enrg-hero-badge { padding: 12px 16px; border-radius: 18px; background: rgba(15,23,42,0.82); border: 1px solid rgba(0,229,255,0.16); display: inline-flex; gap: 10px; align-items: center; }
-      .enrg-hero-badge span { font-weight: 700; color: #00E5FF; }
-      .enrg-step-card { padding: 24px; border-radius: 22px; background: rgba(12,17,28,0.92); border: 1px solid rgba(0,229,255,0.1); min-height: 220px; display: flex; flex-direction: column; gap: 14px; }
-      .enrg-step-card h3 { margin: 0; font-size: 1.05rem; }
-      .enrg-step-card p { margin: 0; color: #9CA3AF; line-height: 1.55; }
-      .enrg-step-card .step-icon { font-size: 2rem; }
-      .enrg-hero-note { color: #9CA3AF; max-width: 780px; margin-top: 12px; }
-      .energy-glow { position: relative; overflow: hidden; }
-      .energy-glow::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 20% 20%, rgba(0,229,255,0.2), transparent 28%), radial-gradient(circle at 80% 80%, rgba(255,107,0,0.18), transparent 24%); pointer-events: none; opacity: 0.8; transition: transform 0.8s ease; transform: scale(0.96); }
-      .energy-glow:hover::before { transform: scale(1.05); }
-      .enrg-energy-overlay { position: absolute; top: 0; right: 0; width: 100%; max-width: 320px; height: 100%; pointer-events: none; z-index: 1; }
-      .enrg-energy-node { position: absolute; width: 86px; height: 86px; border-radius: 50%; border: 1px solid rgba(59,130,246,0.22); background: rgba(1,10,21,0.72); box-shadow: 0 0 28px rgba(0,229,255,0.18); display: flex; align-items: center; justify-content: center; color: #E5E7EB; font-size: 0.85rem; text-align: center; padding: 12px; opacity: 0.95; animation: floatEnergy 7s ease-in-out infinite; }
-      .enrg-energy-node span { display: block; font-size: 0.7rem; margin-top: 8px; color: #A5F3FC; line-height: 1.2; }
-      .enrg-energy-node.energy-1 { top: 10%; right: 12%; animation-delay: 0s; }
-      .enrg-energy-node.energy-2 { top: 42%; right: 16%; animation-delay: 1.4s; }
-      .enrg-energy-node.energy-3 { bottom: 10%; right: 10%; animation-delay: 2.8s; }
-      .enrg-energy-ring { position: absolute; top: 26%; right: 18%; width: 140px; height: 140px; border-radius: 50%; border: 1px solid rgba(56,189,248,0.22); box-shadow: 0 0 48px rgba(56,189,248,0.2); animation: pulseGlow 2.8s ease-out infinite; }
-      .enrg-energy-path { position: absolute; top: 8%; right: 6%; width: 220px; height: 220px; pointer-events: none; }
-      @keyframes floatEnergy { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
-      @keyframes pulseGlow { 0% { transform: scale(0.92); opacity: 0.4; } 50% { transform: scale(1.02); opacity: 0.65; } 100% { transform: scale(0.92); opacity: 0.4; } }
       .fade-up { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
       .fade-up.visible { opacity: 1; transform: translateY(0); }
-      @media (max-width: 767px) {
-        .enrg-chat-panel { right: 12px; bottom: 78px; width: calc(100% - 24px); }
-        .enrg-step-card { min-height: auto; }
-      }
+      @media (max-width: 767px) { .enrg-chat-panel { right: 12px; bottom: 78px; width: calc(100% - 24px); } }
     `;
     document.head.appendChild(style);
 
+    // Load Solana Web3 from CDN if not present
+    if (!window.solanaWeb3) {
+      addLiveFeedLine('📦 Loading Solana Web3 library...');
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js';
+        script.onload = resolve;
+        script.onerror = () => { addLiveFeedLine('⚠️ Solana Web3 CDN unavailable, using simulation mode'); resolve(); };
+        document.head.appendChild(script);
+      });
+    }
+
+    resolveRefs();
     initBackground();
     initModalEvents();
     initStartButtons();
@@ -1229,39 +935,31 @@
     initDocumentationButtons();
     initSimulateButtons();
     initPartnerContactButtons();
-    initFooterLinks();
     initChatAssistant();
-    initEnergyDecorations();
+    initFadeUpAnimations();
+
+    // Load real metrics
+    await loadMetrics();
     startLiveFeed();
+    
+    // Periodic metrics refresh
+    metricsInterval = setInterval(loadMetrics, CONFIG.METRICS_REFRESH_MS);
+
     renderHistory();
     renderDashboardSummary();
-    updateMetricCounters();
-    applyResponsiveLayout();
-    initFadeUpAnimations();
-    initMetricScrollAnimation();
-    window.addEventListener('resize', applyResponsiveLayout);
-    
     updateWalletUI();
-    checkExistingWallet();
-    
+    await checkExistingWallet();
+
+    // Wallet button
     if (refs.connectWalletBtn) {
       refs.connectWalletBtn.addEventListener('click', async (e) => {
         e.preventDefault();
-        if (state.walletConnected) {
-          disconnectWallet();
-        } else {
-          await connectWallet();
-        }
+        if (state.walletConnected) disconnectWallet();
+        else await connectWallet();
       });
     }
-  };
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
   }
-})();
 
-// Загружаем метрики с Oracle API при загрузке страницы
-document.addEventListener('DOMContentLoaded', loadStats);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();

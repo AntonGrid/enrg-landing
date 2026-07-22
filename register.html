@@ -7,6 +7,7 @@
     <meta name="description" content="Register your energy device with ENRG to start tokenizing production.">
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js" defer></script>
 </head>
 <body>
     <canvas id="particle-canvas"></canvas>
@@ -25,12 +26,16 @@
             <a href="whitepaper.html" class="nav-link" target="_blank">Whitepaper</a>
             <a href="technical-overview.html" class="nav-link" target="_blank">Docs</a>
         </div>
+        <div class="nav-cta">
+            <span id="wallet-address-display" style="color:var(--text-muted);font-size:0.8rem;margin-right:12px;display:none;"></span>
+            <button type="button" class="btn-outline" id="connectWalletBtn">Connect Phantom</button>
+        </div>
     </nav>
 
     <div class="page-shell">
         <section class="hero-section section fade-up">
             <h1>Register Your Device</h1>
-            <p class="section-slogan">Enter your <strong>device_id</strong> and <strong>public_key</strong> to link your energy source to ENRG. Start earning <strong>SRC</strong> tokens for every verified MWh.</p>
+            <p class="section-slogan">Connect your Phantom wallet and register your energy device to start earning <strong>SRC</strong> tokens for every verified MWh.</p>
         </section>
 
         <section class="section glass-section fade-up">
@@ -39,16 +44,24 @@
                 <a class="btn-primary" href="dashboard.html" style="display:inline-block;margin-top:12px;text-decoration:none;">Go to Dashboard →</a>
             </div>
 
+            <div id="walletRequired" style="display:none;margin-bottom:1rem;padding:16px;border:1px solid rgba(255,170,0,0.4);border-radius:14px;background:rgba(255,170,0,0.08);">
+                <p style="color:#FFAA00;font-weight:600;">⚠️ Wallet Required</p>
+                <p style="color:var(--text-muted);font-size:0.9rem;margin-top:6px;">Please connect your Phantom wallet first to register a device. The wallet address will be used as the on-chain owner.</p>
+            </div>
+
             <form id="regForm" novalidate style="display:flex;flex-direction:column;gap:16px;max-width:480px;">
                 <div>
                     <label for="device_id" style="display:block;margin-bottom:6px;color:var(--text-muted);font-size:0.85rem;">Device ID</label>
-                    <input type="text" id="device_id" name="device_id" required placeholder="e.g., device-123" style="width:100%;padding:14px;border-radius:14px;border:1px solid rgba(148,163,184,0.3);background:rgba(15,23,42,0.75);color:#E5E7EB;font-size:0.95rem;">
+                    <input type="text" id="device_id" name="device_id" required placeholder="e.g., device-001" style="width:100%;padding:14px;border-radius:14px;border:1px solid rgba(148,163,184,0.3);background:rgba(15,23,42,0.75);color:#E5E7EB;font-size:0.95rem;">
                 </div>
                 <div>
                     <label for="public_key" style="display:block;margin-bottom:6px;color:var(--text-muted);font-size:0.85rem;">Public Key (base64, 44 characters)</label>
                     <input type="text" id="public_key" name="public_key" required minlength="44" maxlength="44" placeholder="Base64-encoded public key" style="width:100%;padding:14px;border-radius:14px;border:1px solid rgba(148,163,184,0.3);background:rgba(15,23,42,0.75);color:#E5E7EB;font-size:0.95rem;">
                 </div>
-                <button class="btn-primary" type="submit" style="align-self:flex-start;">Register Device</button>
+                <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                    <button class="btn-primary" type="submit" id="registerBtn">Register Device</button>
+                    <span id="registerSpinner" style="display:none;color:var(--text-muted);font-size:0.85rem;">⏳ Registering...</span>
+                </div>
             </form>
 
             <p id="errorMsg" style="color:#ff6b6b;margin-top:12px;"></p>
@@ -75,6 +88,9 @@
         return 'https://enrg-oracle.onrender.com';
     })();
 
+    // --- Wallet State ---
+    let walletPublicKey = null;
+
     function getStoredDevice() {
         return {
             id: localStorage.getItem('enrgDeviceId'),
@@ -92,6 +108,56 @@
         localStorage.removeItem('enrgPublicKey');
     }
 
+    function updateWalletUI() {
+        const display = document.getElementById('wallet-address-display');
+        const btn = document.getElementById('connectWalletBtn');
+        if (walletPublicKey) {
+            const short = walletPublicKey.toString().slice(0, 4) + '..' + walletPublicKey.toString().slice(-4);
+            if (display) {
+                display.textContent = short;
+                display.style.display = 'inline';
+            }
+            if (btn) btn.textContent = 'Disconnect';
+        } else {
+            if (display) display.style.display = 'none';
+            if (btn) btn.textContent = 'Connect Phantom';
+        }
+    }
+
+    async function connectWallet() {
+        if (!window.solana || !window.solana.isPhantom) {
+            alert('Phantom Wallet not found. Please install the Phantom browser extension.');
+            return;
+        }
+        try {
+            if (walletPublicKey) {
+                await window.solana.disconnect();
+                walletPublicKey = null;
+                updateWalletUI();
+                document.getElementById('walletRequired').style.display = 'none';
+                return;
+            }
+            const resp = await window.solana.connect();
+            walletPublicKey = resp.publicKey;
+            updateWalletUI();
+            document.getElementById('walletRequired').style.display = 'none';
+        } catch (err) {
+            console.error('Wallet connection error:', err);
+        }
+    }
+
+    async function checkExistingWallet() {
+        if (window.solana && window.solana.isPhantom) {
+            try {
+                const resp = await window.solana.connect({ onlyIfTrusted: true });
+                walletPublicKey = resp.publicKey;
+                updateWalletUI();
+            } catch (e) {
+                // Not previously trusted, that's fine
+            }
+        }
+    }
+
     function initRegisterPage() {
         const { id, pubKey } = getStoredDevice();
         const alreadyBlock = document.getElementById('alreadyRegistered');
@@ -105,10 +171,19 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         initRegisterPage();
+        checkExistingWallet();
+
+        const connectBtn = document.getElementById('connectWalletBtn');
+        if (connectBtn) {
+            connectBtn.addEventListener('click', connectWallet);
+        }
 
         const form = document.getElementById('regForm');
         const errorMsg = document.getElementById('errorMsg');
         const successMsg = document.getElementById('successMsg');
+        const registerBtn = document.getElementById('registerBtn');
+        const registerSpinner = document.getElementById('registerSpinner');
+        const walletRequired = document.getElementById('walletRequired');
 
         if (!form) return;
 
@@ -116,6 +191,13 @@
             e.preventDefault();
             errorMsg.textContent = '';
             successMsg.textContent = '';
+
+            // Check wallet is connected
+            if (!walletPublicKey) {
+                walletRequired.style.display = 'block';
+                errorMsg.textContent = 'Please connect your Phantom wallet first.';
+                return;
+            }
 
             const device_id = document.getElementById('device_id').value.trim();
             const public_key = document.getElementById('public_key').value.trim();
@@ -129,22 +211,32 @@
                 return;
             }
 
+            // Show spinner, disable button
+            registerBtn.disabled = true;
+            registerSpinner.style.display = 'inline';
+
             try {
                 const res = await fetch(`${SRC_API_BASE}/api/v1/device/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ device_id, public_key })
+                    body: JSON.stringify({
+                        device_id,
+                        public_key,
+                        wallet_address: walletPublicKey.toString(),
+                    })
                 });
 
                 const data = await res.json().catch(() => ({}));
 
                 if (!res.ok) {
                     errorMsg.textContent = data.error || 'Registration failed (device may already be registered).';
+                    registerBtn.disabled = false;
+                    registerSpinner.style.display = 'none';
                     return;
                 }
 
                 setStoredDevice(device_id, public_key);
-                successMsg.textContent = 'Device registered successfully. Redirecting to dashboard...';
+                successMsg.textContent = '✅ Device registered successfully. Redirecting to dashboard...';
                 setTimeout(() => {
                     window.location.href = 'dashboard.html';
                 }, 800);
@@ -152,6 +244,8 @@
             } catch (err) {
                 console.error(err);
                 errorMsg.textContent = 'Connection to oracle failed. Please try again later.';
+                registerBtn.disabled = false;
+                registerSpinner.style.display = 'none';
             }
         });
     });
