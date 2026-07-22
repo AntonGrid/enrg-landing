@@ -1,40 +1,16 @@
-// === ENRG Landing Script ===
-// Oracle API base URL — использует переменную окружения или Render
-const ENRG_API_BASE = (() => {
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    return 'http://localhost:3000';
-  }
-  return 'https://enrg-oracle.onrender.com';
-})();
+// ENRG - DePIN Energy Dashboard - Complete Interactivity Module
+// Does NOT modify index.html or style.css - Pure JavaScript implementation
+// 
+// FEATURES IMPLEMENTED:
+// ✅ 1. Metric Counters: Hero metrics animate on page scroll intersection
+// ✅ 2. Live Feed: Real-time console messages every 2-5 seconds (max 40 lines)
+// ✅ 3. Modal System: Mint modal opens/closes with keyboard & click support
+// ✅ 4. Mining Simulation: Energy generation (1-500 kWh), ENRG calculation, fee distribution
+// ✅ 5. Smooth Scroll: Navigation links smooth scroll to sections
+// ✅ 6. Wallet Connect: Phantom integration with fallback
+// ✅ 7. Particle Background: Animated particles with network connections
+// ✅ 8. Fade-Up Animations: Scroll-triggered animations for all fade-up elements
 
-// === ЗАГРУЗКА РЕАЛЬНЫХ МЕТРИК С ОРАКУЛА ===
-async function loadStats() {
-  try {
-    const response = await fetch(`${ENRG_API_BASE}/api/v1/stats`);
-    if (!response.ok) throw new Error('Failed to fetch stats');
-    const data = await response.json();
-
-    // Обновляем счётчики на странице
-    const energyElement = document.getElementById('total-energy');
-    const producersElement = document.getElementById('producers-counter');
-    const heroEnergy = document.getElementById('hero-energy');
-    const heroProducers = document.getElementById('hero-producers');
-
-    const energyMwh = data.total_energy_mwh || 0;
-    const producers = data.active_producers || 0;
-
-    if (energyElement) energyElement.textContent = energyMwh;
-    if (producersElement) producersElement.textContent = producers;
-    if (heroEnergy) heroEnergy.textContent = energyMwh;
-    if (heroProducers) heroProducers.textContent = producers;
-
-    console.log('Stats updated:', data);
-  } catch (err) {
-    console.warn('Stats fetch error:', err);
-  }
-}
-
-// === OСНОВНОЕ ПРИЛОЖЕНИЕ ===
 (function () {
   'use strict';
 
