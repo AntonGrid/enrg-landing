@@ -1,11 +1,11 @@
-// ENRG - DePIN Energy Dashboard - Complete Interactivity Module
+// ENRG - DePIN Energy Dashboard - Complete Interactivity Module (SRC Token)
 // Does NOT modify index.html or style.css - Pure JavaScript implementation
 // 
 // FEATURES IMPLEMENTED:
 // ✅ 1. Metric Counters: Hero metrics animate on page scroll intersection
 // ✅ 2. Live Feed: Real-time console messages every 2-5 seconds (max 40 lines)
 // ✅ 3. Modal System: Mint modal opens/closes with keyboard & click support
-// ✅ 4. Mining Simulation: Energy generation (1-500 kWh), ENRG calculation, fee distribution
+// ✅ 4. Mining Simulation: Energy generation (1-500 kWh), SRC calculation, fee distribution
 // ✅ 5. Smooth Scroll: Navigation links smooth scroll to sections
 // ✅ 6. Wallet Connect: Phantom integration with fallback
 // ✅ 7. Particle Background: Animated particles with network connections
@@ -167,9 +167,9 @@
     historyBody: null,
     consoleFeed: null,
     simEnergyBar: null,
-    simEnrgBar: null,
+    simSrcBar: null,
     simEnergyValue: null,
-    simEnrgValue: null,
+    simSrcValue: null,
     simFeeBuyback: null,
     simFeeStaking: null,
     simFeeDao: null,
@@ -205,9 +205,9 @@
     refs.historyBody = document.getElementById('history-body');
     refs.consoleFeed = document.getElementById('console-feed');
     refs.simEnergyBar = document.getElementById('sim-energy-bar');
-    refs.simEnrgBar = document.getElementById('sim-enrg-bar');
+    refs.simSrcBar = document.getElementById('sim-src-bar');
     refs.simEnergyValue = document.getElementById('sim-energy-value');
-    refs.simEnrgValue = document.getElementById('sim-enrg-value');
+    refs.simSrcValue = document.getElementById('sim-src-value');
     refs.simFeeBuyback = document.getElementById('sim-fee-buyback');
     refs.simFeeStaking = document.getElementById('sim-fee-staking');
     refs.simFeeDao = document.getElementById('sim-fee-dao');
@@ -568,16 +568,16 @@
 
     // Animate bars
     animateBar(refs.simEnergyBar, (kWh / 500) * 100);
-    animateBar(refs.simEnrgBar, Math.min(100, (enrg / 0.5) * 100));
+    animateBar(refs.simSrcBar, Math.min(100, (enrg / 0.5) * 100));
     animateBar(refs.simFeeBuyback, distribution.buyback / fee * 100);
     animateBar(refs.simFeeStaking, distribution.staking / fee * 100);
     animateBar(refs.simFeeDao, distribution.dao / fee * 100);
     animateBar(refs.simFeeEmergency, distribution.emergency / fee * 100);
 
     if (refs.simEnergyValue) refs.simEnergyValue.textContent = `${kWh}`;
-    if (refs.simEnrgValue) refs.simEnrgValue.textContent = `${enrg.toFixed(3)}`;
+    if (refs.simSrcValue) refs.simSrcValue.textContent = `${enrg.toFixed(3)}`;
 
-    const text = `${deviceName} (${sourceDefinition.name}) produced ${kWh} kWh → ${enrg.toFixed(3)} ENRG. Fee: buyback ${distribution.buyback.toFixed(3)}, staking ${distribution.staking.toFixed(3)}, DAO ${distribution.dao.toFixed(3)}, emergency ${distribution.emergency.toFixed(3)}.`;
+    const text = `${deviceName} (${sourceDefinition.name}) produced ${kWh} kWh → ${enrg.toFixed(3)} SRC. Fee: buyback ${distribution.buyback.toFixed(3)}, staking ${distribution.staking.toFixed(3)}, DAO ${distribution.dao.toFixed(3)}, emergency ${distribution.emergency.toFixed(3)}.`;
     addLiveFeedLine(text);
     playClickTone();
 
@@ -630,7 +630,7 @@
   const renderModal = () => {
     if (!refs.modalBody || !refs.modalHeaderTitle) return;
     refs.modalBody.innerHTML = '';
-    refs.modalHeaderTitle.textContent = state.onboarded ? 'Welcome back to ENRG' : 'Onboard your energy source';
+    refs.modalHeaderTitle.textContent = state.onboarded ? 'Welcome back to ENRG Protocol' : 'Onboard your energy source';
     updateProgress();
 
     const wrapper = createElement('div', { style: 'display:flex;flex-direction:column;gap:18px;max-width:100%;' });
@@ -666,7 +666,7 @@
 
   const renderInviteChoiceStep = () => {
     const section = createElement('div', {} , []);
-    section.appendChild(createElement('p', { textContent: 'Start with an invite code or request access to join the ENRG network.', style: 'color:var(--text-muted);' }));
+    section.appendChild(createElement('p', { textContent: 'Start with an invite code or request access to join the ENRG network and start earning SRC tokens.', style: 'color:var(--text-muted);' }));
     const row = createElement('div', { style: 'display:flex;flex-wrap:wrap;gap:12px;margin-top:18px;' }, []);
     const inviteButton = createElement('button', { type: 'button', className: 'btn-primary', textContent: 'I have an invite code' });
     inviteButton.addEventListener('click', () => {
@@ -712,7 +712,7 @@
 
   const renderRegistrationStep = () => {
     const section = createElement('div', {}, []);
-    section.appendChild(createElement('p', { textContent: 'Register with your email and password to join ENRG.', style: 'color:var(--text-muted);' }));
+    section.appendChild(createElement('p', { textContent: 'Register with your email and password to join ENRG and start minting SRC tokens.', style: 'color:var(--text-muted);' }));
     const form = createElement('form', { style: 'display:flex;flex-direction:column;gap:14px;margin-top:18px;' }, []);
     const emailInput = createElement('input', { type: 'email', placeholder: 'Email address', required: true, style: 'padding:14px;border-radius:14px;border:1px solid rgba(148,163,184,0.3);background:rgba(15,23,42,0.75);color:#E5E7EB;' });
     const passwordInput = createElement('input', { type: 'password', placeholder: 'Password', required: true, style: 'padding:14px;border-radius:14px;border:1px solid rgba(148,163,184,0.3);background:rgba(15,23,42,0.75);color:#E5E7EB;' });
@@ -803,7 +803,7 @@
     if (!devices.length) {
       section.appendChild(createElement('p', { textContent: 'Complete device registration to unlock live mining and dashboard insights.', style: 'color:var(--text-muted);' }));
     } else {
-      section.appendChild(createElement('p', { textContent: 'Your onboarding is complete. Use the simulator to mint ENRG from verified production.', style: 'color:var(--text-muted);' }));
+      section.appendChild(createElement('p', { textContent: 'Your onboarding is complete. Use the simulator to mint SRC from verified production.', style: 'color:var(--text-muted);' }));
     }
     const actionRow = createElement('div', { style: 'display:flex;flex-wrap:wrap;gap:12px;margin-top:18px;' }, []);
     const simButton = createElement('button', { type: 'button', className: 'btn-primary', textContent: 'Simulate Mining' });
@@ -831,13 +831,13 @@
     const history = loadHistory();
     summary.innerHTML = '';
     const header = createElement('div', { style: 'display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:14px;' }, []);
-    header.appendChild(createElement('h3', { textContent: 'ENRG Dashboard Summary', style: 'margin:0;font-size:1.15rem;' }));
+    header.appendChild(createElement('h3', { textContent: 'SRC Dashboard Summary', style: 'margin:0;font-size:1.15rem;' }));
     const resetButton = createElement('button', { type: 'button', className: 'btn-secondary', textContent: 'Start Over', style: 'white-space:nowrap;' });
     resetButton.addEventListener('click', (event) => { event.preventDefault(); resetOnboarding(); });
     header.appendChild(resetButton);
     summary.appendChild(header);
     if (!devices.length) {
-      summary.appendChild(createElement('p', { textContent: 'No registered devices yet. Complete onboarding to start minting ENRG from verified energy production.', style: 'color:var(--text-muted);margin-top:16px;max-width:720px;' }));
+      summary.appendChild(createElement('p', { textContent: 'No registered devices yet. Complete onboarding to start minting SRC from verified energy production.', style: 'color:var(--text-muted);margin-top:16px;max-width:720px;' }));
       return;
     }
     const deviceGrid = createElement('div', { style: 'display:grid;gap:16px;margin-top:20px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));' }, []);
@@ -876,7 +876,7 @@
         createElement('th', { textContent: 'Device', style: 'text-align:left;padding:10px;border-bottom:1px solid rgba(148,163,184,0.2);' }),
         createElement('th', { textContent: 'Source', style: 'text-align:left;padding:10px;border-bottom:1px solid rgba(148,163,184,0.2);' }),
         createElement('th', { textContent: 'kWh', style: 'text-align:right;padding:10px;border-bottom:1px solid rgba(148,163,184,0.2);' }),
-        createElement('th', { textContent: 'ENRG', style: 'text-align:right;padding:10px;border-bottom:1px solid rgba(148,163,184,0.2);' }),
+        createElement('th', { textContent: 'SRC', style: 'text-align:right;padding:10px;border-bottom:1px solid rgba(148,163,184,0.2);' }),
         createElement('th', { textContent: 'Fee', style: 'text-align:right;padding:10px;border-bottom:1px solid rgba(148,163,184,0.2);' }),
       ]),
     ]);
@@ -1031,7 +1031,7 @@
     const button = createElement('button', { id: 'enrg-chat-button', className: 'enrg-chat-button', textContent: '💬', type: 'button' });
     const panel = createElement('div', { className: 'enrg-chat-panel', id: 'enrg-chat-panel' }, []);
     const header = createElement('div', { className: 'enrg-chat-header' }, [
-      createElement('div', { textContent: 'ENRG Assistant' }),
+      createElement('div', { textContent: 'ENRG Protocol Assistant' }),
       createElement('button', { type: 'button', textContent: '×', style: 'background:none;border:none;color:#E5E7EB;font-size:1.2rem;cursor:pointer;' }),
     ]);
     const body = createElement('div', { className: 'enrg-chat-body' }, []);
@@ -1039,7 +1039,7 @@
     const hints = [
       'How do I connect a device?',
       'Explain the tokenomics.',
-      'What does ENRG staking do?',
+      'What does SRC staking do?',
     ];
     hints.forEach((hint) => {
       const hintButton = createElement('button', { type: 'button', className: 'enrg-chat-action', textContent: hint });
@@ -1049,7 +1049,7 @@
       });
       actions.appendChild(hintButton);
     });
-    body.appendChild(createElement('div', { className: 'enrg-chat-message', textContent: 'Ask me about ENRG onboarding, minting, or documentation.' }));
+    body.appendChild(createElement('div', { className: 'enrg-chat-message', textContent: 'Ask me about ENRG onboarding, SRC minting, or documentation.' }));
     panel.appendChild(header);
     panel.appendChild(body);
     panel.appendChild(actions);
@@ -1061,11 +1061,11 @@
 
   const generateChatReply = (prompt) => {
     const responses = {
-      'How do I connect a device?': 'Use the onboarding modal to register your device name, ID, and energy source. Then run the mining simulation to see ENRG generated.',
-      'Explain the tokenomics.': 'ENRG is deflationary: every mint charges a 15% fee that is split into buyback, staking, DAO reserve, and emergency funds.',
-      'What does ENRG staking do?': 'Staking increases network security and rewards long-term holders with a share of protocol fees.',
+      'How do I connect a device?': 'Use the onboarding modal to register your device name, ID, and energy source. Then run the mining simulation to see SRC generated.',
+      'Explain the tokenomics.': 'SRC is deflationary: max supply 1,000,000,000 SRC, 1 SRC = 1 MWh. Every mint charges a 15% fee split into buyback (20%), staking (40%), DAO (30%), and emergency (10%).',
+      'What does SRC staking do?': 'Staking increases network security and rewards long-term holders with a share of protocol fees.',
     };
-    return responses[prompt] || 'ENRG connects renewable energy production to token issuance via IoT-verification and Solana minting. Start with onboarding to see it live.';
+    return responses[prompt] || 'ENRG connects renewable energy production to SRC token issuance via IoT-verification and Solana minting. 1 SRC = 1 MWh. Start with onboarding to see it live.';
   };
 
   // ========== EVENT INITIALIZATION ==========

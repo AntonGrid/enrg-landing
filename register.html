@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Register Device — ENRG Protocol</title>
+    <title>Register Device — ENRG Protocol | SRC Token</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Register your energy device with ENRG to start tokenizing production.">
     <link rel="stylesheet" href="style.css">
@@ -30,7 +30,7 @@
     <div class="page-shell">
         <section class="hero-section section fade-up">
             <h1>Register Your Device</h1>
-            <p class="section-slogan">Enter your <strong>device_id</strong> and <strong>public_key</strong> to link your energy source to ENRG.</p>
+            <p class="section-slogan">Enter your <strong>device_id</strong> and <strong>public_key</strong> to link your energy source to ENRG. Start earning <strong>SRC</strong> tokens for every verified MWh.</p>
         </section>
 
         <section class="section glass-section fade-up">
@@ -68,7 +68,7 @@
     </footer>
 
     <script>
-    const ENRG_API_BASE = (() => {
+    const SRC_API_BASE = (() => {
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
             return 'http://localhost:3000';
         }
@@ -130,7 +130,7 @@
             }
 
             try {
-                const res = await fetch(`${ENRG_API_BASE}/api/v1/device/register`, {
+                const res = await fetch(`${SRC_API_BASE}/api/v1/device/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ device_id, public_key })

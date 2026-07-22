@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>ENRG – DePIN Energy Protocol | Tokenize Your Energy Production</title>
+    <title>ENRG Protocol – SRC Token | DePIN Energy Protocol</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="ENRG – DePIN-native energy protocol. Connect any power source, verify production via IoT, and mint deflationary ENRG tokens on Solana.">
+    <meta name="description" content="ENRG – DePIN-native energy protocol. Connect any power source, verify production via IoT, and mint deflationary SRC tokens on Solana. 1 SRC = 1 MWh.">
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
@@ -23,8 +23,10 @@
         </div>
         <div class="nav-links">
             <a href="#how-it-works" class="nav-link">How It Works</a>
+            <a href="#architecture" class="nav-link">Architecture</a>
             <a href="#tokenomics" class="nav-link">Tokenomics</a>
             <a href="#roadmap" class="nav-link">Roadmap</a>
+            <a href="#security" class="nav-link">Security</a>
             <a href="whitepaper.html" class="nav-link" target="_blank">Whitepaper</a>
             <a href="technical-overview.html" class="nav-link" target="_blank">Docs</a>
         </div>
@@ -59,7 +61,7 @@
                         <div class="hero-logo-glow"></div>
                     </div>
                     <h1 class="hero-title">Tokenize Your Energy Production. Earn Real Value.</h1>
-                    <p class="hero-tagline">Connect any power source to the ENRG protocol, verify production via IoT, and mint deflationary tokens on Solana.</p>
+                    <p class="hero-tagline">Connect any power source to the ENRG protocol, verify production via IoT, and mint deflationary <strong>SRC</strong> tokens on Solana. <strong>1 SRC = 1 MWh</strong>.</p>
                     <p class="hero-slogan">A cyberpunk DePIN command center for energy producers, token holders, and clean power economies.</p>
                     <div class="hero-actions" id="hero-actions">
                         <button type="button" class="btn-primary" id="btn-start-minting-hero">Get Started</button>
@@ -81,8 +83,8 @@
                             <div class="metric-value"><span class="counter" data-target="198">0</span></div>
                         </div>
                         <div class="metric-card">
-                            <div class="metric-label">ENRG Staked</div>
-                            <div class="metric-value"><span class="counter" data-target="88000">0</span></div>
+                            <div class="metric-label">SRC Staked</div>
+                            <div class="metric-value"><span class="counter" data-target="88000">0</span> SRC</div>
                         </div>
                     </div>
                     <div class="mini-console">
@@ -103,17 +105,17 @@
                 <div class="enrg-step-card">
                     <div class="step-icon">⚡</div>
                     <h3>Connect Your Source</h3>
-                    <p>Register your solar panel, wind turbine, or hydro generator to tokenize production.</p>
+                    <p>Register your solar panel, wind turbine, or hydro generator. Each device gets a unique Ed25519 key pair stored in Secure Element (ATECC608).</p>
                 </div>
                 <div class="enrg-step-card">
                     <div class="step-icon">🔗</div>
                     <h3>Verify & Mint</h3>
-                    <p>Our IoT oracle verifies energy output and mints ENRG tokens on-chain via Solana.</p>
+                    <p>IoT device signs energy readings every 10 minutes. Oracle verifies Ed25519 signature, validates nonce + timestamp, and mints SRC tokens via Solana smart contract.</p>
                 </div>
                 <div class="enrg-step-card">
                     <div class="step-icon">💰</div>
                     <h3>Earn & Trade</h3>
-                    <p>Receive tokens in your wallet, stake them, and join the global energy economy.</p>
+                    <p>85% of minted SRC goes to you. Stake tokens, earn protocol fees, and participate in DAO governance. 1 SRC = 1 MWh of verified energy.</p>
                 </div>
             </div>
             <div style="margin-top: 24px;">
@@ -121,9 +123,84 @@
             </div>
         </section>
 
+        <!-- Architecture -->
+        <section id="architecture" class="section glass-section fade-up">
+            <h2>Architecture</h2>
+            <p class="section-slogan">Two-Program Architecture on Solana — Modular, Auditable, Upgradeable.</p>
+            <div class="how-grid">
+                <div class="enrg-step-card">
+                    <div class="step-icon">🧱</div>
+                    <h3>enrg-mvp — Core Protocol</h3>
+                    <p>Handles minting, proof verification (Ed25519 via sysvar), vault management, staking, buyback & burn, vesting, and device lifecycle. The central engine of the protocol.</p>
+                </div>
+                <div class="enrg-step-card">
+                    <div class="step-icon">📋</div>
+                    <h3>enrg-profile — Device Profiles</h3>
+                    <p>Manages energy producer profiles with rated power, device metadata, and 30-day rolling energy window. Accessed by enrg-mvp via CPI using <code>declare_program!</code>.</p>
+                </div>
+                <div class="enrg-step-card">
+                    <div class="step-icon">🔄</div>
+                    <h3>CPI Integration</h3>
+                    <p>enrg-mvp calls <code>enrg_profile::cpi::record_production</code> during each mint to update the producer's energy profile. The profile's <code>rated_power</code> determines the max energy per mint.</p>
+                </div>
+            </div>
+            <div style="margin-top: 24px; text-align: center;">
+                <a href="technical-overview.html#architecture" class="btn-outline" target="_blank">View Full Architecture →</a>
+            </div>
+        </section>
+
+        <!-- Device Lifecycle -->
+        <section id="device-lifecycle" class="section glass-section fade-up">
+            <h2>Device Lifecycle</h2>
+            <p class="section-slogan">Every device follows a cryptographically enforced state machine (ADR-0005).</p>
+            <div style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-top:20px;">
+                <div style="background:rgba(0,229,255,0.1); border:1px solid rgba(0,229,255,0.3); border-radius:12px; padding:12px 18px; text-align:center; min-width:120px;">
+                    <div style="font-size:1.5rem;">📡</div>
+                    <div style="font-weight:600; font-size:0.85rem; margin-top:4px;">REGISTERED</div>
+                    <div style="font-size:0.7rem; color:var(--text-muted);">Crypto identity created</div>
+                </div>
+                <div style="background:rgba(0,229,255,0.1); border:1px solid rgba(0,229,255,0.3); border-radius:12px; padding:12px 18px; text-align:center; min-width:120px;">
+                    <div style="font-size:1.5rem;">🔑</div>
+                    <div style="font-weight:600; font-size:0.85rem; margin-top:4px;">CLAIMED</div>
+                    <div style="font-size:0.7rem; color:var(--text-muted);">Bound to owner</div>
+                </div>
+                <div style="background:rgba(0,229,255,0.1); border:1px solid rgba(0,229,255,0.3); border-radius:12px; padding:12px 18px; text-align:center; min-width:120px;">
+                    <div style="font-size:1.5rem;">⚙️</div>
+                    <div style="font-weight:600; font-size:0.85rem; margin-top:4px;">PROVISIONED</div>
+                    <div style="font-size:0.7rem; color:var(--text-muted);">Configured & synced</div>
+                </div>
+                <div style="background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.4); border-radius:12px; padding:12px 18px; text-align:center; min-width:120px;">
+                    <div style="font-size:1.5rem;">⚡</div>
+                    <div style="font-weight:600; font-size:0.85rem; margin-top:4px;">ACTIVE</div>
+                    <div style="font-size:0.7rem; color:var(--text-muted);">Producing & minting</div>
+                </div>
+                <div style="background:rgba(255,107,0,0.15); border:1px solid rgba(255,107,0,0.4); border-radius:12px; padding:12px 18px; text-align:center; min-width:120px;">
+                    <div style="font-size:1.5rem;">🔒</div>
+                    <div style="font-weight:600; font-size:0.85rem; margin-top:4px;">QUARANTINE</div>
+                    <div style="font-size:0.7rem; color:var(--text-muted);">Under suspicion</div>
+                </div>
+                <div style="background:rgba(250,204,21,0.15); border:1px solid rgba(250,204,21,0.4); border-radius:12px; padding:12px 18px; text-align:center; min-width:120px;">
+                    <div style="font-size:1.5rem;">🔧</div>
+                    <div style="font-weight:600; font-size:0.85rem; margin-top:4px;">MAINTENANCE</div>
+                    <div style="font-size:0.7rem; color:var(--text-muted);">Service mode</div>
+                </div>
+                <div style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); border-radius:12px; padding:12px 18px; text-align:center; min-width:120px;">
+                    <div style="font-size:1.5rem;">🚫</div>
+                    <div style="font-weight:600; font-size:0.85rem; margin-top:4px;">REVOKED</div>
+                    <div style="font-size:0.7rem; color:var(--text-muted);">Permanently removed</div>
+                </div>
+            </div>
+            <p style="text-align:center; color:var(--text-muted); font-size:0.85rem; margin-top:16px;">
+                Transitions: REGISTERED → CLAIMED → PROVISIONED → ACTIVE ↔ QUARANTINE ↔ ACTIVE · ACTIVE ↔ MAINTENANCE · ACTIVE → REVOKED
+                <br>
+                <a href="technical-overview.html#device-lifecycle" target="_blank" style="color:var(--accent-cyan);">Full lifecycle specification (ADR-0005) →</a>
+            </p>
+        </section>
+
         <!-- Minting Simulator -->
         <section id="minting" class="section glass-section fade-up">
             <h2>Virtual Energy Meter</h2>
+            <p class="section-slogan">Simulate energy production and see how SRC tokens are minted and distributed.</p>
             <div class="minting-layout">
                 <div class="minting-left">
                     <div class="mint-sim">
@@ -140,13 +217,13 @@
                                 </div>
                             </div>
                             <div class="sim-bar">
-                                <span class="sim-label">ENRG Tokens</span>
+                                <span class="sim-label">SRC Tokens</span>
                                 <div class="sim-bar-track">
-                                    <div class="sim-bar-fill sim-bar-fill-secondary" id="sim-enrg-bar" style="width:0%"></div>
+                                    <div class="sim-bar-fill sim-bar-fill-secondary" id="sim-src-bar" style="width:0%"></div>
                                 </div>
                                 <div class="sim-output">
-                                    <span id="sim-enrg-value">0</span>
-                                    <span>ENRG</span>
+                                    <span id="sim-src-value">0</span>
+                                    <span>SRC</span>
                                 </div>
                             </div>
                         </div>
@@ -194,20 +271,34 @@
             <div class="tokenomics-grid">
                 <div class="tokenomics-cards">
                     <div class="token-card">
+                        <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:4px;">Ticker</div>
+                        <div style="font-size:1.3rem;font-weight:700;">SRC</div>
+                        <div style="font-size:0.75rem;color:var(--text-muted);">Source</div>
+                    </div>
+                    <div class="token-card">
                         <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:4px;">Max Supply</div>
-                        <div style="font-size:1.3rem;font-weight:700;">1,000,000,000 ENRG</div>
+                        <div style="font-size:1.3rem;font-weight:700;">1,000,000,000 SRC</div>
+                        <div style="font-size:0.75rem;color:var(--text-muted);">Fixed cap</div>
                     </div>
                     <div class="token-card">
                         <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:4px;">Backing</div>
-                        <div style="font-size:1.3rem;font-weight:700;">1 ENRG = 1 MWh</div>
+                        <div style="font-size:1.3rem;font-weight:700;">1 SRC = 1 MWh</div>
+                        <div style="font-size:0.75rem;color:var(--text-muted);">1,000 kWh verified energy</div>
                     </div>
                     <div class="token-card">
                         <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:4px;">Protocol Fee</div>
                         <div style="font-size:1.3rem;font-weight:700;">15%</div>
+                        <div style="font-size:0.75rem;color:var(--text-muted);">85% to producer</div>
                     </div>
                     <div class="token-card">
                         <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:4px;">Decimals</div>
                         <div style="font-size:1.3rem;font-weight:700;">6</div>
+                        <div style="font-size:0.75rem;color:var(--text-muted);">SPL token standard</div>
+                    </div>
+                    <div class="token-card">
+                        <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:4px;">Source Multipliers</div>
+                        <div style="font-size:1rem;font-weight:700;">Solar / Wind / Hydro</div>
+                        <div style="font-size:0.75rem;color:var(--text-muted);">100% · Biogas 80% · Fossil 50%</div>
                     </div>
                 </div>
                 <div class="chart-container">
@@ -231,6 +322,41 @@
             </div>
         </section>
 
+        <!-- Security -->
+        <section id="security" class="section glass-section fade-up">
+            <h2>Security Model</h2>
+            <p class="section-slogan">Multi-layer protection from device to blockchain. Based on ENRG Security Policy and STRIDE threat model.</p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:20px;">
+                <div style="background:rgba(15,23,42,0.6);border:1px solid rgba(148,163,184,0.15);border-radius:14px;padding:18px;">
+                    <div style="font-size:1.2rem;margin-bottom:8px;">🔐 Ed25519 Verification</div>
+                    <p style="font-size:0.85rem;color:var(--text-muted);line-height:1.5;">All device signatures are verified on-chain via Solana sysvar instructions. The private key never leaves the device — stored in ATECC608 Secure Element.</p>
+                </div>
+                <div style="background:rgba(15,23,42,0.6);border:1px solid rgba(148,163,184,0.15);border-radius:14px;padding:18px;">
+                    <div style="font-size:1.2rem;margin-bottom:8px;">🛡️ Replay Protection</div>
+                    <p style="font-size:0.85rem;color:var(--text-muted);line-height:1.5;">Every proof includes a monotonic nonce and timestamp. <strong>MAX_PROOF_AGE = 1 hour</strong>. Duplicate nonces are rejected on-chain.</p>
+                </div>
+                <div style="background:rgba(15,23,42,0.6);border:1px solid rgba(148,163,184,0.15);border-radius:14px;padding:18px;">
+                    <div style="font-size:1.2rem;margin-bottom:8px;">⚡ Rate Limiting</div>
+                    <p style="font-size:0.85rem;color:var(--text-muted);line-height:1.5;">Oracle API enforces rate limits: 200 req/min general, 100 req/min for proof submission, 20 req/min for device registration.</p>
+                </div>
+                <div style="background:rgba(15,23,42,0.6);border:1px solid rgba(148,163,184,0.15);border-radius:14px;padding:18px;">
+                    <div style="font-size:1.2rem;margin-bottom:8px;">📋 STRIDE Threat Model</div>
+                    <p style="font-size:0.85rem;color:var(--text-muted);line-height:1.5;">Spoofing → Ed25519 · Tampering → Signed packets · Repudiation → Nonce + timestamp · DoS → Gas limits · Elevation → PDA architecture</p>
+                </div>
+                <div style="background:rgba(15,23,42,0.6);border:1px solid rgba(148,163,184,0.15);border-radius:14px;padding:18px;">
+                    <div style="font-size:1.2rem;margin-bottom:8px;">🔍 Anomaly Detection</div>
+                    <p style="font-size:0.85rem;color:var(--text-muted);line-height:1.5;">Energy Reputation Score (ERS) tracks device history. Sudden spikes, night-time generation, and profile anomalies trigger quarantine.</p>
+                </div>
+                <div style="background:rgba(15,23,42,0.6);border:1px solid rgba(148,163,184,0.15);border-radius:14px;padding:18px;">
+                    <div style="font-size:1.2rem;margin-bottom:8px;">🏛️ Multi-Oracle (Future)</div>
+                    <p style="font-size:0.85rem;color:var(--text-muted);line-height:1.5;">Planned transition to Switchboard decentralized oracle network for redundant verification and fault tolerance.</p>
+                </div>
+            </div>
+            <div style="text-align:center;margin-top:16px;">
+                <a href="technical-overview.html#security" class="btn-outline" target="_blank">Full Security Specification →</a>
+            </div>
+        </section>
+
         <!-- Roadmap -->
         <section id="roadmap" class="section glass-section fade-up">
             <h2>Roadmap</h2>
@@ -240,33 +366,33 @@
                     <div class="roadmap-item passed">
                         <div class="roadmap-node"><span class="checkmark">✓</span></div>
                         <div class="roadmap-card">
-                            <div class="roadmap-phase">Phase I</div>
+                            <div class="roadmap-phase">Phase I — Foundation ✅</div>
                             <div class="roadmap-title">Genesis</div>
-                            <div class="roadmap-desc">Testnet launch, smart contract audit, IoT prototype, landing page. Q2–Q3 2026</div>
+                            <div class="roadmap-desc">Smart contract, Oracle, ESP32 Proof-of-Production, device registration, minting, documentation, ADRs. Q2–Q3 2026</div>
                         </div>
                     </div>
                     <div class="roadmap-item current">
                         <div class="roadmap-node"><span class="checkmark">★</span></div>
                         <div class="roadmap-card">
-                            <div class="roadmap-phase">Phase II</div>
+                            <div class="roadmap-phase">Phase II — Platform 🚧</div>
                             <div class="roadmap-title">Mainnet</div>
-                            <div class="roadmap-desc">Mainnet deployment, first IoT devices, DEX listing. Q4 2026 – Q1 2027</div>
+                            <div class="roadmap-desc">Device Registry, Provisioning Service, Device Manifest, Policy Engine, Dashboard, REST API, Live Statistics. Q4 2026 – Q1 2027</div>
                         </div>
                     </div>
                     <div class="roadmap-item">
                         <div class="roadmap-node"></div>
                         <div class="roadmap-card">
-                            <div class="roadmap-phase">Phase III</div>
+                            <div class="roadmap-phase">Phase III — Ecosystem</div>
                             <div class="roadmap-title">Vault Growth</div>
-                            <div class="roadmap-desc">Vault activation, Buyback & Burn, industrial producers. Q2–Q3 2027</div>
+                            <div class="roadmap-desc">SDK, CLI Tools, Reference Integrations, Developer Portal, Oracle Network, Community Contributions. Q2–Q3 2027</div>
                         </div>
                     </div>
                     <div class="roadmap-item">
                         <div class="roadmap-node"></div>
                         <div class="roadmap-card">
-                            <div class="roadmap-phase">Phase IV</div>
-                            <div class="roadmap-title">Expansion</div>
-                            <div class="roadmap-desc">Tier-1 CEX, cross-chain, full DAO governance. 2028+</div>
+                            <div class="roadmap-phase">Phase IV — Mainnet</div>
+                            <div class="roadmap-title">Global Standard</div>
+                            <div class="roadmap-desc">Independent Audit, Security Review, Testnet Validation, Multi-chain Support, Carbon Credits, Energy Marketplace. 2028+</div>
                         </div>
                     </div>
                 </div>
@@ -290,7 +416,7 @@
         <!-- Dashboard -->
         <section id="dashboard" class="section glass-section fade-up">
             <h2>Dashboard</h2>
-            <p class="section-slogan">Track your devices, mining history, and ENRG balance.</p>
+            <p class="section-slogan">Track your devices, mining history, and SRC balance.</p>
             <div id="dashboard-content">
                 <p style="color:var(--text-muted);">Complete onboarding to unlock live mining and dashboard insights.</p>
             </div>
@@ -302,7 +428,7 @@
                             <th>Device</th>
                             <th>Source</th>
                             <th style="text-align:right;">kWh</th>
-                            <th style="text-align:right;">ENRG</th>
+                            <th style="text-align:right;">SRC</th>
                             <th style="text-align:right;">Fee</th>
                         </tr>
                     </thead>
@@ -325,7 +451,7 @@
                 <span class="vault-arrow">→</span>
                 <span class="vault-node">🏦 Energy Vault</span>
                 <span class="vault-arrow">→</span>
-                <span class="vault-node">🪙 ENRG Token</span>
+                <span class="vault-node">🪙 SRC Token</span>
             </div>
         </section>
     </div>

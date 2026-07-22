@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>ENRG – Technical Documentation v3.0</title>
+  <title>ENRG – Technical Documentation v3.0 | SRC Token</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     :root {
@@ -167,6 +167,7 @@
     <main class="doc-shell">
       <div class="doc-shell-inner fade-up">
         <h1>ENRG Technical Documentation v3.0</h1>
+        <p><span class="tag">Ticker:</span> <strong>SRC</strong> (Source) · <span class="tag">Max Supply:</span> <strong>1,000,000,000 SRC</strong> · <span class="tag">Backing:</span> <strong>1 SRC = 1 MWh</strong></p>
         <p>July 2026 · Contact: <a href="mailto:anton@enrg.network">anton@enrg.network</a></p>
         <p style="color:var(--text-muted);">This document describes the current architecture of the ENRG protocol, including smart contracts, CPI integration, device lifecycle, and security model.</p>
 
@@ -238,23 +239,40 @@ crate::enrg_profile::cpi::record_production(
         <!-- 3. Device Lifecycle -->
         <section id="DeviceLifecycle" class="glass-section fade-up">
           <h2>3. Device Lifecycle (ADR-0005)</h2>
-          <p>Devices follow a strict state machine with 7 states:</p>
-          <pre>Registered → Claimed → Provisioned → Active
-                                            ↓
-                                      Quarantined → Released
-                                            ↓
-                                       Revoked</pre>
+          <p>Devices follow a strict state machine with 8 states. Each state has clearly defined transition rules:</p>
+          <pre>UNREGISTERED
+    │
+    ▼
+REGISTERED → (crypto identity created)
+    │
+    ▼
+CLAIMED → (bound to owner)
+    │
+    ▼
+PROVISIONED → (configured & synced)
+    │
+    ▼
+ACTIVE → (producing & minting)
+    │
+    ├── (suspicious activity) → QUARANTINE → ACTIVE (released) or REVOKED
+    │
+    ├── (maintenance) → MAINTENANCE → ACTIVE
+    │
+    └── (end of life) → REVOKED</pre>
           <table>
             <thead><tr><th>State</th><th>Description</th><th>Valid Transitions</th></tr></thead>
             <tbody>
-              <tr><td>Registered</td><td>Device identity recorded on-chain</td><td>→ Claimed</td></tr>
-              <tr><td>Claimed</td><td>Owner claims the device</td><td>→ Provisioned</td></tr>
-              <tr><td>Provisioned</td><td>Device configured and ready</td><td>→ Active</td></tr>
-              <tr><td>Active</td><td>Device producing and minting</td><td>→ Quarantined, Revoked</td></tr>
-              <tr><td>Quarantined</td><td>Suspicious activity detected</td><td>→ Active (released), Revoked</td></tr>
-              <tr><td>Revoked</td><td>Permanently removed</td><td>— (terminal)</td></tr>
+              <tr><td>UNREGISTERED</td><td>Device unknown to the system</td><td>→ Registered</td></tr>
+              <tr><td>REGISTERED</td><td>Device identity recorded on-chain</td><td>→ Claimed</td></tr>
+              <tr><td>CLAIMED</td><td>Owner claims the device</td><td>→ Provisioned</td></tr>
+              <tr><td>PROVISIONED</td><td>Wi-Fi configured, time synced, config received</td><td>→ Active</td></tr>
+              <tr><td>ACTIVE</td><td>Device producing and minting</td><td>→ Quarantine, Maintenance, Revoked</td></tr>
+              <tr><td>QUARANTINE</td><td>Suspicious activity — proofs not minted</td><td>→ Active (released), Revoked</td></tr>
+              <tr><td>MAINTENANCE</td><td>Service mode — proofs not sent</td><td>→ Active</td></tr>
+              <tr><td>REVOKED</td><td>Permanently removed</td><td>— (terminal)</td></tr>
             </tbody>
           </table>
+          <p style="margin-top:8px;color:var(--text-muted);font-size:0.85rem;">Full specification: <a href="https://github.com/AntonGrid/ENRG/blob/main/docs/architecture/adr/ADR-0005-device-states.md" target="_blank">ADR-0005: Device States</a></p>
         </section>
 
         <!-- 4. Proof-of-Production -->
@@ -275,7 +293,7 @@ crate::enrg_profile::cpi::record_production(
             <li><strong>Nonce</strong> monotonically increasing (replay protection)</li>
             <li><strong>Energy limit</strong> based on device's <code>rated_power</code> from EnergyProfile</li>
           </ul>
-          <p>After verification, ENRG is minted with a 15% protocol fee split:</p>
+          <p>After verification, SRC is minted with a 15% protocol fee split:</p>
           <ul>
             <li>85% to producer</li>
             <li>15% fee → 20% Buyback & Burn, 40% Staking, 30% DAO, 10% Emergency</li>
@@ -319,7 +337,7 @@ crate::enrg_profile::cpi::record_production(
               <tr><td>POST</td><td><code>/api/v1/device/register</code></td><td>Register a new device</td></tr>
               <tr><td>POST</td><td><code>/api/v1/proof/submit</code></td><td>Submit signed energy proof</td></tr>
               <tr><td>GET</td><td><code>/api/v1/device/{id}/status</code></td><td>Get device status and energy history</td></tr>
-              <tr><td>GET</td><td><code>/api/v1/device/{id}/balance</code></td><td>Get device ENRG balance</td></tr>
+              <tr><td>GET</td><td><code>/api/v1/device/{id}/balance</code></td><td>Get device SRC balance</td></tr>
               <tr><td>POST</td><td><code>/api/v1/pool/create</code></td><td>Create a new staking pool</td></tr>
             </tbody>
           </table>
@@ -330,8 +348,9 @@ crate::enrg_profile::cpi::record_production(
         <section id="Tokenomics" class="glass-section fade-up">
           <h2>7. Tokenomics</h2>
           <ul>
-            <li><strong>Max supply:</strong> 1,000,000,000 ENRG (fixed cap)</li>
-            <li><strong>Scale:</strong> 1 ENRG = 1 MWh (1,000 kWh)</li>
+            <li><strong>Ticker:</strong> SRC (Source)</li>
+            <li><strong>Max supply:</strong> 1,000,000,000 SRC (fixed cap)</li>
+            <li><strong>Scale:</strong> 1 SRC = 1 MWh (1,000 kWh)</li>
             <li><strong>Token decimals:</strong> 6</li>
             <li><strong>Protocol fee:</strong> 15% of every mint</li>
             <li><strong>Source multipliers:</strong> Solar/Wind/Hydro: 100%, Biogas: 80%, Fossil: 50%</li>
@@ -348,19 +367,19 @@ crate::enrg_profile::cpi::record_production(
         <!-- 8. Architecture Decisions -->
         <section id="ADR" class="glass-section fade-up">
           <h2>8. Architecture Decision Records (ADR)</h2>
-          <p>The following ADRs document key architectural decisions:</p>
+          <p>The following ADRs document key architectural decisions. Click each to view the full document:</p>
           <ul>
-            <li><strong>ADR-0001:</strong> Key Never Leaves Device — Ed25519 keys are generated and stored on the IoT device.</li>
-            <li><strong>ADR-0002:</strong> Device Registry as Source of Truth — All device state is stored on-chain.</li>
-            <li><strong>ADR-0003:</strong> Oracle Policy Engine — Oracle validates proofs before on-chain submission.</li>
-            <li><strong>ADR-0004:</strong> Device Manifest — Each device has an on-chain manifest with metadata.</li>
-            <li><strong>ADR-0005:</strong> Device States — Formal state machine for device lifecycle.</li>
-            <li><strong>ADR-0006:</strong> Core Protocol vs Energy Profile — Separation of concerns between enrg-mvp and enrg-profile.</li>
-            <li><strong>ADR-0007:</strong> Security Key Management — Hardware-grade key storage with ATECC608.</li>
-            <li><strong>ADR-0008:</strong> OTA Secure Firmware Updates — Signed firmware updates for IoT devices.</li>
-            <li><strong>ADR-0009:</strong> Governance Protocol — Progressive decentralization path to DAO.</li>
+            <li><strong><a href="https://github.com/AntonGrid/ENRG/blob/main/docs/architecture/adr/ADR-0001-key-never-leaves-device.md" target="_blank">ADR-0001:</a></strong> Key Never Leaves Device — Ed25519 keys are generated and stored on the IoT device in ATECC608 Secure Element.</li>
+            <li><strong><a href="https://github.com/AntonGrid/ENRG/blob/main/docs/architecture/adr/ADR-0002-device-registry-source-of-truth.md" target="_blank">ADR-0002:</a></strong> Device Registry as Source of Truth — All device state is stored on-chain.</li>
+            <li><strong><a href="https://github.com/AntonGrid/ENRG/blob/main/docs/architecture/adr/ADR-0003-oracle-policy-engine.md" target="_blank">ADR-0003:</a></strong> Oracle Policy Engine — Oracle validates proofs before on-chain submission.</li>
+            <li><strong><a href="https://github.com/AntonGrid/ENRG/blob/main/docs/architecture/adr/ADR-0004-device-manifest.md" target="_blank">ADR-0004:</a></strong> Device Manifest — Each device has an on-chain manifest with metadata.</li>
+            <li><strong><a href="https://github.com/AntonGrid/ENRG/blob/main/docs/architecture/adr/ADR-0005-device-states.md" target="_blank">ADR-0005:</a></strong> Device States — Formal state machine for device lifecycle (8 states).</li>
+            <li><strong><a href="https://github.com/AntonGrid/ENRG/blob/main/docs/architecture/adr/ADR-0006-core-protocol-vs-energy-profile.md" target="_blank">ADR-0006:</a></strong> Core Protocol vs Energy Profile — Separation of concerns between enrg-mvp and enrg-profile.</li>
+            <li><strong><a href="https://github.com/AntonGrid/ENRG/blob/main/docs/architecture/adr/ADR-0007-Security-Key-Management.md" target="_blank">ADR-0007:</a></strong> Security Key Management — Hardware-grade key storage with ATECC608.</li>
+            <li><strong><a href="https://github.com/AntonGrid/ENRG/blob/main/docs/architecture/adr/ADR-0008-OTA-Secure-Firmware-Updates.md" target="_blank">ADR-0008:</a></strong> OTA Secure Firmware Updates — Signed firmware updates for IoT devices.</li>
+            <li><strong><a href="https://github.com/AntonGrid/ENRG/blob/main/docs/architecture/adr/ADR-0009-Governance-Protocol.md" target="_blank">ADR-0009:</a></strong> Governance Protocol — Progressive decentralization path to DAO.</li>
           </ul>
-          <p>Full ADRs: <code>docs/architecture/adr/</code></p>
+          <p>Full ADR directory: <a href="https://github.com/AntonGrid/ENRG/tree/main/docs/architecture/adr" target="_blank">docs/architecture/adr/</a></p>
         </section>
 
         <!-- 9. IoT Hardware -->
@@ -379,20 +398,21 @@ crate::enrg_profile::cpi::record_production(
         <!-- 10. Mainnet Readiness -->
         <section id="Mainnet" class="glass-section fade-up">
           <h2>10. Mainnet Readiness</h2>
-          <p>The protocol has undergone extensive preparation for mainnet deployment:</p>
+          <p>The protocol has undergone extensive preparation for mainnet deployment. Based on <a href="https://github.com/AntonGrid/ENRG/blob/main/docs/protocol/deployment/mainnet-readiness.md" target="_blank">Mainnet Readiness Checklist</a>:</p>
           <ul>
             <li><span class="tag tag-green">✓</span> Ed25519 signature verification via sysvar instructions</li>
             <li><span class="tag tag-green">✓</span> CPI integration between enrg-mvp and enrg-profile</li>
-            <li><span class="tag tag-green">✓</span> Device lifecycle state machine (ADR-0005)</li>
+            <li><span class="tag tag-green">✓</span> Device lifecycle state machine (ADR-0005) — 8 states</li>
             <li><span class="tag tag-green">✓</span> Timestamp validation (MAX_PROOF_AGE = 1 hour)</li>
             <li><span class="tag tag-green">✓</span> Rate limiting on Oracle API (200/100/20 req/min)</li>
             <li><span class="tag tag-green">✓</span> PostgreSQL database with migrations</li>
             <li><span class="tag tag-green">✓</span> Prometheus + Grafana monitoring</li>
             <li><span class="tag tag-green">✓</span> CI/CD pipeline (Rust/Anchor, Node.js, Docker, Security Scan)</li>
+            <li><span class="tag tag-green">✓</span> STRIDE threat model applied</li>
+            <li><span class="tag tag-green">✓</span> Replay protection (nonce + timestamp)</li>
             <li><span class="tag tag-orange">○</span> Professional smart contract audit (scheduled)</li>
             <li><span class="tag tag-orange">○</span> Switchboard oracle integration (in progress)</li>
           </ul>
-          <p>Full checklist: <code>docs/protocol/deployment/mainnet-readiness.md</code></p>
         </section>
 
         <a href="index.html" class="back-link">← Back to main site</a>

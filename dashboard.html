@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard — ENRG Protocol</title>
+    <title>Dashboard — ENRG Protocol | SRC Token</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="ENRG Dashboard: device status, accumulated energy, wallet balance, and pool participation.">
     <link rel="stylesheet" href="style.css">
@@ -48,7 +48,7 @@
                     <div class="metric-value"><span id="energy">—</span> Wh</div>
                 </div>
                 <div class="metric-card">
-                    <div class="metric-label">ENRG Balance</div>
+                    <div class="metric-label">SRC Balance</div>
                     <div class="metric-value"><span id="balance">—</span></div>
                 </div>
             </div>
@@ -91,7 +91,7 @@
     </footer>
 
     <script>
-    const ENRG_API_BASE = (() => {
+    const SRC_API_BASE = (() => {
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
             return 'http://localhost:3000';
         }
@@ -115,7 +115,7 @@
         const balanceEl = document.getElementById('balance');
 
         try {
-            const statusRes = await fetch(`${ENRG_API_BASE}/api/v1/device/${encodeURIComponent(deviceId)}/status`);
+            const statusRes = await fetch(`${SRC_API_BASE}/api/v1/device/${encodeURIComponent(deviceId)}/status`);
             if (statusRes.ok) {
                 const status = await statusRes.json();
                 energyEl.textContent = status.energy_wh ?? '0';
@@ -128,7 +128,7 @@
         }
 
         try {
-            const balanceRes = await fetch(`${ENRG_API_BASE}/api/v1/device/${encodeURIComponent(deviceId)}/balance`);
+            const balanceRes = await fetch(`${SRC_API_BASE}/api/v1/device/${encodeURIComponent(deviceId)}/balance`);
             if (balanceRes.ok) {
                 const balance = await balanceRes.json();
                 balanceEl.textContent = balance.balance ?? '0';
