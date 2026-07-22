@@ -1,162 +1,160 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Регистрация устройства — ENRG</title>
+    <title>Register Device — ENRG Protocol</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Регистрация устройства ENRG для отслеживания накопленной энергии и участия в DePIN.">
+    <meta name="description" content="Register your energy device with ENRG to start tokenizing production.">
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
-<body data-page="register">
-<nav class="navbar">
-    <a href="index.html" data-page-link="home">🏠 Главная</a>
-    <a href="register.html" data-page-link="register">📝 Регистрация</a>
-    <a href="dashboard.html" data-page-link="dashboard" data-auth="only">📊 Дашборд</a>
-    <a href="#" id="logoutLink" data-auth="only">🚪 Выйти</a>
-</nav>
+<body>
+    <canvas id="particle-canvas"></canvas>
+    <div class="bg-overlay"></div>
 
-<main>
-    <section class="glass-section">
-        <h2>Регистрация устройства ⚡</h2>
-        <p>Введи <strong>device_id</strong> и <strong>public_key</strong>, чтобы привязать устройство к ENRG.</p>
-
-        <div id="alreadyRegistered" style="display:none; margin-bottom:1rem;">
-            <p>Устройство уже зарегистрировано в этом браузере.</p>
-            <a class="btn-primary" href="dashboard.html">Перейти в дашборд →</a>
+    <nav class="top-nav">
+        <div class="nav-left">
+            <div class="brand-mark"><div class="brand-mark-inner">EN</div></div>
+            <div class="brand-text">
+                <div class="brand-title">ENRG Protocol</div>
+                <div class="brand-subtitle">Device Registration</div>
+            </div>
         </div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="whitepaper.html" class="nav-link" target="_blank">Whitepaper</a>
+            <a href="technical-overview.html" class="nav-link" target="_blank">Docs</a>
+        </div>
+    </nav>
 
-        <form id="regForm" novalidate>
-            <label for="device_id">Device ID</label>
-            <input type="text" id="device_id" name="device_id" required placeholder="например, device-123">
+    <div class="page-shell">
+        <section class="hero-section section fade-up">
+            <h1>Register Your Device</h1>
+            <p class="section-slogan">Enter your <strong>device_id</strong> and <strong>public_key</strong> to link your energy source to ENRG.</p>
+        </section>
 
-            <label for="public_key">Public Key (base64, 44 символа)</label>
-            <input type="text" id="public_key" name="public_key" required minlength="44" maxlength="44" placeholder="Base64-ключ">
+        <section class="section glass-section fade-up">
+            <div id="alreadyRegistered" style="display:none;margin-bottom:1rem;">
+                <p style="color:var(--text-muted);">Device already registered in this browser.</p>
+                <a class="btn-primary" href="dashboard.html" style="display:inline-block;margin-top:12px;text-decoration:none;">Go to Dashboard →</a>
+            </div>
 
-            <button class="btn-primary" type="submit">Зарегистрировать</button>
-        </form>
+            <form id="regForm" novalidate style="display:flex;flex-direction:column;gap:16px;max-width:480px;">
+                <div>
+                    <label for="device_id" style="display:block;margin-bottom:6px;color:var(--text-muted);font-size:0.85rem;">Device ID</label>
+                    <input type="text" id="device_id" name="device_id" required placeholder="e.g., device-123" style="width:100%;padding:14px;border-radius:14px;border:1px solid rgba(148,163,184,0.3);background:rgba(15,23,42,0.75);color:#E5E7EB;font-size:0.95rem;">
+                </div>
+                <div>
+                    <label for="public_key" style="display:block;margin-bottom:6px;color:var(--text-muted);font-size:0.85rem;">Public Key (base64, 44 characters)</label>
+                    <input type="text" id="public_key" name="public_key" required minlength="44" maxlength="44" placeholder="Base64-encoded public key" style="width:100%;padding:14px;border-radius:14px;border:1px solid rgba(148,163,184,0.3);background:rgba(15,23,42,0.75);color:#E5E7EB;font-size:0.95rem;">
+                </div>
+                <button class="btn-primary" type="submit" style="align-self:flex-start;">Register Device</button>
+            </form>
 
-        <p id="errorMsg" style="color:#ff6b6b; margin-top:0.75rem;"></p>
-        <p id="successMsg" style="color:#4caf50; margin-top:0.75rem;"></p>
-    </section>
-</main>
+            <p id="errorMsg" style="color:#ff6b6b;margin-top:12px;"></p>
+            <p id="successMsg" style="color:#4caf50;margin-top:12px;"></p>
+        </section>
+    </div>
 
-<script>
-const ENRG_API_BASE = "https://enrg-oracle.onrender.com/api/v1/device";
+    <footer class="site-footer">
+        <div class="footer-links">
+            <a href="index.html">Home</a>
+            <a href="whitepaper.html" target="_blank">Whitepaper</a>
+            <a href="technical-overview.html" target="_blank">Technical Docs</a>
+            <a href="https://github.com/AntonGrid/enrg-landing" target="_blank" rel="noreferrer">GitHub</a>
+            <a href="https://t.me/enrg_network" target="_blank" rel="noreferrer">Telegram</a>
+        </div>
+        <div class="footer-copy">© 2026 ENRG Protocol. Built on Solana.</div>
+    </footer>
 
-function getStoredDevice() {
-    return {
-        id: localStorage.getItem("enrgDeviceId"),
-        pubKey: localStorage.getItem("enrgPublicKey"),
-    };
-}
-
-function setStoredDevice(id, pubKey) {
-    localStorage.setItem("enrgDeviceId", id);
-    localStorage.setItem("enrgPublicKey", pubKey);
-}
-
-function clearStoredDevice() {
-    localStorage.removeItem("enrgDeviceId");
-    localStorage.removeItem("enrgPublicKey");
-}
-
-function initNav() {
-    const { id, pubKey } = getStoredDevice();
-    const isAuth = Boolean(id && pubKey);
-
-    const links = document.querySelectorAll("nav a[data-page-link]");
-    const currentPage = document.body.dataset.page;
-    links.forEach(link => {
-        if (link.dataset.pageLink === currentPage) {
-            link.classList.add("active");
-        } else {
-            link.classList.remove("active");
+    <script>
+    const ENRG_API_BASE = (() => {
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            return 'http://localhost:3000';
         }
-    });
+        return 'https://enrg-oracle.onrender.com';
+    })();
 
-    document.querySelectorAll("[data-auth='only']").forEach(el => {
-        el.style.display = isAuth ? "inline-block" : "none";
-    });
-
-    const registerLink = document.querySelector("a[data-page-link='register']");
-    if (registerLink) {
-        registerLink.style.display = isAuth ? "none" : "inline-block";
+    function getStoredDevice() {
+        return {
+            id: localStorage.getItem('enrgDeviceId'),
+            pubKey: localStorage.getItem('enrgPublicKey'),
+        };
     }
 
-    const logoutLink = document.getElementById("logoutLink");
-    if (logoutLink) {
-        logoutLink.addEventListener("click", (e) => {
+    function setStoredDevice(id, pubKey) {
+        localStorage.setItem('enrgDeviceId', id);
+        localStorage.setItem('enrgPublicKey', pubKey);
+    }
+
+    function clearStoredDevice() {
+        localStorage.removeItem('enrgDeviceId');
+        localStorage.removeItem('enrgPublicKey');
+    }
+
+    function initRegisterPage() {
+        const { id, pubKey } = getStoredDevice();
+        const alreadyBlock = document.getElementById('alreadyRegistered');
+        const form = document.getElementById('regForm');
+
+        if (id && pubKey) {
+            if (alreadyBlock) alreadyBlock.style.display = 'block';
+            if (form) form.style.display = 'none';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initRegisterPage();
+
+        const form = document.getElementById('regForm');
+        const errorMsg = document.getElementById('errorMsg');
+        const successMsg = document.getElementById('successMsg');
+
+        if (!form) return;
+
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            clearStoredDevice();
-            window.location.href = "index.html";
-        });
-    }
-}
+            errorMsg.textContent = '';
+            successMsg.textContent = '';
 
-function initRegisterPage() {
-    const { id, pubKey } = getStoredDevice();
-    const alreadyBlock = document.getElementById("alreadyRegistered");
-    const form = document.getElementById("regForm");
+            const device_id = document.getElementById('device_id').value.trim();
+            const public_key = document.getElementById('public_key').value.trim();
 
-    if (id && pubKey) {
-        if (alreadyBlock) alreadyBlock.style.display = "block";
-        if (form) form.style.display = "none";
-    }
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    initNav();
-    initRegisterPage();
-
-    const form = document.getElementById("regForm");
-    const errorMsg = document.getElementById("errorMsg");
-    const successMsg = document.getElementById("successMsg");
-
-    if (!form) return;
-
-    form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        errorMsg.textContent = "";
-        successMsg.textContent = "";
-
-        const device_id = document.getElementById("device_id").value.trim();
-        const public_key = document.getElementById("public_key").value.trim();
-
-        if (!device_id || !public_key) {
-            errorMsg.textContent = "Заполни все поля.";
-            return;
-        }
-        if (public_key.length !== 44) {
-            errorMsg.textContent = "Public key должен быть длиной 44 символа.";
-            return;
-        }
-
-        try {
-            const res = await fetch(ENRG_API_BASE + "/register", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ device_id, public_key })
-            });
-
-            const data = await res.json().catch(() => ({}));
-
-            if (!res.ok) {
-                errorMsg.textContent = data.error || "Ошибка регистрации (возможно, устройство уже зарегистрировано).";
+            if (!device_id || !public_key) {
+                errorMsg.textContent = 'Please fill in all fields.';
+                return;
+            }
+            if (public_key.length !== 44) {
+                errorMsg.textContent = 'Public key must be exactly 44 characters.';
                 return;
             }
 
-            setStoredDevice(device_id, public_key);
-            successMsg.textContent = "Устройство успешно зарегистрировано. Перенаправляем в дашборд…";
-            setTimeout(() => {
-                window.location.href = "dashboard.html";
-            }, 800);
+            try {
+                const res = await fetch(`${ENRG_API_BASE}/api/v1/device/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ device_id, public_key })
+                });
 
-        } catch (err) {
-            console.error(err);
-            errorMsg.textContent = "Ошибка соединения с оракулом. Попробуй позже.";
-        }
+                const data = await res.json().catch(() => ({}));
+
+                if (!res.ok) {
+                    errorMsg.textContent = data.error || 'Registration failed (device may already be registered).';
+                    return;
+                }
+
+                setStoredDevice(device_id, public_key);
+                successMsg.textContent = 'Device registered successfully. Redirecting to dashboard...';
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 800);
+
+            } catch (err) {
+                console.error(err);
+                errorMsg.textContent = 'Connection to oracle failed. Please try again later.';
+            }
+        });
     });
-});
-</script>
+    </script>
 </body>
 </html>
