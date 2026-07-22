@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard — ENRG Protocol</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="ENRG Dashboard: device status, accumulated energy, wallet balance, and pool participation.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <canvas id="particle-canvas"></canvas>
+    <div class="bg-overlay"></div>
+
+    <nav class="top-nav">
+        <div class="nav-left">
+            <div class="brand-mark"><div class="brand-mark-inner">EN</div></div>
+            <div class="brand-text">
+                <div class="brand-title">ENRG Protocol</div>
+                <div class="brand-subtitle">Device Dashboard</div>
+            </div>
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="whitepaper.html" class="nav-link" target="_blank">Whitepaper</a>
+            <a href="technical-overview.html" class="nav-link" target="_blank">Docs</a>
+        </div>
+        <div class="nav-cta">
+            <button type="button" class="btn-outline" id="logoutBtn">Logout</button>
+        </div>
+    </nav>
+
+    <div class="page-shell">
+        <section class="hero-section section fade-up">
+            <h1>Device Dashboard</h1>
+            <p class="section-slogan">Monitor your energy production, wallet, and pool participation.</p>
+        </section>
+
+        <section class="section glass-section fade-up">
+            <h2>Device Info</h2>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:12px;">
+                <div class="metric-card">
+                    <div class="metric-label">Device ID</div>
+                    <div class="metric-value" id="devId">—</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Accumulated Energy</div>
+                    <div class="metric-value"><span id="energy">—</span> Wh</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">ENRG Balance</div>
+                    <div class="metric-value"><span id="balance">—</span></div>
+                </div>
+            </div>
+            <div style="margin-top:16px;">
+                <button type="button" class="btn-primary" id="refreshBtn">↻ Refresh</button>
+            </div>
+        </section>
+
+        <section class="section glass-section fade-up">
+            <h2>Pool Participation</h2>
+            <p class="section-slogan">Coming soon: pool interface for yield strategies and reward distribution.</p>
+            <ul style="margin-left:1.2rem;color:var(--text-muted);">
+                <li>📈 Pool yield overview</li>
+                <li>⚙️ Participation strategy configuration</li>
+                <li>🔁 Auto-compounding (planned)</li>
+            </ul>
+        </section>
+
+        <section class="section glass-section fade-up">
+            <h2>Wallet</h2>
+            <p id="walletStatus" style="color:var(--text-muted);">Wallet not connected.</p>
+            <div style="margin-top:12px;">
+                <button type="button" class="btn-primary" id="connectWalletBtn">Connect Phantom</button>
+            </div>
+            <p style="font-size:0.85rem;color:var(--text-muted);margin-top:12px;">
+                Phantom Wallet browser extension required. After connection, the wallet will be linked to your device and pools.
+            </p>
+        </section>
+    </div>
+
+    <footer class="site-footer">
+        <div class="footer-links">
+            <a href="index.html">Home</a>
+            <a href="whitepaper.html" target="_blank">Whitepaper</a>
+            <a href="technical-overview.html" target="_blank">Technical Docs</a>
+            <a href="https://github.com/AntonGrid/enrg-landing" target="_blank" rel="noreferrer">GitHub</a>
+            <a href="https://t.me/enrg_network" target="_blank" rel="noreferrer">Telegram</a>
+        </div>
+        <div class="footer-copy">© 2026 ENRG Protocol. Built on Solana.</div>
+    </footer>
+
+    <script>
+    const ENRG_API_BASE = (() => {
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            return 'http://localhost:3000';
+        }
+        return 'https://enrg-oracle.onrender.com';
+    })();
+
+    function getStoredDevice() {
+        return {
+            id: localStorage.getItem('enrgDeviceId'),
+            pubKey: localStorage.getItem('enrgPublicKey'),
+        };
+    }
+
+    function clearStoredDevice() {
+        localStorage.removeItem('enrgDeviceId');
+        localStorage.removeItem('enrgPublicKey');
+    }
+
+    async function loadDeviceData(deviceId) {
+        const energyEl = document.getElementById('energy');
+        const balanceEl = document.getElementById('balance');
+
+        try {
+            const statusRes = await fetch(`${ENRG_API_BASE}/api/v1/device/${encodeURIComponent(deviceId)}/status`);
+            if (statusRes.ok) {
+                const status = await statusRes.json();
+                energyEl.textContent = status.energy_wh ?? '0';
+            } else {
+                energyEl.textContent = '—';
+            }
+        } catch (e) {
+            console.warn('Error loading device status:', e);
+            energyEl.textContent = '—';
+        }
+
+        try {
+            const balanceRes = await fetch(`${ENRG_API_BASE}/api/v1/device/${encodeURIComponent(deviceId)}/balance`);
+            if (balanceRes.ok) {
+                const balance = await balanceRes.json();
+                balanceEl.textContent = balance.balance ?? '0';
+            } else {
+                balanceEl.textContent = '—';
+            }
+        } catch (e) {
+            console.warn('Error loading device balance:', e);
+            balanceEl.textContent = '—';
+        }
+    }
+
+    async function connectPhantom() {
+        const walletStatus = document.getElementById('walletStatus');
+        if (!window.solana || !window.solana.isPhantom) {
+            alert('Phantom Wallet not found. Please install the Phantom browser extension.');
+            walletStatus.textContent = 'Phantom not installed.';
+            return;
+        }
+        try {
+            const resp = await window.solana.connect();
+            const address = resp.publicKey.toString();
+            walletStatus.textContent = `Wallet connected: ${address}`;
+        } catch (err) {
+            console.error(err);
+            walletStatus.textContent = 'Connection cancelled or error occurred.';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const { id, pubKey } = getStoredDevice();
+        if (!id || !pubKey) {
+            window.location.href = 'register.html';
+            return;
+        }
+
+        const devIdEl = document.getElementById('devId');
+        if (devIdEl) devIdEl.textContent = id;
+
+        const refreshBtn = document.getElementById('refreshBtn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => loadDeviceData(id));
+        }
+
+        const connectWalletBtn = document.getElementById('connectWalletBtn');
+        if (connectWalletBtn) {
+            connectWalletBtn.addEventListener('click', connectPhantom);
+        }
+
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                clearStoredDevice();
+                window.location.href = 'index.html';
+            });
+        }
+
+        loadDeviceData(id);
+    });
+    </script>
+</body>
+</html>

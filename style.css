@@ -11,6 +11,192 @@
   --transition-fast: 200ms ease-out;
 }
 
+/* ========== STEP CARDS (How It Works) ========== */
+.how-grid {
+  display: grid;
+  gap: 18px;
+  margin-top: 24px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.enrg-step-card {
+  padding: 24px;
+  border-radius: 22px;
+  background: rgba(12, 17, 28, 0.92);
+  border: 1px solid rgba(0, 229, 255, 0.1);
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.enrg-step-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(0, 229, 255, 0.4);
+  box-shadow: 0 0 30px rgba(0, 229, 255, 0.15);
+}
+
+.enrg-step-card h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--accent-cyan);
+}
+
+.enrg-step-card p {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.enrg-step-card .step-icon {
+  font-size: 2rem;
+}
+
+/* ========== HERO BADGES ========== */
+.enrg-hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.enrg-hero-badge {
+  padding: 12px 16px;
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.82);
+  border: 1px solid rgba(0, 229, 255, 0.16);
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.enrg-hero-badge span {
+  font-weight: 700;
+  color: var(--accent-cyan);
+}
+
+/* ========== ENERGY GLOW ========== */
+.energy-glow {
+  position: relative;
+  overflow: hidden;
+}
+
+.energy-glow::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(0, 229, 255, 0.2), transparent 28%),
+    radial-gradient(circle at 80% 80%, rgba(255, 107, 0, 0.18), transparent 24%);
+  pointer-events: none;
+  opacity: 0.8;
+  transition: transform 0.8s ease;
+  transform: scale(0.96);
+}
+
+.energy-glow:hover::before {
+  transform: scale(1.05);
+}
+
+/* ========== ENERGY OVERLAY ========== */
+.enrg-energy-overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+  max-width: 320px;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.enrg-energy-node {
+  position: absolute;
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  border: 1px solid rgba(59, 130, 246, 0.22);
+  background: rgba(1, 10, 21, 0.72);
+  box-shadow: 0 0 28px rgba(0, 229, 255, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #E5E7EB;
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 12px;
+  opacity: 0.95;
+  animation: floatEnergy 7s ease-in-out infinite;
+}
+
+.enrg-energy-node span {
+  display: block;
+  font-size: 0.7rem;
+  margin-top: 8px;
+  color: #A5F3FC;
+  line-height: 1.2;
+}
+
+.enrg-energy-node.energy-1 { top: 10%; right: 12%; animation-delay: 0s; }
+.enrg-energy-node.energy-2 { top: 42%; right: 16%; animation-delay: 1.4s; }
+.enrg-energy-node.energy-3 { bottom: 10%; right: 10%; animation-delay: 2.8s; }
+
+.enrg-energy-ring {
+  position: absolute;
+  top: 26%;
+  right: 18%;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  box-shadow: 0 0 48px rgba(56, 189, 248, 0.2);
+  animation: pulseGlow 2.8s ease-out infinite;
+}
+
+.enrg-energy-path {
+  position: absolute;
+  top: 8%;
+  right: 6%;
+  width: 220px;
+  height: 220px;
+  pointer-events: none;
+}
+
+@keyframes floatEnergy {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes pulseGlow {
+  0% { transform: scale(0.92); opacity: 0.4; }
+  50% { transform: scale(1.02); opacity: 0.65; }
+  100% { transform: scale(0.92); opacity: 0.4; }
+}
+
+/* ========== CONSOLE LINE ========== */
+.console-line {
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+/* ========== RESPONSIVE OVERRIDES ========== */
+@media (max-width: 900px) {
+  .how-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .how-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  
+  .enrg-step-card {
+    min-height: auto;
+  }
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
