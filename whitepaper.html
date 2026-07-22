@@ -2,258 +2,263 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>ENRG Protocol – Whitepaper v2.0 | SRC Token</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    :root {
-      --bg-main: #0B0F19;
-      --bg-card: rgba(15, 23, 42, 0.7);
-      --border-card: rgba(148, 163, 184, 0.4);
-      --accent-cyan: #00E5FF;
-      --accent-orange: #FF6B00;
-      --text-main: #E5E7EB;
-      --text-muted: #9CA3AF;
-      --radius-lg: 18px;
-      --radius-md: 12px;
-      --shadow-soft: 0 24px 60px rgba(0, 0, 0, 0.65);
-      --transition-fast: 200ms ease-out;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg-main); color: var(--text-main); line-height: 1.7; }
-    .page-shell { max-width: 960px; margin: 0 auto; padding: 24px 20px 60px; }
-    .top-nav { display: flex; align-items: center; justify-content: space-between; padding: 12px 24px; background: rgba(11,15,25,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(148,163,184,0.12); position: sticky; top: 0; z-index: 100; }
-    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text-main); }
-    .brand-mark { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg,var(--accent-cyan),var(--accent-orange)); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8rem; color: #0B0F19; }
-    .brand-text .brand-title { font-weight: 700; font-size: 1rem; }
-    .brand-text .brand-subtitle { font-size: 0.7rem; color: var(--text-muted); }
-    .top-nav-cta { display: flex; gap: 8px; }
-    .btn-outline { background: transparent; border: 1px solid rgba(148,163,184,0.3); color: var(--text-main); padding: 8px 18px; border-radius: 10px; cursor: pointer; font-size: 0.85rem; transition: var(--transition-fast); text-decoration: none; display: inline-block; }
-    .btn-outline:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); }
-    .doc-shell { margin-top: 24px; }
-    .doc-shell-inner { max-width: 100%; }
-    .glass-section { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: var(--radius-lg); padding: 28px 32px; margin-bottom: 24px; box-shadow: var(--shadow-soft); }
-    .glass-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 16px; background: linear-gradient(135deg,var(--accent-cyan),var(--accent-orange)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .glass-section h3 { font-size: 1.1rem; font-weight: 600; margin: 16px 0 8px; color: var(--accent-cyan); }
-    .glass-section p, .glass-section li { font-size: 0.92rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 8px; }
-    .glass-section ul { padding-left: 1.4rem; margin-bottom: 12px; }
-    .glass-section ul li { margin-bottom: 6px; }
-    .glass-section strong { color: var(--text-main); }
-    .glass-section code { background: rgba(0,229,255,0.1); padding: 2px 8px; border-radius: 6px; font-size: 0.85rem; color: var(--accent-cyan); }
-    .highlight { background: rgba(0,229,255,0.06); border-left: 4px solid var(--accent-cyan); padding: 16px 20px; border-radius: 0 var(--radius-md) var(--radius-md) 0; margin: 12px 0; }
-    .comparison-table { width: 100%; border-collapse: collapse; margin: 12px 0; }
-    .comparison-table th, .comparison-table td { padding: 10px 14px; border: 1px solid rgba(148,163,184,0.15); text-align: left; font-size: 0.85rem; }
-    .comparison-table th { background: rgba(0,229,255,0.08); color: var(--accent-cyan); font-weight: 600; }
-    .comparison-table td { color: var(--text-muted); }
-    .chart-container { margin: 16px 0; }
-    .roadmap-wrapper { margin: 12px 0; }
-    .roadmap-timeline { list-style: none; padding: 0; }
-    .roadmap-timeline li { padding: 8px 0; border-bottom: 1px solid rgba(148,163,184,0.1); font-size: 0.9rem; color: var(--text-muted); }
-    .roadmap-timeline li:last-child { border-bottom: none; }
-    .roadmap-timeline li strong { color: var(--text-main); }
-    .fade-up { animation: fadeUp 0.6s ease-out; }
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    @media (max-width: 720px) { .glass-section { padding: 20px 16px; } .top-nav { padding: 10px 14px; } }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Whitepaper — ENRG Protocol</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/docs.css" />
+  <link rel="icon" href="assets/favicon.ico" />
 </head>
-<body>
-  <div class="page-shell">
-    <header class="top-nav">
-      <a href="index.html" class="brand">
-        <div class="brand-mark">EN</div>
-        <div class="brand-text">
-          <div class="brand-title">ENRG Protocol</div>
-          <div class="brand-subtitle">Whitepaper v2.0</div>
+<body class="page--docs">
+
+  <header class="navbar">
+    <a href="/" class="navbar__logo">
+      <img src="assets/logo.svg" alt="ENRG" width="32" height="32" />
+      <span>ENRG</span>
+    </a>
+    <nav class="navbar__links">
+      <a href="/whitepaper.html" class="active">Whitepaper</a>
+      <a href="/technical-overview.html">Docs</a>
+      <a href="/dashboard.html">Dashboard</a>
+    </nav>
+    <button id="wallet-btn" class="btn btn--outline">Connect Wallet</button>
+  </header>
+
+  <div class="docs-layout">
+
+    <!-- Sidebar -->
+    <aside class="docs-sidebar">
+      <nav class="docs-nav">
+        <span class="docs-nav__group">Whitepaper</span>
+        <a href="#abstract">Abstract</a>
+        <a href="#problem">Problem Statement</a>
+        <a href="#solution">Solution</a>
+        <a href="#token">SRC Token</a>
+        <a href="#protocol">Protocol Design</a>
+        <a href="#oracle">Oracle System</a>
+        <a href="#governance">Governance</a>
+        <a href="#roadmap">Roadmap</a>
+        <a href="#team">Team</a>
+      </nav>
+    </aside>
+
+    <!-- Content -->
+    <main class="docs-content">
+
+      <div class="docs-header">
+        <span class="docs-badge">v1.0 — July 2026</span>
+        <h1>ENRG Protocol Whitepaper</h1>
+        <p class="docs-lead">
+          A decentralized protocol for tokenizing real-world energy production data
+          on the Solana blockchain.
+        </p>
+      </div>
+
+      <section id="abstract" class="docs-section">
+        <h2>Abstract</h2>
+        <p>
+          ENRG Protocol enables owners of renewable energy devices — solar panels,
+          wind turbines, hydroelectric generators — to tokenize their verified energy
+          output as SRC (Solar Renewable Certificate) tokens on the Solana blockchain.
+        </p>
+        <p>
+          Each SRC token represents exactly 1 MWh of verified energy production.
+          The protocol leverages a decentralized oracle network for data verification,
+          Ed25519 cryptographic signatures for device authentication, and Solana's SPL
+          Token standard for on-chain representation.
+        </p>
+        <div class="docs-callout">
+          <strong>Max Supply:</strong> 1,000,000,000 SRC &nbsp;·&nbsp;
+          <strong>1 SRC</strong> = 1 MWh of verified energy &nbsp;·&nbsp;
+          <strong>Network:</strong> Solana
         </div>
-      </a>
-      <div class="top-nav-cta">
-        <a href="index.html" class="btn-outline">← Back to Site</a>
-      </div>
-    </header>
+      </section>
 
-    <main class="doc-shell">
-      <div class="doc-shell-inner">
+      <section id="problem" class="docs-section">
+        <h2>Problem Statement</h2>
+        <p>
+          The global renewable energy market suffers from three critical inefficiencies:
+        </p>
+        <ol class="docs-list">
+          <li>
+            <strong>Opaque certification.</strong> Renewable Energy Certificates (RECs)
+            are issued by centralized bodies with limited auditability, slow issuance
+            cycles, and high administrative overhead.
+          </li>
+          <li>
+            <strong>Fragmented markets.</strong> Energy producers in different regions
+            cannot access unified, liquid markets for their certificates. Small producers
+            are effectively excluded.
+          </li>
+          <li>
+            <strong>Verification trust gap.</strong> Buyers of RECs must trust
+            intermediaries rather than cryptographic proof. Double-counting and
+            fraudulent certificates are persistent problems.
+          </li>
+        </ol>
+      </section>
 
-        <section class="glass-section fade-up">
-          <h1 style="font-size:1.8rem;font-weight:800;margin-bottom:8px;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">ENRG Protocol – Whitepaper v2.0</h1>
-          <p style="font-size:1rem;color:var(--text-muted);margin-bottom:4px;"><strong style="color:var(--text-main);">Backed by Real MWh, Not Loyalty Points</strong></p>
-          <p style="font-size:0.9rem;color:var(--text-muted);">ENRG – The Backbone for DePIN Energy. The Only DePIN Protocol with Buyback & Burn and Energy-Backed Tokenization.</p>
-          <p style="font-size:0.85rem;color:var(--text-muted);margin-top:12px;"><em>"Bitcoin solved the problem of money without central banks. ENRG will solve the problem of energy without monopolies."</em></p>
-          <p style="font-size:0.85rem;color:var(--text-muted);margin-top:8px;"><strong>Contact:</strong> Anton Grid, Founder & CEO &nbsp;|&nbsp; Email: <a href="mailto:anton@enrg.network" style="color:var(--accent-cyan);">anton@enrg.network</a> &nbsp;|&nbsp; <a href="https://enrg.network" style="color:var(--accent-cyan);" target="_blank">https://enrg.network</a></p>
-        </section>
-
-        <section class="glass-section fade-up">
-          <h2>1. Executive Summary</h2>
-          <p>ENRG is a DePIN-native energy protocol that turns real-world energy production into a programmable, on-chain asset. Each <strong>SRC</strong> token represents <strong>1 MWh</strong> of verifiable energy, backed by cryptographic proofs from IoT devices (ESP32, industrial Modbus/RS485 meters) and decentralized oracles.</p>
-        </section>
-
-        <section class="glass-section fade-up">
-          <h2>2. The Problem – Centralized Energy Markets</h2>
-          <p>Today's energy markets are dominated by centralized utilities, opaque intermediaries, and fragmented data silos. Small producers cannot monetize surplus, consumers face opaque pricing, and renewable energy lacks transparent verification.</p>
-        </section>
-
-        <section class="glass-section fade-up">
-          <h2>3. Our Solution – Proof-of-Production (PoP)</h2>
-          <p>ENRG introduces Proof-of-Production: a cryptographic pipeline that connects physical energy devices to on-chain tokens.</p>
-          <div class="highlight">
-            <strong>Industrial Integration:</strong> Supports Modbus RTU/RS485 meters (Schneider, Siemens, ABB, Меркурий, Энергомера) via gateway firmware that translates readings into signed proofs.
+      <section id="solution" class="docs-section">
+        <h2>Solution</h2>
+        <p>
+          ENRG Protocol replaces centralized certification with a trustless,
+          on-chain flow:
+        </p>
+        <div class="docs-steps">
+          <div class="docs-step">
+            <span class="docs-step__num">1</span>
+            <div>
+              <strong>Device Registration</strong>
+              <p>Owners register devices on-chain via the <code>enrg-profile</code>
+              program. Each device receives a unique Program Derived Address (PDA).</p>
+            </div>
           </div>
-          <h3>Anti-Fraud System</h3>
-          <ul>
-            <li><strong>Hardware security:</strong> ATECC608 Secure Element for key storage and signing.</li>
-            <li><strong>Replay protection:</strong> Monotonic nonce per device + timestamp validation (MAX_PROOF_AGE = 1 hour).</li>
-            <li><strong>Physical limits:</strong> <code>max_power_w</code> per device, time-based limits (10 min intervals).</li>
-            <li><strong>Multi-oracle verification:</strong> Switchboard aggregates data from multiple oracles (planned).</li>
-            <li><strong>Anomaly detection:</strong> Monitoring sudden spikes, comparison with historical data via Energy Reputation Score (ERS).</li>
-            <li><strong>Tamper detection:</strong> Enclosure sensors → key revocation.</li>
-          </ul>
-        </section>
+          <div class="docs-step">
+            <span class="docs-step__num">2</span>
+            <div>
+              <strong>Oracle Verification</strong>
+              <p>The ENRG Oracle network reads device telemetry and signs
+              energy production data using Ed25519 keys. The signature is
+              verified on-chain by the <code>enrg-mvp</code> program.</p>
+            </div>
+          </div>
+          <div class="docs-step">
+            <span class="docs-step__num">3</span>
+            <div>
+              <strong>On-Chain Minting</strong>
+              <p>Upon successful verification, the program mints the corresponding
+              amount of SRC tokens directly to the device owner's wallet via CPI
+              to the SPL Token program.</p>
+            </div>
+          </div>
+          <div class="docs-step">
+            <span class="docs-step__num">4</span>
+            <div>
+              <strong>Immutable Record</strong>
+              <p>Every mint event is recorded on-chain. The full audit trail is
+              publicly verifiable via Solana Explorer.</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-        <section class="glass-section fade-up">
-          <h2>4. Why ENRG Wins</h2>
-          <p>The Only DePIN Protocol with Buyback & Burn and Real MWh Backing. Supports any source (solar, wind, hydro, biogas, fossil) with transparent multipliers. Fully open-source, built on Solana with Anchor Framework.</p>
-          <table class="comparison-table">
-            <thead><tr><th>Feature</th><th>ENRG</th><th>Other DePIN</th></tr></thead>
-            <tbody>
-              <tr><td>Energy Backing</td><td>1 SRC = 1 MWh</td><td>No real-world backing</td></tr>
-              <tr><td>Buyback & Burn</td><td>✅ Built-in</td><td>❌</td></tr>
-              <tr><td>Source Multipliers</td><td>✅ Solar/Wind 100%</td><td>❌</td></tr>
-              <tr><td>Hardware Security</td><td>ATECC608 + Ed25519</td><td>Software-only</td></tr>
-              <tr><td>Architecture</td><td>Two-program (core + profile)</td><td>Monolithic</td></tr>
-            </tbody>
-          </table>
-        </section>
+      <section id="token" class="docs-section">
+        <h2>SRC Token</h2>
+        <table class="docs-table">
+          <thead>
+            <tr><th>Property</th><th>Value</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Name</td><td>Solar Renewable Certificate</td></tr>
+            <tr><td>Symbol</td><td>SRC</td></tr>
+            <tr><td>Standard</td><td>SPL Token (Solana)</td></tr>
+            <tr><td>Decimals</td><td>9</td></tr>
+            <tr><td>Max Supply</td><td>1,000,000,000 SRC</td></tr>
+            <tr><td>Peg</td><td>1 SRC = 1 MWh verified energy</td></tr>
+            <tr><td>Transferable</td><td>Yes</td></tr>
+            <tr><td>Burnable</td><td>Yes (for retirement/offset claims)</td></tr>
+          </tbody>
+        </table>
+        <p>
+          SRC tokens are freely transferable on Solana. Holders may burn tokens
+          to formally retire them as carbon offset certificates, generating
+          an immutable on-chain retirement record.
+        </p>
+      </section>
 
-        <section class="glass-section fade-up">
-          <h2>5. Tokenomics (June 2026)</h2>
-          <ul>
-            <li><strong>Ticker:</strong> SRC (Source)</li>
-            <li><strong>Max Supply:</strong> 1,000,000,000 SRC (fixed cap)</li>
-            <li><strong>Scale:</strong> 1 SRC = 1 MWh (1,000 kWh)</li>
-            <li><strong>Decimals:</strong> 6</li>
-            <li><strong>Protocol Fee:</strong> 15% of every mint distributed as:
-              <ul>
-                <li>20% → Buyback & Burn</li>
-                <li>40% → Staking Rewards</li>
-                <li>30% → DAO Reserve</li>
-                <li>10% → Emergency Fund</li>
-              </ul>
-            </li>
-            <li><strong>Source Multipliers:</strong>
-              <ul>
-                <li>Solar / Wind / Hydro: 100%</li>
-                <li>Biogas: 80%</li>
-                <li>Fossil: 50%</li>
-              </ul>
-            </li>
-          </ul>
-        </section>
+      <section id="protocol" class="docs-section">
+        <h2>Protocol Design</h2>
+        <p>
+          The protocol consists of two Solana programs deployed on-chain:
+        </p>
+        <h3>enrg-mvp</h3>
+        <p>
+          The core minting program. Accepts oracle-signed energy data,
+          verifies the Ed25519 signature via Solana's native
+          <code>ed25519_program</code>, and calls the SPL Token program
+          via CPI to mint the corresponding SRC amount.
+        </p>
+        <h3>enrg-profile</h3>
+        <p>
+          Manages participant and device registration. Each profile and
+          device is stored as a PDA. The profile program handles
+          Create/Update/Close lifecycle for both participants and devices.
+        </p>
+      </section>
 
-        <section class="glass-section fade-up">
-          <h2>6. Emission Curve & Scarcity Forecast</h2>
-          <p>Base formula: <em>E(S) = 1 MWh × k^S</em>, where S is the fraction of already mined tokens, and k is the difficulty coefficient.</p>
-          <ul>
-            <li><strong>Conservative (5% network growth/year):</strong> SRC reaches structural scarcity by 2035.</li>
-            <li><strong>Moderate (15% growth/year):</strong> Scarcity by 2032.</li>
-            <li><strong>Aggressive (10x first year):</strong> Scarcity by 2029.</li>
-          </ul>
-          <p>In all scenarios, SRC becomes structurally deflationary as network adoption grows. The model is asymptotic — the last token is practically unattainable.</p>
-        </section>
+      <section id="oracle" class="docs-section">
+        <h2>Oracle System</h2>
+        <p>
+          The ENRG Oracle is a permissioned off-chain service that:
+        </p>
+        <ul class="docs-list">
+          <li>Ingests device telemetry over HTTPS/MQTT</li>
+          <li>Validates device registration status on-chain</li>
+          <li>Aggregates energy readings over configurable time windows</li>
+          <li>Signs batched mint requests with its Ed25519 keypair</li>
+          <li>Submits signed instructions to the <code>enrg-mvp</code> program</li>
+        </ul>
+        <p>
+          The oracle's public key is embedded in the on-chain program at deployment.
+          Future versions will support a multi-oracle quorum model to eliminate
+          the single point of trust.
+        </p>
+      </section>
 
-        <section class="glass-section fade-up">
-          <h2>7. Energy Vault – The Economic Engine</h2>
-          <p>Every MWh Minted Feeds the Vault. Every Fee Feeds Scarcity. The Vault accumulates protocol fees, executes buyback & burn, and distributes to stakers, DAO, and emergency fund.</p>
-          <ul>
-            <li><strong>Buyback & Burn (20% of fees):</strong> Constant deflationary pressure. Tokens are burned via <code>buyback_and_burn</code> instruction.</li>
-            <li><strong>Staking Pool (40%):</strong> Rewards distributed proportionally to staked share.</li>
-            <li><strong>DAO Treasury (30%):</strong> Community-governed development fund.</li>
-            <li><strong>Emergency Fund (10%):</strong> Protocol insurance and black swan protection.</li>
-          </ul>
-        </section>
+      <section id="governance" class="docs-section">
+        <h2>Governance</h2>
+        <p>
+          ENRG Protocol v1 is governed by the founding team. A DAO governance
+          model is planned for v2, where SRC token holders will be able to vote on:
+        </p>
+        <ul class="docs-list">
+          <li>Approved device categories and verification standards</li>
+          <li>Oracle operator set and quorum thresholds</li>
+          <li>Protocol fee parameters</li>
+          <li>Treasury allocation</li>
+        </ul>
+      </section>
 
-        <section class="glass-section fade-up">
-          <h2>8. Smart Contract Architecture</h2>
-          <p>Modular Solana programs written in Rust using Anchor Framework 1.0.3:</p>
-          <ul>
-            <li><strong>enrg-mvp:</strong> Core protocol — minting, proof verification (Ed25519 via sysvar), vault, staking, buyback & burn, vesting, device lifecycle.</li>
-            <li><strong>enrg-profile:</strong> Device profiles — rated power, metadata, 30-day rolling energy window. Accessed via CPI using <code>declare_program!</code>.</li>
-          </ul>
-          <p>All programs auditable and upgradeable via DAO governance. Interaction between programs occurs via CPI (Cross-Program Invocation).</p>
-        </section>
+      <section id="roadmap" class="docs-section">
+        <h2>Roadmap</h2>
+        <div class="docs-roadmap">
+          <div class="roadmap-item roadmap-item--done">
+            <span class="roadmap-item__phase">Q1 2026</span>
+            <strong>MVP on Devnet</strong>
+            <p>Core programs deployed, device registration, oracle integration, SRC minting.</p>
+          </div>
+          <div class="roadmap-item roadmap-item--active">
+            <span class="roadmap-item__phase">Q3 2026</span>
+            <strong>Mainnet Launch</strong>
+            <p>Security audit, mainnet deployment, public device onboarding.</p>
+          </div>
+          <div class="roadmap-item">
+            <span class="roadmap-item__phase">Q1 2027</span>
+            <strong>Multi-Oracle & DAO</strong>
+            <p>Decentralized oracle quorum, DAO governance, cross-chain bridges.</p>
+          </div>
+          <div class="roadmap-item">
+            <span class="roadmap-item__phase">Q3 2027</span>
+            <strong>Carbon Market Integration</strong>
+            <p>Direct integration with voluntary carbon markets, SRC retirement API.</p>
+          </div>
+        </div>
+      </section>
 
-        <section class="glass-section fade-up">
-          <h2>9. IoT Hardware Prototype</h2>
-          <ul>
-            <li><strong>Consumer:</strong> ESP32 + PZEM-004T, Ed25519 signing, Wi-Fi, OLED display.</li>
-            <li><strong>Industrial:</strong> Modbus/RS485 gateway (ESP32 + RS485 shield) supporting Schneider, Siemens, ABB, Меркурий, Энергомера.</li>
-            <li><strong>Secure Element:</strong> ATECC608 planned for production — private key never leaves the device.</li>
-          </ul>
-        </section>
+      <section id="team" class="docs-section">
+        <h2>Team</h2>
+        <p>
+          ENRG Protocol is built by a team of blockchain engineers and
+          renewable energy specialists. The team is currently operating
+          in stealth mode ahead of mainnet launch.
+        </p>
+        <p>
+          For inquiries: <a href="mailto:team@enrg.io">team@enrg.io</a>
+        </p>
+      </section>
 
-        <section class="glass-section fade-up">
-          <h2>10. Oracle Architecture</h2>
-          <ul>
-            <li><strong>Current (MVP):</strong> Node.js oracle server with Express, deployable on Render, Railway, or any PaaS. Verifies Ed25519 signatures, validates nonce + timestamp, aggregates data into pools.</li>
-            <li><strong>Future:</strong> Switchboard decentralized oracle network for redundant verification and fault tolerance.</li>
-            <li><strong>API Endpoints:</strong> <code>POST /api/v1/proof/submit</code>, <code>GET /api/v1/device/{id}/status</code>, <code>GET /api/v1/pool/{id}/stats</code>.</li>
-          </ul>
-        </section>
-
-        <section class="glass-section fade-up">
-          <h2>11. Roadmap</h2>
-          <ul class="roadmap-timeline">
-            <li><strong>Genesis (Q2–Q3 2026):</strong> Testnet, audit, IoT prototype, landing page, smart contract, documentation, ADRs. ✅</li>
-            <li><strong>Mainnet (Q4 2026 – Q1 2027):</strong> Mainnet deployment, first IoT devices, DEX listing, Device Registry, Dashboard, REST API. 🚧</li>
-            <li><strong>Vault Growth (Q2–Q3 2027):</strong> Vault activation, buyback & burn, industrial producers, SDK, CLI Tools, Developer Portal.</li>
-            <li><strong>Expansion (2028+):</strong> Tier-1 CEX, cross-chain, full DAO governance, Carbon Credits, Energy Marketplace.</li>
-          </ul>
-        </section>
-
-        <section class="glass-section fade-up">
-          <h2>12. Investment Opportunity</h2>
-          <p><strong>Pre-Seed:</strong> $150k – $250k targeted to fund:</p>
-          <ul>
-            <li>Smart contract audit (third-party)</li>
-            <li>MVP completion and testnet launch</li>
-            <li>Legal and regulatory compliance</li>
-            <li>Marketing and community building</li>
-            <li>Initial liquidity provision</li>
-          </ul>
-          <p><strong>Projected Vault Revenue:</strong></p>
-          <table class="comparison-table">
-            <thead><tr><th>Year</th><th>Projected Revenue</th></tr></thead>
-            <tbody>
-              <tr><td>2027</td><td>$500k</td></tr>
-              <tr><td>2028</td><td>$2M</td></tr>
-              <tr><td>2029</td><td>$10M</td></tr>
-            </tbody>
-          </table>
-        </section>
-
-        <section class="glass-section fade-up">
-          <h2>13. Competitive Advantages</h2>
-          <ul>
-            <li>Any energy source (solar, wind, hydro, biogas, fossil) with transparent multipliers.</li>
-            <li>Real asset backed by MWh, not loyalty points.</li>
-            <li>Buyback & Burn mechanism creates structural scarcity.</li>
-            <li>Hardware-level anti-fraud (Secure Element, multi-oracle).</li>
-            <li>Built on Solana (fast, low fees).</li>
-            <li>Fully open-source and decentralized.</li>
-            <li>Two-program architecture for modularity and auditability.</li>
-          </ul>
-        </section>
-
-        <section class="glass-section fade-up">
-          <h2>14. Team</h2>
-          <p><strong>Anton Grid</strong> – Founder & CEO. Building ENRG to make energy markets as open and programmable as the internet.</p>
-        </section>
-
-        <section class="glass-section fade-up">
-          <h2>15. Legal Disclaimer</h2>
-          <p>This document does not constitute financial, legal, or investment advice. SRC tokens may be subject to regulatory oversight. All projections are inherently uncertain. Conduct your own research.</p>
-        </section>
-
-      </div>
     </main>
   </div>
+
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>

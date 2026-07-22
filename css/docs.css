@@ -1,0 +1,119 @@
+/* =============================================
+   ENRG Protocol — Docs Layout
+   ============================================= */
+
+.page--docs { min-height: 100vh; }
+
+.docs-layout {
+  display: flex;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+  gap: 48px;
+  min-height: calc(100vh - 64px);
+}
+
+/* --- Sidebar --- */
+.docs-sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  padding: 40px 0;
+  position: sticky;
+  top: 64px;
+  height: calc(100vh - 64px);
+  overflow-y: auto;
+}
+.docs-nav { display: flex; flex-direction: column; gap: 4px; }
+.docs-nav__group {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-muted);
+  margin: 16px 0 8px;
+}
+.docs-nav a {
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  color: var(--color-muted);
+  transition: all var(--transition);
+}
+.docs-nav a:hover,
+.docs-nav a.active {
+  background: var(--color-primary-dim);
+  color: var(--color-primary);
+}
+
+/* --- Content --- */
+.docs-content {
+  flex: 1;
+  padding: 40px 0 80px;
+  max-width: 720px;
+}
+
+.docs-header { margin-bottom: 48px; }
+.docs-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--color-primary-dim);
+  color: var(--color-primary);
+  margin-bottom: 16px;
+}
+.docs-header h1 {
+  font-size: 2.4rem;
+  font-weight: 800;
+  margin-bottom: 16px;
+  letter-spacing: -0.02em;
+}
+.docs-lead {
+  font-size: 1.1rem;
+  color: var(--color-muted);
+  max-width: 560px;
+}
+
+/* --- Sections --- */
+.docs-section {
+  padding: 48px 0;
+  border-top: 1px solid var(--color-border);
+}
+.docs-section h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+.docs-section h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 28px 0 12px;
+  color: var(--color-primary);
+}
+.docs-section p { color: var(--color-muted); margin-bottom: 16px; line-height: 1.75; }
+
+/* --- List --- */
+.docs-list { padding-left: 20px; color: var(--color-muted); }
+.docs-list li { margin-bottom: 8px; line-height: 1.7; }
+.docs-list li strong { color: var(--color-text); }
+
+/* --- Callout --- */
+.docs-callout {
+  background: var(--color-primary-dim);
+  border-left: 3px solid var(--color-primary);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  padding: 16px 20px;
+  font-size: 0.9rem;
+  color: var(--color-text);
+  margin: 24px 0;
+}
+
+/* --- Code --- */
+.docs-code {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  margin: 16px 0;
+}
