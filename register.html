@@ -3,88 +3,68 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Register Device — ENRG Protocol</title>
+  <title>Register Device — ENRG Protocol | SRC Token</title>
+  <meta name="description" content="Register your energy device with ENRG to start tokenizing production as SRC tokens." />
   <link rel="stylesheet" href="css/style.css" />
-  <link rel="icon" href="assets/favicon.ico" />
+  <link rel="icon" href="favicon.ico" />
 </head>
-<body class="page--register">
+<body>
 
-  <!-- NAVBAR -->
   <header class="navbar">
     <a href="/" class="navbar__logo">
       <img src="assets/logo.svg" alt="ENRG" width="32" height="32" />
       <span>ENRG</span>
     </a>
+    <nav class="navbar__links">
+      <a href="/whitepaper.html">Whitepaper</a>
+      <a href="/technical-overview.html">Docs</a>
+      <a href="/dashboard.html">Dashboard</a>
+    </nav>
     <button id="wallet-btn" class="btn btn--outline">Connect Wallet</button>
+    <span id="wallet-address" class="wallet-address"></span>
   </header>
 
-  <!-- MAIN -->
-  <main class="register-page" id="register-root">
+  <main>
+    <section class="section">
+      <div class="section__inner">
+        <h1 class="section__title">Register Your Device</h1>
+        <p class="section__lead">
+          Connect your Phantom wallet and register your energy device to start earning
+          <strong>SRC (Source)</strong> tokens for every verified MWh.
+        </p>
 
-    <!-- Step 1: Create Profile -->
-    <div id="step-profile" class="register-step active">
-      <div class="register-card">
-        <h1>Create Profile</h1>
-        <p class="register-card__sub">One-time setup before registering your device.</p>
-        <form id="profile-form" class="form" novalidate>
+        <form id="device-form" class="form">
           <div class="form__group">
-            <label for="profile-name">Full Name *</label>
-            <input id="profile-name" type="text" placeholder="John Doe" required />
+            <label for="device-id">Device ID</label>
+            <input type="text" id="device-id" name="device_id" required
+                   placeholder="e.g., device-001" class="form__input" />
           </div>
           <div class="form__group">
-            <label for="profile-email">Email (optional)</label>
-            <input id="profile-email" type="email" placeholder="john@example.com" />
+            <label for="device-public-key">Public Key (base64, 44 characters)</label>
+            <input type="text" id="device-public-key" name="public_key" required
+                   minlength="44" maxlength="44"
+                   placeholder="Base64-encoded Ed25519 public key" class="form__input" />
           </div>
-          <div class="form__group">
-            <label for="profile-country">Country *</label>
-            <input id="profile-country" type="text" placeholder="United States" required />
-          </div>
-          <button type="submit" class="btn btn--primary btn--full">
-            Create Profile
-          </button>
+          <button type="submit" class="btn btn--primary">Register Device</button>
         </form>
-      </div>
-    </div>
 
-    <!-- Step 2: Register Device -->
-    <div id="step-device" class="register-step">
-      <div class="register-card">
-        <h1>Register Device</h1>
-        <p class="register-card__sub">Add your energy-producing device to the protocol.</p>
-        <form id="device-form" class="form" novalidate>
-          <div class="form__group">
-            <label for="device-name">Device Name *</label>
-            <input id="device-name" type="text" placeholder="Rooftop Solar Panel A" required />
-          </div>
-          <div class="form__group">
-            <label for="device-type">Device Type *</label>
-            <select id="device-type" required>
-              <option value="">Select type...</option>
-              <option value="solar">Solar Panel</option>
-              <option value="wind">Wind Turbine</option>
-              <option value="hydro">Hydro Generator</option>
-              <option value="battery">Battery Storage</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-          <div class="form__group">
-            <label for="device-capacity">Capacity (kWh) *</label>
-            <input id="device-capacity" type="number" min="0.1" step="0.1"
-                   placeholder="5.5" required />
-          </div>
-          <div class="form__group">
-            <label for="device-location">Location *</label>
-            <input id="device-location" type="text"
-                   placeholder="City, Country" required />
-          </div>
-          <button type="submit" class="btn btn--primary btn--full">
-            Register Device
-          </button>
-        </form>
+        <div id="register-root"></div>
       </div>
-    </div>
-
+    </section>
   </main>
+
+  <footer class="footer">
+    <div class="footer__inner">
+      <div class="footer__links">
+        <a href="/whitepaper.html">Whitepaper</a>
+        <a href="/technical-overview.html">Technical Docs</a>
+        <a href="https://github.com/AntonGrid/enrg" target="_blank">GitHub</a>
+        <a href="https://t.me/enrg_network" target="_blank">Telegram</a>
+        <a href="mailto:anton@enrg.network">Contact</a>
+      </div>
+      <p class="footer__copy">© 2026 ENRG Protocol. Built on Solana.</p>
+    </div>
+  </footer>
 
   <script type="module" src="js/register.js"></script>
 </body>

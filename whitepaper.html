@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Whitepaper — ENRG Protocol</title>
+  <title>Whitepaper — ENRG Protocol | SRC Token</title>
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/docs.css" />
   <link rel="icon" href="assets/favicon.ico" />
@@ -45,31 +45,34 @@
     <main class="docs-content">
 
       <div class="docs-header">
-        <span class="docs-badge">v1.0 — July 2026</span>
+        <span class="docs-badge">v2.0 — July 2026</span>
         <h1>ENRG Protocol Whitepaper</h1>
         <p class="docs-lead">
-          A decentralized protocol for tokenizing real-world energy production data
-          on the Solana blockchain.
+          An open protocol for cryptographically verifiable physical infrastructure.
+          The first reference implementation tokenizes energy production data on the Solana blockchain.
         </p>
       </div>
 
       <section id="abstract" class="docs-section">
         <h2>Abstract</h2>
         <p>
-          ENRG Protocol enables owners of renewable energy devices — solar panels,
-          wind turbines, hydroelectric generators — to tokenize their verified energy
-          output as SRC (Solar Renewable Certificate) tokens on the Solana blockchain.
+          ENRG is an open, blockchain-independent protocol for establishing cryptographic trust
+          between physical devices and digital systems. The protocol defines a standard for
+          Proof-of-Production — cryptographically signed data packets from IoT devices that
+          are verified by an oracle network and recorded on-chain.
         </p>
         <p>
-          Each SRC token represents exactly 1 MWh of verified energy production.
-          The protocol leverages a decentralized oracle network for data verification,
-          Ed25519 cryptographic signatures for device authentication, and Solana's SPL
-          Token standard for on-chain representation.
+          The first reference implementation tokenizes verified energy production as
+          <strong>SRC (Source)</strong> tokens on Solana. Each SRC token represents exactly
+          <strong>1 MWh</strong> of verified energy production. The protocol leverages
+          Ed25519 cryptographic signatures for device authentication, a policy engine for
+          deterministic verification, and Solana's SPL Token standard for on-chain representation.
         </p>
         <div class="docs-callout">
           <strong>Max Supply:</strong> 1,000,000,000 SRC &nbsp;·&nbsp;
           <strong>1 SRC</strong> = 1 MWh of verified energy &nbsp;·&nbsp;
-          <strong>Network:</strong> Solana
+          <strong>Decimals:</strong> 6 &nbsp;·&nbsp;
+          <strong>Network:</strong> Solana (blockchain-independent protocol)
         </div>
       </section>
 
@@ -98,44 +101,57 @@
       </section>
 
       <section id="solution" class="docs-section">
-        <h2>Solution</h2>
+        <h2>Solution: Proof-of-Production (PoP)</h2>
         <p>
-          ENRG Protocol replaces centralized certification with a trustless,
-          on-chain flow:
+          ENRG introduces Proof-of-Production: a cryptographic pipeline that connects
+          physical energy devices to on-chain tokens. The pipeline consists of five stages:
         </p>
         <div class="docs-steps">
           <div class="docs-step">
             <span class="docs-step__num">1</span>
             <div>
-              <strong>Device Registration</strong>
-              <p>Owners register devices on-chain via the <code>enrg-profile</code>
-              program. Each device receives a unique Program Derived Address (PDA).</p>
+              <strong>Device Measurement</strong>
+              <p>IoT device (ESP32 + PZEM-004T or industrial Modbus/RS485 meter) measures
+              energy production every 10 minutes. Data is signed with the device's Ed25519
+              private key stored in a Secure Element (ATECC608).</p>
             </div>
           </div>
           <div class="docs-step">
             <span class="docs-step__num">2</span>
             <div>
               <strong>Oracle Verification</strong>
-              <p>The ENRG Oracle network reads device telemetry and signs
-              energy production data using Ed25519 keys. The signature is
-              verified on-chain by the <code>enrg-mvp</code> program.</p>
+              <p>The ENRG Oracle receives signed data packets, verifies the Ed25519 signature
+              via <code>solana_instructions_sysvar</code>, validates the monotonic nonce and
+              timestamp (MAX_PROOF_AGE = 1 hour), and checks device status against the
+              Device Registry.</p>
             </div>
           </div>
           <div class="docs-step">
             <span class="docs-step__num">3</span>
             <div>
-              <strong>On-Chain Minting</strong>
-              <p>Upon successful verification, the program mints the corresponding
-              amount of SRC tokens directly to the device owner's wallet via CPI
-              to the SPL Token program.</p>
+              <strong>Pool Aggregation</strong>
+              <p>For small producers, the oracle aggregates verified readings into a pool.
+              When the pool reaches the threshold of 1 MWh, the oracle initiates minting.
+              Tokens are distributed proportionally to each participant's contribution.</p>
             </div>
           </div>
           <div class="docs-step">
             <span class="docs-step__num">4</span>
             <div>
+              <strong>On-Chain Minting</strong>
+              <p>The oracle calls <code>mint_energy</code> on the enrg-mvp program. The
+              smart contract verifies the oracle's Ed25519 signature via sysvar, validates
+              the producer PDA, and mints SRC tokens via CPI to the SPL Token program.
+              85% goes to the producer, 15% is distributed as protocol fees.</p>
+            </div>
+          </div>
+          <div class="docs-step">
+            <span class="docs-step__num">5</span>
+            <div>
               <strong>Immutable Record</strong>
               <p>Every mint event is recorded on-chain. The full audit trail is
-              publicly verifiable via Solana Explorer.</p>
+              publicly verifiable via Solana Explorer. Token supply is always
+              auditable and deterministic.</p>
             </div>
           </div>
         </div>
@@ -148,60 +164,139 @@
             <tr><th>Property</th><th>Value</th></tr>
           </thead>
           <tbody>
-            <tr><td>Name</td><td>Solar Renewable Certificate</td></tr>
+            <tr><td>Name</td><td>Source</td></tr>
             <tr><td>Symbol</td><td>SRC</td></tr>
             <tr><td>Standard</td><td>SPL Token (Solana)</td></tr>
-            <tr><td>Decimals</td><td>9</td></tr>
-            <tr><td>Max Supply</td><td>1,000,000,000 SRC</td></tr>
+            <tr><td>Decimals</td><td>6</td></tr>
+            <tr><td>Max Supply</td><td>1,000,000,000 SRC (fixed cap)</td></tr>
             <tr><td>Peg</td><td>1 SRC = 1 MWh verified energy</td></tr>
             <tr><td>Transferable</td><td>Yes</td></tr>
-            <tr><td>Burnable</td><td>Yes (for retirement/offset claims)</td></tr>
+            <tr><td>Burnable</td><td>Yes (buyback & burn mechanism)</td></tr>
           </tbody>
         </table>
-        <p>
-          SRC tokens are freely transferable on Solana. Holders may burn tokens
-          to formally retire them as carbon offset certificates, generating
-          an immutable on-chain retirement record.
-        </p>
+
+        <h3>Protocol Fee Distribution</h3>
+        <p>15% of each mint is distributed as follows:</p>
+        <ul class="docs-list">
+          <li><strong>20% Buyback & Burn</strong> — creates constant deflationary pressure</li>
+          <li><strong>40% Staking Rewards</strong> — distributed to SRC stakers proportionally</li>
+          <li><strong>30% DAO Reserve</strong> — governed by token holder voting</li>
+          <li><strong>10% Emergency Fund</strong> — protocol insurance</li>
+        </ul>
+        <p><strong>85%</strong> of each mint goes directly to the energy producer.</p>
+
+        <h3>Source Multipliers</h3>
+        <table class="docs-table">
+          <thead>
+            <tr><th>Energy Source</th><th>Multiplier</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Solar / Wind / Hydro</td><td>100%</td></tr>
+            <tr><td>Biogas</td><td>80%</td></tr>
+            <tr><td>Fossil</td><td>50%</td></tr>
+          </tbody>
+        </table>
       </section>
 
       <section id="protocol" class="docs-section">
         <h2>Protocol Design</h2>
         <p>
-          The protocol consists of two Solana programs deployed on-chain:
+          The ENRG Protocol consists of two Solana programs that communicate via
+          Cross-Program Invocation (CPI):
         </p>
-        <h3>enrg-mvp</h3>
+
+        <h3>enrg-mvp — Core Protocol</h3>
         <p>
-          The core minting program. Accepts oracle-signed energy data,
-          verifies the Ed25519 signature via Solana's native
-          <code>ed25519_program</code>, and calls the SPL Token program
-          via CPI to mint the corresponding SRC amount.
+          The core program responsible for:
         </p>
-        <h3>enrg-profile</h3>
+        <ul class="docs-list">
+          <li>Verifying oracle Ed25519 signatures via <code>solana_instructions_sysvar</code></li>
+          <li>Minting SRC tokens via CPI to SPL Token program</li>
+          <li>Managing the Energy Vault (buyback, staking, DAO, emergency funds)</li>
+          <li>Device lifecycle management (8 states per ADR-0005)</li>
+          <li>Enforcing mint constraints (max supply, nonce, timestamp, power limits)</li>
+        </ul>
+        <div class="docs-code">
+          <span class="docs-code__label">Program ID (devnet)</span>
+          <code>EsaKY8C3EZeRLL1wG5UECAnDWjbLfWJr7jL3pBLmpFfW</code>
+        </div>
+
+        <h3>enrg-profile — Energy Profile</h3>
         <p>
-          Manages participant and device registration. Each profile and
-          device is stored as a PDA. The profile program handles
-          Create/Update/Close lifecycle for both participants and devices.
+          Manages energy producer profiles with:
         </p>
+        <ul class="docs-list">
+          <li>Participant profiles (PDA per wallet)</li>
+          <li>Device registration and metadata</li>
+          <li>30-day rolling energy window</li>
+          <li>Rated power configuration (determines max energy per mint)</li>
+        </ul>
+        <p>
+          enrg-mvp calls <code>enrg_profile::cpi::record_production</code> during each mint
+          via <code>declare_program!</code> to update the producer's energy profile.
+        </p>
+        <div class="docs-code">
+          <span class="docs-code__label">Program ID (devnet)</span>
+          <code>H9GDJQhaLqHeZZmuiqL1JTCaQ4nSquKterUyFVRdL5GZ</code>
+        </div>
+
+        <h3>Device Lifecycle (ADR-0005)</h3>
+        <p>Every device follows a cryptographically enforced state machine with 8 states:</p>
+        <pre class="docs-pre"><code>UNREGISTERED → REGISTERED → CLAIMED → PROVISIONED → ACTIVE
+                                                          │
+                                          ┌───────────────┼──────────────┐
+                                          ▼               ▼              ▼
+                                      QUARANTINE    MAINTENANCE     REVOKED
+                                          │               │
+                                          └───────→ ACTIVE ←──────────┘</code></pre>
+        <ul class="docs-list">
+          <li><strong>UNREGISTERED</strong> — device unknown to the system</li>
+          <li><strong>REGISTERED</strong> — cryptographic identity created, not yet bound to owner</li>
+          <li><strong>CLAIMED</strong> — bound to owner, not yet configured</li>
+          <li><strong>PROVISIONED</strong> — Wi-Fi configured, time synced, manifest received</li>
+          <li><strong>ACTIVE</strong> — producing and sending Proofs</li>
+          <li><strong>QUARANTINE</strong> — under suspicion, Proofs not minted</li>
+          <li><strong>MAINTENANCE</strong> — service mode, no Proofs sent</li>
+          <li><strong>REVOKED</strong> — permanently removed</li>
+        </ul>
       </section>
 
       <section id="oracle" class="docs-section">
         <h2>Oracle System</h2>
         <p>
-          The ENRG Oracle is a permissioned off-chain service that:
+          The ENRG Oracle is a permissioned off-chain service that bridges the physical
+          and digital worlds:
         </p>
         <ul class="docs-list">
-          <li>Ingests device telemetry over HTTPS/MQTT</li>
-          <li>Validates device registration status on-chain</li>
-          <li>Aggregates energy readings over configurable time windows</li>
-          <li>Signs batched mint requests with its Ed25519 keypair</li>
-          <li>Submits signed instructions to the <code>enrg-mvp</code> program</li>
+          <li>Ingests signed device telemetry over HTTPS</li>
+          <li>Verifies Ed25519 signatures using <code>solana_instructions_sysvar</code></li>
+          <li>Validates monotonic nonces and timestamps (replay protection)</li>
+          <li>Aggregates readings into pools (1 MWh threshold for minting)</li>
+          <li>Submits <code>mint_energy</code> instructions to the enrg-mvp program</li>
         </ul>
         <p>
-          The oracle's public key is embedded in the on-chain program at deployment.
-          Future versions will support a multi-oracle quorum model to eliminate
-          the single point of trust.
+          In the MVP, the oracle is a Node.js server deployed on Render. Future versions
+          will use a decentralized Switchboard oracle network for redundant verification.
         </p>
+        <div class="docs-callout">
+          The oracle's Ed25519 public key is verified on-chain via
+          <code>solana_instructions_sysvar::get_instruction_relative</code>.
+          The private key never leaves the oracle server.
+        </div>
+
+        <h3>Oracle API</h3>
+        <p>Base URL: <code>https://enrg-oracle.onrender.com/api/v1</code></p>
+        <table class="docs-table">
+          <thead>
+            <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>GET</td><td><code>/stats</code></td><td>Protocol-wide statistics (total energy, active producers, supply)</td></tr>
+            <tr><td>POST</td><td><code>/device/register</code></td><td>Register a new device</td></tr>
+            <tr><td>POST</td><td><code>/proof/submit</code></td><td>Submit proof of production</td></tr>
+            <tr><td>GET</td><td><code>/device/:id/status</code></td><td>Get device status and accumulated energy</td></tr>
+          </tbody>
+        </table>
       </section>
 
       <section id="governance" class="docs-section">
@@ -216,30 +311,34 @@
           <li>Protocol fee parameters</li>
           <li>Treasury allocation</li>
         </ul>
+        <p>
+          Protocol evolution follows the ENRG RFC process and Architecture Decision Records (ADR).
+          All changes are transparent, documented, and publicly reviewable.
+        </p>
       </section>
 
       <section id="roadmap" class="docs-section">
         <h2>Roadmap</h2>
         <div class="docs-roadmap">
           <div class="roadmap-item roadmap-item--done">
-            <span class="roadmap-item__phase">Q1 2026</span>
-            <strong>MVP on Devnet</strong>
-            <p>Core programs deployed, device registration, oracle integration, SRC minting.</p>
+            <span class="roadmap-item__phase">Q2–Q3 2026</span>
+            <strong>Genesis — Foundation ✅</strong>
+            <p>Smart contract, Oracle, ESP32 Proof-of-Production, device registration, minting, documentation, ADRs.</p>
           </div>
           <div class="roadmap-item roadmap-item--active">
-            <span class="roadmap-item__phase">Q3 2026</span>
-            <strong>Mainnet Launch</strong>
-            <p>Security audit, mainnet deployment, public device onboarding.</p>
+            <span class="roadmap-item__phase">Q4 2026 – Q1 2027</span>
+            <strong>Mainnet — Platform 🚧</strong>
+            <p>Device Registry, Provisioning Service, Device Manifest, Policy Engine, Dashboard, REST API, Live Statistics.</p>
           </div>
           <div class="roadmap-item">
-            <span class="roadmap-item__phase">Q1 2027</span>
-            <strong>Multi-Oracle & DAO</strong>
-            <p>Decentralized oracle quorum, DAO governance, cross-chain bridges.</p>
+            <span class="roadmap-item__phase">Q2–Q3 2027</span>
+            <strong>Vault Growth — Ecosystem</strong>
+            <p>SDK, CLI Tools, Reference Integrations, Developer Portal, Oracle Network, Community Contributions.</p>
           </div>
           <div class="roadmap-item">
-            <span class="roadmap-item__phase">Q3 2027</span>
-            <strong>Carbon Market Integration</strong>
-            <p>Direct integration with voluntary carbon markets, SRC retirement API.</p>
+            <span class="roadmap-item__phase">2028+</span>
+            <strong>Global Standard — Expansion</strong>
+            <p>Independent Audit, Multi-chain Support, Carbon Credits, Energy Marketplace, Full DAO Governance.</p>
           </div>
         </div>
       </section>
@@ -248,11 +347,10 @@
         <h2>Team</h2>
         <p>
           ENRG Protocol is built by a team of blockchain engineers and
-          renewable energy specialists. The team is currently operating
-          in stealth mode ahead of mainnet launch.
+          renewable energy specialists.
         </p>
         <p>
-          For inquiries: <a href="mailto:team@enrg.io">team@enrg.io</a>
+          For inquiries: <a href="mailto:anton@enrg.network">anton@enrg.network</a>
         </p>
       </section>
 

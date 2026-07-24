@@ -1,4 +1,5 @@
-// js/api.js — все запросы к Oracle и on-chain данным
+// js/api.js — все запросы к Oracle API и on-chain данным
+// Источник истины: plans/ENRG_website_truth_sheet.md
 
 import { CONFIG } from "./config.js";
 
@@ -15,10 +16,17 @@ async function request(path, options = {}) {
   return res.json();
 }
 
-export async function fetchDevices(walletAddress) {
-  return request(`/device/${walletAddress}`);
+// --- Protocol Stats ---
+export async function fetchProtocolStats() {
+  const data = await request("/stats");
+  return {
+    totalEnergyMwh: data.total_energy_mwh ?? 0,
+    activeProducers: data.active_producers ?? 0,
+    totalSupply: data.total_supply ?? 0,
+  };
 }
 
+// --- Device ---
 export async function registerDevice(payload) {
   return request("/device/register", {
     method: "POST",
@@ -26,28 +34,14 @@ export async function registerDevice(payload) {
   });
 }
 
-export async function fetchMintHistory(walletAddress) {
-  return request(`/mints/${walletAddress}`);
+export async function fetchDeviceStatus(deviceId) {
+  return request(`/device/${encodeURIComponent(deviceId)}/status`);
 }
 
-export async function submitMintRequest({ walletAddress, deviceId, signature, message }) {
-  return request("/mint", {
-    method: "POST",
-    body: JSON.stringify({ walletAddress, deviceId, signature, message }),
-  });
-}
-
-export async function fetchProfile(walletAddress) {
-  return request(`/profile/${walletAddress}`);
-}
-
-export async function createProfile(payload) {
-  return request("/profile/create", {
+// --- Proof ---
+export async function submitProof(payload) {
+  return request("/proof/submit", {
     method: "POST",
     body: JSON.stringify(payload),
   });
-}
-
-export async function fetchProtocolStats() {
-  return request("/stats");
 }
