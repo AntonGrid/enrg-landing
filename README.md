@@ -47,8 +47,8 @@ The **Energy Vault** buys real assets and distributes revenue via **Buyback & Bu
 | **Ticker** | ENRG |
 | **Blockchain** | Solana (Agave 3.1.14) |
 | **Total Supply** | 1,000,000,000 (fixed cap) |
-| **Scale** | 1 ENRG = 1 MWh |
-| **Token Decimals** | 6 |
+| **Scale** | 1 SRC = 1 MWh |
+| **Token Decimals** | 9 |
 | **Protocol Fee** | 15% (→ Buyback 20%, Staking 40%, DAO 30%, Emergency 10%) |
 | **Source Multipliers** | Solar/Wind/Hydro 100%, Biogas 80%, Fossil 50% |
 

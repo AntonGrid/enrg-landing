@@ -457,7 +457,7 @@ ACTIVE         ← activate_device()
           <tbody>
             <tr><td>Ticker</td><td>SRC (Source)</td></tr>
             <tr><td>Max Supply</td><td>1,000,000,000 SRC (fixed cap)</td></tr>
-            <tr><td>Decimals</td><td>6</td></tr>
+            <tr><td>Decimals</td><td>9</td></tr>
             <tr><td>Peg</td><td>1 SRC = 1 MWh verified energy</td></tr>
             <tr><td>Protocol Fee</td><td>15% (85% to producer)</td></tr>
           </tbody>
@@ -485,7 +485,7 @@ ACTIVE         ← activate_device()
 
         <h3>Mint Energy Formula</h3>
         <pre class="docs-pre"><code>max_energy_wh = producer.max_power_w * 10 / 60
-total_mint    = energy_wh * 10^6  // convert to base units with 6 decimals
+total_mint    = energy_wh * 10^9  // convert to base units with 9 decimals
 producer_share = total_mint * 85 / 100
 fee            = total_mint * 15 / 100
 

@@ -17,7 +17,7 @@ export const CONFIG = {
 
   // Token SRC (Source)
   srcMint: "EsaKY8C3EZeRLL1wG5UECAnDWjbLfWJr7jL3pBLmpFfW", // same as programId for MVP
-  srcDecimals: 6, // ✅ Утверждено: 6 decimals
+  srcDecimals: 9, // соответствует on-chain SRC_DECIMALS = 9
   srcMaxSupply: 1_000_000_000,
   srcPeg: "1 SRC = 1 MWh",
 
