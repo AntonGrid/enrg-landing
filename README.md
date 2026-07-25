@@ -67,8 +67,8 @@ ENRG — это **стандарт**, который может быть раз�
 ## 🔗 Ссылки
 
 - **Сайт**: [enrg.network](https://enrg.network)
-- **Белая книга**: [ссылка]
-- **Техническая документация**: [ссылка]
+- **Белая книга**: [https://enrg.network/whitepaper.html]
+- **Техническая документация**: [https://enrg.network/technical-overview.html]
 - **Репозиторий**: [github.com/AntonGrid/ENRG](https://github.com/AntonGrid/ENRG)
 - **Контакты**: anton@enrg.network
 
