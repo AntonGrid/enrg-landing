@@ -275,4 +275,108 @@
           <li>Validates monotonic nonces and timestamps (replay protection)</li>
           <li>Aggregates readings into pools (1 MWh threshold for minting)</li>
           <li>Submits <code>mint_energy</code> instructions to the enrg-mvp program</li>
-        </
+        </ul>
+        <p>
+          In the MVP, the oracle is a Node.js server deployed on Render. Future versions
+          will use a decentralized Switchboard oracle network for redundant verification.
+        </p>
+        <div class="docs-callout">
+          The oracle's Ed25519 public key is verified on-chain via
+          <code>solana_instructions_sysvar::get_instruction_relative</code>.
+          The private key never leaves the oracle server.
+        </div>
+
+        <h3>Oracle API</h3>
+        <p>Base URL: <code>https://enrg-oracle.onrender.com/api/v1</code></p>
+        <table class="docs-table">
+          <thead>
+            <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>GET</td><td><code>/stats</code></td><td>Protocol-wide statistics (total energy, active producers, supply)</td></tr>
+            <tr><td>POST</td><td><code>/device/register</code></td><td>Register a new device</td></tr>
+            <tr><td>POST</td><td><code>/proof/submit</code></td><td>Submit proof of production</td></tr>
+            <tr><td>GET</td><td><code>/device/:id/status</code></td><td>Get device status and accumulated energy</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="governance" class="docs-section">
+        <h2>Governance</h2>
+        <p>
+          ENRG Protocol v1 is governed by the founding team. A DAO governance
+          model is planned for v2, where SRC token holders will be able to vote on:
+        </p>
+        <ul class="docs-list">
+          <li>Approved device categories and verification standards</li>
+          <li>Oracle operator set and quorum thresholds</li>
+          <li>Protocol fee parameters</li>
+          <li>Treasury allocation</li>
+        </ul>
+        <p>
+          Protocol evolution follows the ENRG RFC process and Architecture Decision Records (ADR).
+          All changes are transparent, documented, and publicly reviewable.
+        </p>
+      </section>
+
+      <section id="roadmap" class="docs-section">
+        <h2>Roadmap</h2>
+        <div class="docs-roadmap">
+          <div class="roadmap-item roadmap-item--done">
+            <span class="roadmap-item__phase">Q2–Q3 2026</span>
+            <strong>Genesis — Foundation ✅</strong>
+            <p>Smart contract, Oracle, ESP32 Proof-of-Production, device registration, minting, documentation, ADRs.</p>
+          </div>
+          <div class="roadmap-item roadmap-item--active">
+            <span class="roadmap-item__phase">Q4 2026 – Q1 2027</span>
+            <strong>Mainnet — Platform 🚧</strong>
+            <p>Device Registry, Provisioning Service, Device Manifest, Policy Engine, Dashboard, REST API, Live Statistics.</p>
+          </div>
+          <div class="roadmap-item">
+            <span class="roadmap-item__phase">Q2–Q3 2027</span>
+            <strong>Vault Growth — Ecosystem</strong>
+            <p>SDK, CLI Tools, Reference Integrations, Developer Portal, Oracle Network, Community Contributions.</p>
+          </div>
+          <div class="roadmap-item">
+            <span class="roadmap-item__phase">2028+</span>
+            <strong>Global Standard — Expansion</strong>
+            <p>Independent Audit, Multi-chain Support, Carbon Credits, Energy Marketplace, Full DAO Governance.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="team" class="docs-section">
+        <h2>Team</h2>
+        <p>
+          ENRG Protocol is built by a team of blockchain engineers and
+          renewable energy specialists.
+        </p>
+        <p>
+          For inquiries: <a href="mailto:anton@enrg.network">anton@enrg.network</a>
+        </p>
+      </section>
+
+    </main>
+  </div>
+
+  <footer class="footer">
+    <div class="footer__inner">
+      <div class="footer__links">
+        <a href="/whitepaper.html">Whitepaper</a>
+        <a href="/technical-overview.html">Technical Docs</a>
+        <a href="https://github.com/AntonGrid/ENRG" target="_blank">GitHub</a>
+        <a href="https://x.com/ENRG_Protocol" target="_blank" rel="noopener noreferrer">X (Twitter)</a>
+        <a href="https://t.me/enrg_protocol" target="_blank" rel="noopener noreferrer">Telegram</a>
+        <a href="mailto:anton@enrg.network">Contact</a>
+      </div>
+      <p class="footer__copy">
+        © 2026 ENRG Protocol. Built on Solana. Open source & community driven.
+        <br />
+        <em>The protocol is governed. The protocol is not owned.</em>
+      </p>
+    </div>
+  </footer>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
