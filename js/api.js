@@ -66,3 +66,20 @@ export async function postProof(device_id, timestamp, energyWh, nonce, signature
 export async function getDeviceStatus(deviceId) {
   return request(`/device/${encodeURIComponent(deviceId)}/status`);
 }
+
+// --- Wallet SRC balance (on-chain, devnet) ---
+// pubkey: string (base58) или solanaWeb3.PublicKey. 0, если токенов нет.
+export async function getWalletTokenBalance(pubkey) {
+  if (typeof solanaWeb3 === "undefined") {
+    throw new Error("solana-web3 not loaded in this page.");
+  }
+  const owner = typeof pubkey === "string" ? new solanaWeb3.PublicKey(pubkey) : pubkey;
+  const mint = new solanaWeb3.PublicKey(CONFIG.srcMint);
+  const connection = new solanaWeb3.Connection(CONFIG.rpcUrl);
+
+  const tokenAccounts = await connection.getTokenAccountsByOwner(owner, { mint });
+  if (tokenAccounts.value.length === 0) return 0;
+
+  const accountInfo = await connection.getTokenAccountBalance(tokenAccounts.value[0].pubkey);
+  return Number(accountInfo.value.uiAmount) || 0;
+}

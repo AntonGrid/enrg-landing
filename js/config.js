@@ -57,4 +57,11 @@ export const CONFIG = {
 
   // Dashboard live polling
   dashboardPollMs: 15000, // 15 seconds
+
+  // Backoff при ошибках polling: base 2s -> max 60s
+  pollBackoffBaseMs: 2000,
+  pollBackoffMaxMs: 60000,
+
+  // Throttle для статусов отдельных устройств (1 запрос на устройство в 5s)
+  deviceStatusThrottleMs: 5000,
 };

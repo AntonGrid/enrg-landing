@@ -2,9 +2,9 @@
 // Источник истины: plans/ENRG_website_truth_sheet.md
 
 import { requireAuth, logout } from "./auth.js";
-import { getDeviceStatus } from "./api.js";
-import { formatSrc, shortAddress, renderError } from "./ui.js";
-import { getPublicKey } from "./wallet.js";
+import { getDeviceStatus, fetchProtocolStats, getWalletTokenBalance } from "./api.js";
+import { showToast, formatSrc, shortAddress, renderError } from "./ui.js";
+import { getConnectedPubkey } from "./wallet.js";
 import { initWalletUI } from "./wallet-ui.js";
 import { getStoredDevices, getDeviceFromStorage } from "./device-store.js";
 import { bindSimulateButtons } from "./simulate-buttons.js";
@@ -12,7 +12,8 @@ import { CONFIG } from "./config.js";
 
 let session = null;
 let _lastStatusFetch = 0;
-const STATUS_THROTTLE_MS = 5000; // throttle: не чаще раза в 5 сек
+let _statsTimer = null;
+let _backoffMs = CONFIG.pollBackoffBaseMs;
 
 async function init() {
   initWalletUI();
@@ -23,6 +24,11 @@ async function init() {
   document.getElementById("user-address").textContent = shortAddress(session.address);
 
   const deviceIds = getStoredDevices();
+
+  // Stats и SRC balance показываем всегда, даже без зарегистрированных устройств
+  loadStats();
+  loadSrcBalance();
+
   if (deviceIds.length === 0) {
     renderError(document.getElementById("dashboard-root"), "No device registered. Please register first.");
     return;
@@ -37,10 +43,9 @@ async function init() {
   await Promise.all([
     loadDeviceData(deviceIds[0]),
     refreshDeviceList(deviceIds, true),
-    loadSrcBalance(),
   ]);
 
-  // Live polling: статусы устройств (+ статистика в след. шаге)
+  // Live polling статусов устройств (отдельно от stats)
   setInterval(() => refreshDeviceList(deviceIds), CONFIG.dashboardPollMs);
 }
 
@@ -49,6 +54,49 @@ document.getElementById("logout-btn")?.addEventListener("click", () => {
   logout();
   window.location.href = "/index.html";
 });
+
+// --- Manual refresh: немедленное обновление stats ---
+document.getElementById("btn-refresh")?.addEventListener("click", () => {
+  if (_statsTimer) clearTimeout(_statsTimer);
+  _backoffMs = CONFIG.pollBackoffBaseMs;
+  loadStats();
+});
+
+// --- Protocol stats: polling с экспоненциальным бэкоффом ---
+function updateStatsWidgets(stats) {
+  const set = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  };
+  set("stat-producers", stats.activeProducers);
+  set("stat-energy", `${stats.totalEnergyMwh} MWh`);
+  set("stat-supply", formatSrc(stats.totalSupply));
+}
+
+async function loadStats() {
+  const statsEl = document.getElementById("dashboard-stats");
+  if (statsEl) statsEl.classList.add("is-loading");
+
+  try {
+    const stats = await fetchProtocolStats();
+    _backoffMs = CONFIG.pollBackoffBaseMs; // успех — сбрасываем бэкофф
+    updateStatsWidgets(stats);
+    _scheduleStatsPoll(CONFIG.dashboardPollMs);
+  } catch (err) {
+    const msg = (err && err.message) || String(err);
+    console.warn("Stats poll failed:", msg);
+    showToast(`Stats update failed: ${msg} — retrying in ${Math.round(_backoffMs / 1000)}s`, "error");
+    _scheduleStatsPoll(_backoffMs);
+    _backoffMs = Math.min(_backoffMs * 2, CONFIG.pollBackoffMaxMs); // 2s -> 4s -> ... -> 60s
+  } finally {
+    if (statsEl) statsEl.classList.remove("is-loading");
+  }
+}
+
+function _scheduleStatsPoll(delayMs) {
+  if (_statsTimer) clearTimeout(_statsTimer);
+  _statsTimer = setTimeout(loadStats, delayMs);
+}
 
 // --- Device Card (primary device) ---
 const STATUS_MAP = {
@@ -97,10 +145,10 @@ async function loadDeviceData(deviceId) {
   }
 }
 
-// --- Device list: статусы всех устройств из localStorage (throttle) ---
+// --- Device list: статусы всех устройств из localStorage (throttle 5s) ---
 async function refreshDeviceList(deviceIds, force = false) {
   const now = Date.now();
-  if (!force && now - _lastStatusFetch < STATUS_THROTTLE_MS) return;
+  if (!force && now - _lastStatusFetch < CONFIG.deviceStatusThrottleMs) return;
   _lastStatusFetch = now;
 
   const container = document.getElementById("devices-list");
@@ -141,29 +189,20 @@ async function refreshDeviceList(deviceIds, force = false) {
     .join("");
 }
 
-// --- SRC Balance ---
+// --- SRC Balance (on-chain, через localStorage["enrg_pubkey"]) ---
 async function loadSrcBalance() {
   const container = document.getElementById("src-balance");
   if (!container) return;
 
-  const pubKey = getPublicKey();
-  if (!pubKey) {
+  const pubkey = getConnectedPubkey();
+  if (!pubkey) {
     container.textContent = "Connect wallet to see balance";
     return;
   }
 
   try {
-    const connection = new solanaWeb3.Connection(CONFIG.rpcUrl);
-    const mintPubkey = new solanaWeb3.PublicKey(CONFIG.srcMint);
-    const tokenAccounts = await connection.getTokenAccountsByOwner(pubKey, { mint: mintPubkey });
-
-    if (tokenAccounts.value.length === 0) {
-      container.textContent = "0 SRC";
-      return;
-    }
-
-    const accountInfo = await connection.getTokenAccountBalance(tokenAccounts.value[0].pubkey);
-    container.textContent = formatSrc(Number(accountInfo.value.uiAmount) || 0);
+    const balance = await getWalletTokenBalance(pubkey);
+    container.textContent = formatSrc(balance);
   } catch (err) {
     console.warn("Error fetching SRC balance:", err);
     container.textContent = "—";
