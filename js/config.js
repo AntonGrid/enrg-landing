@@ -9,14 +9,14 @@ export const CONFIG = {
   rpcUrl: "https://api.devnet.solana.com",
 
   // Oracle API (реальный)
-  oracleUrl: "https://enrg-oracle.onrender.com/api/v1",
+  oracleUrl: "http://localhost:3000/api/v1",
 
   // Program IDs (реальные, из Anchor.toml)
-  programId: "EsaKY8C3EZeRLL1wG5UECAnDWjbLfWJr7jL3pBLmpFfW", // enrg-mvp
-  profileProgramId: "H9GDJQhaLqHeZZmuiqL1JTCaQ4nSquKterUyFVRdL5GZ", // enrg-profile
+  programId: "HkuC3FTGAf9ryPqH7fi3RbUHwP4TKFMg5WgHNWm6Vaxb", // enrg-mvp
+  profileProgramId: "78FUdpHn7pWPjnDhA8RWCsXxZq6r4wVPtCcsEKBBvhUt", // enrg-profile
 
   // Token SRC (Source)
-  srcMint: "EsaKY8C3EZeRLL1wG5UECAnDWjbLfWJr7jL3pBLmpFfW", // same as programId for MVP
+  srcMint: "3PDsZUDQwgx1SV4dSTtyKDEoL9HYCdt4GN63UBYpLvwB", // SRC mint PDA (devnet, канон)
   srcDecimals: 9, // соответствует on-chain SRC_DECIMALS = 9
   srcMaxSupply: 1_000_000_000,
   srcPeg: "1 SRC = 1 MWh",

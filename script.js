@@ -11,11 +11,11 @@
       if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         return 'http://localhost:3000';
       }
-      return 'https://enrg-oracle.onrender.com';
+      return 'http://localhost:3000';
     })(),
     SOLANA_RPC: 'https://api.devnet.solana.com',
-    PROGRAM_ID: 'EsaKY8C3EZeRLL1wG5UECAnDWjbLfWJr7jL3pBLmpFfW',
-    PROFILE_PROGRAM_ID: 'H9GDJQhaLqHeZZmuiqL1JTCaQ4nSquKterUyFVRdL5GZ',
+    PROGRAM_ID: 'HkuC3FTGAf9ryPqH7fi3RbUHwP4TKFMg5WgHNWm6Vaxb',
+    PROFILE_PROGRAM_ID: '78FUdpHn7pWPjnDhA8RWCsXxZq6r4wVPtCcsEKBBvhUt',
     SRC_DECIMALS: 6,
     SRC_MINT: null, // Will be fetched from API
     METRICS_REFRESH_MS: 30000,
