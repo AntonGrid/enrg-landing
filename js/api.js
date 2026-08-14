@@ -53,3 +53,16 @@ export async function submitProof(payload) {
     body: JSON.stringify(payload),
   });
 }
+
+// POST /api/v1/proof/submit { device_id, timestamp, energyWh, nonce, signature }
+export async function postProof(device_id, timestamp, energyWh, nonce, signature) {
+  return request("/proof/submit", {
+    method: "POST",
+    body: JSON.stringify({ device_id, timestamp, energyWh, nonce, signature }),
+  });
+}
+
+// GET /api/v1/device/:id/status
+export async function getDeviceStatus(deviceId) {
+  return request(`/device/${encodeURIComponent(deviceId)}/status`);
+}

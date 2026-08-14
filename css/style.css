@@ -840,6 +840,35 @@ input, select, button { font-family: inherit; font-size: 1rem; }
 .device-row__status--registered { color: var(--color-success); }
 .device-row__status--unregistered { color: var(--color-warning); }
 
+.device-row__stats {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+.device-row__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.device-row__error {
+  font-size: 0.75rem;
+  color: var(--color-error);
+}
+
+/* --- Simulate proof button --- */
+.btn--sim {
+  background: transparent;
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+}
+.btn--sim:hover { background: var(--color-primary-dim); }
+.btn--sim:disabled,
+.btn--sim.is-loading {
+  opacity: 0.6;
+  cursor: wait;
+}
+
 .register-result {
   margin-top: 16px;
   max-width: 720px;

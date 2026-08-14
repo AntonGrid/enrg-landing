@@ -54,4 +54,7 @@ export const CONFIG = {
 
   // Metrics refresh interval
   metricsRefreshMs: 30000, // 30 seconds
+
+  // Dashboard live polling
+  dashboardPollMs: 15000, // 15 seconds
 };

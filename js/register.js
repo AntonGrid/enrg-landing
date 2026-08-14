@@ -1,19 +1,18 @@
 // js/register.js — регистрация устройства (симуляция)
-// Генерирует Ed25519 keypair в браузере (tweetnacl), сохраняет device в localStorage
-// и регистрирует его в локальном оракле через POST /api/v1/device/register.
+// Генерирует Ed25519 keypair в браузере (tweetnacl), сохраняет device в localStorage,
+// регистрирует в оракле и отправляет симулированные proofs.
 
 import { initWalletUI } from "./wallet-ui.js";
 import { postRegisterDevice } from "./api.js";
 import { showToast, setLoading } from "./ui.js";
+import { getStoredDevices, getDeviceFromStorage, saveDeviceToStorage } from "./device-store.js";
+import { bytesToBase64, simulateProof } from "./device-proof.js";
+import { bindSimulateButtons } from "./simulate-buttons.js";
+
+// Re-export для страницы dashboard и других модулей
+export { getStoredDevices, getDeviceFromStorage, saveDeviceToStorage, simulateProof };
 
 const nacl = window.nacl; // tweetnacl (CDN, загружен в register.html)
-
-// --- Base64 helpers (browser, без Buffer) ---
-function bytesToBase64(bytes) {
-  let bin = "";
-  for (const b of bytes) bin += String.fromCharCode(b);
-  return btoa(bin);
-}
 
 // --- Generate device: Ed25519 keypair + device_id ---
 export function generateDevice() {
@@ -30,37 +29,9 @@ export function generateDevice() {
     secretKey: bytesToBase64(kp.secretKey), // хранится только локально, на сервер не уходит
     created_at: new Date().toISOString(),
     last_nonce: 0,
+    energy_wh: 0,
     registered: false,
   };
-}
-
-// --- localStorage ---
-export function getStoredDevices() {
-  try {
-    const raw = localStorage.getItem("enrg_devices");
-    const list = raw ? JSON.parse(raw) : [];
-    return Array.isArray(list) ? list : [];
-  } catch {
-    return [];
-  }
-}
-
-export function saveDeviceToStorage(device) {
-  const list = getStoredDevices();
-  if (!list.includes(device.device_id)) {
-    list.push(device.device_id);
-    localStorage.setItem("enrg_devices", JSON.stringify(list));
-  }
-  localStorage.setItem(`enrg_device_${device.device_id}`, JSON.stringify(device));
-}
-
-function getDeviceFromStorage(deviceId) {
-  try {
-    const raw = localStorage.getItem(`enrg_device_${deviceId}`);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
 }
 
 // --- Oracle registration ---
@@ -89,13 +60,20 @@ function renderDeviceList() {
       const status = device.registered
         ? `<span class="device-row__status device-row__status--registered">✅ registered</span>`
         : `<span class="device-row__status device-row__status--unregistered">📋 unregistered</span>`;
+      const simBtn = device.registered
+        ? `<button class="btn btn--sm btn--sim" data-device-id="${device.device_id}" data-energy-wh="250">Simulate proof (250 Wh)</button>`
+        : "";
       return `
         <div class="device-row">
           <div class="device-row__meta">
             <span class="device-row__id">${device.device_id}</span>
             <span class="device-row__pub">${device.publicKey}</span>
+            <span class="device-row__stats">nonce: ${device.last_nonce || 0} · energy: ${device.energy_wh || 0} Wh</span>
           </div>
-          ${status}
+          <div class="device-row__actions">
+            ${status}
+            ${simBtn}
+          </div>
         </div>
       `;
     })
@@ -143,7 +121,9 @@ function init() {
   renderDeviceList();
 
   document.getElementById("btn-register-device")?.addEventListener("click", handleRegisterDevice);
+  bindSimulateButtons(document.getElementById("device-list"), { onDone: renderDeviceList });
 }
 
 init();
+
 
