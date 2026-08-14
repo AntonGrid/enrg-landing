@@ -8,8 +8,13 @@ export const CONFIG = {
   // RPC
   rpcUrl: "https://api.devnet.solana.com",
 
-  // Oracle API (реальный)
-  oracleUrl: "http://localhost:3000/api/v1",
+  // Oracle API (реальный).
+  // Прод-URL можно переопределить до загрузки приложения:
+  //   <script>window.ENRG_ORACLE_URL = "https://enrg-oracle.onrender.com/api/v1";</script>
+  // Если не задан — используется локальный оракл (localhost:3000).
+  oracleUrl: (typeof window !== "undefined" && window.ENRG_ORACLE_URL)
+    ? window.ENRG_ORACLE_URL
+    : "http://localhost:3000/api/v1",
 
   // Program IDs (реальные, из Anchor.toml)
   programId: "HkuC3FTGAf9ryPqH7fi3RbUHwP4TKFMg5WgHNWm6Vaxb", // enrg-mvp
