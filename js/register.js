@@ -1,55 +1,149 @@
-// js/register.js — логика регистрации устройства
-// Источник истины: plans/ENRG_website_truth_sheet.md
+// js/register.js — регистрация устройства (симуляция)
+// Генерирует Ed25519 keypair в браузере (tweetnacl), сохраняет device в localStorage
+// и регистрирует его в локальном оракле через POST /api/v1/device/register.
 
-import { requireAuth } from "./auth.js";
-import { registerDevice } from "./api.js";
-import { showToast, setLoading, renderError } from "./ui.js";
+import { initWalletUI } from "./wallet-ui.js";
+import { postRegisterDevice } from "./api.js";
+import { showToast, setLoading } from "./ui.js";
 
-let session = null;
+const nacl = window.nacl; // tweetnacl (CDN, загружен в register.html)
 
-async function init() {
-  session = await requireAuth("/index.html");
-  if (!session) return;
+// --- Base64 helpers (browser, без Buffer) ---
+function bytesToBase64(bytes) {
+  let bin = "";
+  for (const b of bytes) bin += String.fromCharCode(b);
+  return btoa(bin);
 }
 
-// --- Device form ---
-document.getElementById("device-form")?.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const btn = e.target.querySelector("button[type=submit]");
+// --- Generate device: Ed25519 keypair + device_id ---
+export function generateDevice() {
+  if (!nacl) {
+    throw new Error("tweetnacl not loaded — check CDN script in register.html.");
+  }
+
+  const kp = nacl.sign.keyPair();
+  const deviceId = `dev_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
+
+  return {
+    device_id: deviceId,
+    publicKey: bytesToBase64(kp.publicKey),
+    secretKey: bytesToBase64(kp.secretKey), // хранится только локально, на сервер не уходит
+    created_at: new Date().toISOString(),
+    last_nonce: 0,
+    registered: false,
+  };
+}
+
+// --- localStorage ---
+export function getStoredDevices() {
+  try {
+    const raw = localStorage.getItem("enrg_devices");
+    const list = raw ? JSON.parse(raw) : [];
+    return Array.isArray(list) ? list : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveDeviceToStorage(device) {
+  const list = getStoredDevices();
+  if (!list.includes(device.device_id)) {
+    list.push(device.device_id);
+    localStorage.setItem("enrg_devices", JSON.stringify(list));
+  }
+  localStorage.setItem(`enrg_device_${device.device_id}`, JSON.stringify(device));
+}
+
+function getDeviceFromStorage(deviceId) {
+  try {
+    const raw = localStorage.getItem(`enrg_device_${deviceId}`);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+// --- Oracle registration ---
+export async function registerDeviceToOracle(device) {
+  if (!device.publicKey || device.publicKey.length !== 44) {
+    throw new Error("Generated public key must be exactly 44 base64 characters.");
+  }
+  return postRegisterDevice(device.device_id, device.publicKey);
+}
+
+// --- Render device list from localStorage ---
+function renderDeviceList() {
+  const container = document.getElementById("device-list");
+  if (!container) return;
+
+  const ids = getStoredDevices();
+  if (ids.length === 0) {
+    container.innerHTML = `<p class="empty-message">No devices yet. Click "Register device (simulate)" to create one.</p>`;
+    return;
+  }
+
+  const rows = ids
+    .map((id) => {
+      const device = getDeviceFromStorage(id);
+      if (!device) return "";
+      const status = device.registered
+        ? `<span class="device-row__status device-row__status--registered">✅ registered</span>`
+        : `<span class="device-row__status device-row__status--unregistered">📋 unregistered</span>`;
+      return `
+        <div class="device-row">
+          <div class="device-row__meta">
+            <span class="device-row__id">${device.device_id}</span>
+            <span class="device-row__pub">${device.publicKey}</span>
+          </div>
+          ${status}
+        </div>
+      `;
+    })
+    .join("");
+
+  container.innerHTML = rows;
+}
+
+// --- Register button handler ---
+async function handleRegisterDevice() {
+  const btn = document.getElementById("btn-register-device");
+  const resultEl = document.getElementById("register-result");
+  if (!btn) return;
+
   setLoading(btn, true);
-
-  const deviceId = document.getElementById("device-id").value.trim();
-  const publicKey = document.getElementById("device-public-key").value.trim();
-
-  if (!deviceId || !publicKey) {
-    showToast("Device ID and Public Key are required.", "error");
-    setLoading(btn, false);
-    return;
-  }
-
-  if (publicKey.length !== 44) {
-    showToast("Public key must be exactly 44 characters (base64).", "error");
-    setLoading(btn, false);
-    return;
-  }
+  if (resultEl) resultEl.innerHTML = "";
 
   try {
-    await registerDevice({
-      device_id: deviceId,
-      public_key: publicKey,
-      wallet_address: session.address,
-    });
-    showToast("Device registered!", "success");
-    localStorage.setItem("enrgDeviceId", deviceId);
-    localStorage.setItem("enrgPublicKey", publicKey);
-    setTimeout(() => {
-      window.location.href = "/dashboard.html";
-    }, 1500);
+    const device = generateDevice();
+    const resp = await registerDeviceToOracle(device);
+
+    device.registered = true;
+    device.registered_at = new Date().toISOString();
+    saveDeviceToStorage(device);
+
+    showToast("Device registered successfully!", "success");
+    if (resultEl) {
+      resultEl.innerHTML = `<p class="register-result__ok">✅ ${resp.message || "Device registered successfully"}</p>`;
+    }
+    renderDeviceList();
   } catch (err) {
-    showToast(err.message, "error");
+    console.warn("Register failed:", err.message);
+    showToast(`Registration failed: ${err.message} Please check the oracle and retry.`, "error");
+    if (resultEl) {
+      resultEl.innerHTML = `<p class="register-result__error">⚠️ ${err.message}</p>`;
+    }
   } finally {
     setLoading(btn, false);
   }
-});
+}
+
+// --- Init ---
+function init() {
+  initWalletUI();
+  renderDeviceList();
+
+  document.getElementById("btn-register-device")?.addEventListener("click", handleRegisterDevice);
+}
 
 init();
+

@@ -34,6 +34,14 @@ export async function registerDevice(payload) {
   });
 }
 
+// Register a device to the oracle: POST /api/v1/device/register { device_id, public_key }
+export async function postRegisterDevice(device_id, public_key) {
+  return request("/device/register", {
+    method: "POST",
+    body: JSON.stringify({ device_id, public_key }),
+  });
+}
+
 export async function fetchDeviceStatus(deviceId) {
   return request(`/device/${encodeURIComponent(deviceId)}/status`);
 }

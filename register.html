@@ -29,26 +29,17 @@
       <div class="section__inner">
         <h1 class="section__title">Register Your Device</h1>
         <p class="section__lead">
-          Connect your Phantom wallet and register your energy device to start earning
-          <strong>SRC (Source)</strong> tokens for every verified MWh.
+          Simulate an energy device: generate an Ed25519 keypair in-browser, register it
+          with the ENRG oracle, and start earning <strong>SRC (Source)</strong> tokens.
+          Private keys never leave your browser.
         </p>
 
-        <form id="device-form" class="form">
-          <div class="form__group">
-            <label for="device-id">Device ID</label>
-            <input type="text" id="device-id" name="device_id" required
-                   placeholder="e.g., device-001" class="form__input" />
-          </div>
-          <div class="form__group">
-            <label for="device-public-key">Public Key (base64, 44 characters)</label>
-            <input type="text" id="device-public-key" name="public_key" required
-                   minlength="44" maxlength="44"
-                   placeholder="Base64-encoded Ed25519 public key" class="form__input" />
-          </div>
-          <button type="submit" class="btn btn--primary">Register Device</button>
-        </form>
+        <button id="btn-register-device" class="btn btn--primary">Register device (simulate)</button>
 
-        <div id="register-root"></div>
+        <div id="register-result" class="register-result"></div>
+
+        <h2 class="section__subtitle">My Devices</h2>
+        <div id="device-list" class="device-list"></div>
       </div>
     </section>
   </main>
@@ -66,6 +57,7 @@
     </div>
   </footer>
 
+  <script src="https://unpkg.com/tweetnacl@1.0.3/nacl.min.js"></script>
   <script type="module" src="js/register.js"></script>
 </body>
 </html>

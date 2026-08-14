@@ -798,6 +798,69 @@ input, select, button { font-family: inherit; font-size: 1rem; }
   border-color: var(--color-primary);
 }
 
+/* --- Device List (Register) --- */
+.device-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 720px;
+}
+.device-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+.device-row__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.device-row__id {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.device-row__pub {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-muted);
+  word-break: break-all;
+}
+.device-row__status {
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.device-row__status--registered { color: var(--color-success); }
+.device-row__status--unregistered { color: var(--color-warning); }
+
+.register-result {
+  margin-top: 16px;
+  max-width: 720px;
+}
+.register-result__ok {
+  color: var(--color-success);
+  background: rgba(52, 211, 153, 0.12);
+  border: 1px solid var(--color-success);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  font-size: 0.9rem;
+}
+.register-result__error {
+  color: var(--color-error);
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  font-size: 0.9rem;
+}
+
 /* --- Device Card (Dashboard) --- */
 .device-card {
   background: var(--color-bg-card);
