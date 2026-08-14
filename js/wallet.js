@@ -2,6 +2,8 @@
 
 import { CONFIG } from "./config.js";
 
+const PUBKEY_STORAGE_KEY = "enrg_pubkey";
+
 let _wallet = null;
 let _changeCallbacks = [];
 
@@ -14,11 +16,32 @@ function getProvider() {
   throw new Error("Phantom wallet not found. Please install it from https://phantom.app");
 }
 
+// True, если установлено расширение Phantom (window.solana.isPhantom)
+export function hasPhantom() {
+  return typeof window !== "undefined" && Boolean(window.solana && window.solana.isPhantom);
+}
+
+// --- Persist connected pubkey to localStorage["enrg_pubkey"] ---
+function _persistPubkey(pubkey) {
+  try {
+    if (pubkey) localStorage.setItem(PUBKEY_STORAGE_KEY, pubkey);
+    else localStorage.removeItem(PUBKEY_STORAGE_KEY);
+  } catch {
+    /* localStorage недоступен — игнорируем */
+  }
+}
+
+function _setWallet(publicKey) {
+  _wallet = publicKey;
+  _persistPubkey(publicKey ? publicKey.toString() : null);
+  return publicKey;
+}
+
 // --- Connect ---
 export async function connectWallet() {
   const provider = getProvider();
   const resp = await provider.connect();
-  _wallet = resp.publicKey;
+  _setWallet(resp.publicKey);
   _listenWalletEvents(provider);
   return _wallet;
 }
@@ -29,7 +52,7 @@ export async function tryAutoConnect() {
     const provider = getProvider();
     if (!provider.isConnected) return null;
     const resp = await provider.connect({ onlyIfTrusted: true });
-    _wallet = resp.publicKey;
+    _setWallet(resp.publicKey);
     _listenWalletEvents(provider);
     return _wallet;
   } catch {
@@ -43,7 +66,7 @@ export async function disconnectWallet() {
     const provider = getProvider();
     await provider.disconnect();
   } catch {}
-  _wallet = null;
+  _setWallet(null);
 }
 
 // --- Get address ---
@@ -53,6 +76,16 @@ export function getWalletAddress() {
 
 export function getPublicKey() {
   return _wallet;
+}
+
+// Connected pubkey: из памяти, либо из localStorage (после перезагрузки страницы)
+export function getConnectedPubkey() {
+  if (_wallet) return _wallet.toString();
+  try {
+    return localStorage.getItem(PUBKEY_STORAGE_KEY);
+  } catch {
+    return null;
+  }
 }
 
 // --- Sign auth message (Ed25519) ---
@@ -88,12 +121,12 @@ export function onWalletChange(callback) {
 
 function _listenWalletEvents(provider) {
   provider.on("accountChanged", (newKey) => {
-    _wallet = newKey;
+    _setWallet(newKey);
     _changeCallbacks.forEach(cb => cb(newKey));
   });
 
   provider.on("disconnect", () => {
-    _wallet = null;
+    _setWallet(null);
     _changeCallbacks.forEach(cb => cb(null));
   });
 }

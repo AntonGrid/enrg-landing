@@ -5,11 +5,14 @@ import { requireAuth, logout } from "./auth.js";
 import { fetchDeviceStatus } from "./api.js";
 import { showToast, formatSrc, shortAddress, renderError, renderEmpty } from "./ui.js";
 import { getPublicKey } from "./wallet.js";
+import { initWalletUI } from "./wallet-ui.js";
 import { CONFIG } from "./config.js";
 
 let session = null;
 
 async function init() {
+  initWalletUI();
+
   session = await requireAuth("/index.html");
   if (!session) return;
 

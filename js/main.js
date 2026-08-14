@@ -2,50 +2,12 @@
 // Источник истины: plans/ENRG_website_truth_sheet.md
 
 import { CONFIG } from "./config.js";
-import { connectWallet, tryAutoConnect, getWalletAddress, onWalletChange } from "./wallet.js";
 import { fetchProtocolStats } from "./api.js";
-import { showToast, shortAddress, formatSrc } from "./ui.js";
+import { formatSrc } from "./ui.js";
+import { initWalletUI } from "./wallet-ui.js";
 
-// --- Wallet button ---
-const walletBtn = document.getElementById("wallet-btn");
-const walletAddress = document.getElementById("wallet-address");
-
-async function updateWalletUI(address) {
-  if (address) {
-    walletBtn.textContent = shortAddress(address);
-    walletBtn.classList.add("connected");
-    if (walletAddress) walletAddress.textContent = shortAddress(address);
-  } else {
-    walletBtn.textContent = "Connect Wallet";
-    walletBtn.classList.remove("connected");
-    if (walletAddress) walletAddress.textContent = "";
-  }
-}
-
-walletBtn?.addEventListener("click", async () => {
-  try {
-    await connectWallet();
-    const address = getWalletAddress();
-    await updateWalletUI(address);
-    showToast("Wallet connected!", "success");
-  } catch (err) {
-    showToast(err.message, "error");
-  }
-});
-
-// --- Auto connect ---
-async function init() {
-  const key = await tryAutoConnect();
-  if (key) await updateWalletUI(key.toString());
-
-  onWalletChange((newKey) => {
-    updateWalletUI(newKey ? newKey.toString() : null);
-  });
-
-  await loadStats();
-  // Refresh metrics periodically
-  setInterval(loadStats, CONFIG.metricsRefreshMs);
-}
+// --- Wallet (Phantom) header UI: Connect / Disconnect / Install Phantom ---
+initWalletUI();
 
 // --- Protocol stats ---
 async function loadStats() {
@@ -83,4 +45,6 @@ async function loadStats() {
   }
 }
 
-init();
+loadStats();
+setInterval(loadStats, CONFIG.metricsRefreshMs);
+

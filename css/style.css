@@ -137,6 +137,11 @@ input, select, button { font-family: inherit; font-size: 1rem; }
   border-color: var(--color-primary);
   color: var(--color-primary);
 }
+.wallet-address {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
 
 /* --- Hero --- */
 .hero {
