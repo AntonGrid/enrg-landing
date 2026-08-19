@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register Device — ENRG Protocol | SRC Token</title>
+  <meta name="description" content="Register your energy device with ENRG to start tokenizing production as SRC tokens." />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="favicon.ico" />
+</head>
+<body>
+
+  <header class="navbar">
+    <a href="/" class="navbar__logo">
+      <img src="assets/logo.svg" alt="ENRG" width="32" height="32" />
+      <span>ENRG</span>
+    </a>
+    <nav class="navbar__links">
+      <a href="whitepaper.html">Whitepaper</a>
+      <a href="technical-overview.html">Docs</a>
+      <a href="dashboard.html">Dashboard</a>
+    </nav>
+    <button id="wallet-btn" class="btn btn--outline">Connect Wallet</button>
+    <span id="wallet-address" class="wallet-address"></span>
+  </header>
+
+  <main>
+    <section class="section">
+      <div class="section__inner">
+        <h1 class="section__title">Register Your Device</h1>
+        <p class="section__lead">
+          Simulate an energy device: generate an Ed25519 keypair in-browser, register it
+          with the ENRG oracle, and start earning <strong>SRC (Source)</strong> tokens.
+          Private keys never leave your browser.
+        </p>
+
+        <button id="btn-register-device" class="btn btn--primary">Register device (simulate)</button>
+
+        <div id="register-result" class="register-result glass-panel"></div>
+
+        <h2 class="section__subtitle">My Devices</h2>
+        <div id="device-list" class="device-list"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer__inner">
+      <div class="footer__links">
+        <a href="whitepaper.html">Whitepaper</a>
+        <a href="technical-overview.html">Technical Docs</a>
+        <a href="https://github.com/AntonGrid/enrg" target="_blank">GitHub</a>
+        <a href="https://t.me/enrg_network" target="_blank">Telegram</a>
+        <a href="mailto:anton@enrg.network">Contact</a>
+      </div>
+      <p class="footer__copy">© 2026 ENRG Protocol. Built on Solana.</p>
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/tweetnacl@1.0.3/nacl.min.js"></script>
+  <script type="module" src="js/register.js"></script>
+</body>
+</html>

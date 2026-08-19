@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — ENRG Protocol | SRC Token</title>
+  <meta name="description" content="ENRG Dashboard: device status, SRC balance, and mining activity." />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="favicon.ico" />
+  <script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js" defer></script>
+</head>
+<body>
+
+  <header class="navbar">
+    <a href="/" class="navbar__logo">
+      <img src="assets/logo.svg" alt="ENRG" width="32" height="32" />
+      <span>ENRG</span>
+    </a>
+    <nav class="navbar__links">
+      <a href="whitepaper.html">Whitepaper</a>
+      <a href="technical-overview.html">Docs</a>
+      <a href="dashboard.html" class="active">Dashboard</a>
+    </nav>
+    <div class="navbar__right">
+      <button id="wallet-btn" class="btn btn--outline" data-state="disconnected">Connect Wallet</button>
+      <span id="wallet-address" class="wallet-address"></span>
+      <button id="logout-btn" class="btn btn--ghost btn--sm">Logout</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="section">
+      <div class="section__inner">
+        <h1 class="section__title">Device Dashboard</h1>
+        <p class="section__lead">
+          Monitor your device status, SRC balance, and mining activity.
+          Wallet: <span id="user-address" class="highlight">—</span>
+        </p>
+
+        <div class="dashboard-toolbar">
+          <div id="dashboard-stats" class="stats-grid">
+            <div class="stat-card glass-panel">
+              <span class="stat__label">Active Producers</span>
+              <span class="stat__value" id="stat-producers">—</span>
+            </div>
+            <div class="stat-card glass-panel">
+              <span class="stat__label">Total Energy Tokenized</span>
+              <span class="stat__value" id="stat-energy">—</span>
+            </div>
+            <div class="stat-card glass-panel">
+              <span class="stat__label">SRC Supply</span>
+              <span class="stat__value" id="stat-supply">—</span>
+            </div>
+          </div>
+          <button id="btn-refresh" class="btn btn--outline btn--sm" title="Refresh stats now">↻ Refresh</button>
+        </div>
+
+        <div class="grid grid--2">
+          <div class="card">
+            <h2>📟 Device Info</h2>
+            <p>Device ID: <strong id="device-id-display">—</strong></p>
+            <div id="device-info"></div>
+          </div>
+          <div class="card">
+            <h2>💰 SRC Balance</h2>
+            <p id="src-balance" class="balance-large">—</p>
+            <p class="text-muted">1 SRC = 1 MWh verified energy</p>
+          </div>
+        </div>
+
+        <div id="dashboard-root"></div>
+
+        <h2 class="section__subtitle">My Devices</h2>
+        <div id="devices-list" class="device-list"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer__inner">
+      <div class="footer__links">
+        <a href="whitepaper.html">Whitepaper</a>
+        <a href="technical-overview.html">Technical Docs</a>
+        <a href="https://github.com/AntonGrid/enrg" target="_blank">GitHub</a>
+        <a href="https://t.me/enrg_network" target="_blank">Telegram</a>
+        <a href="mailto:anton@enrg.network">Contact</a>
+      </div>
+      <p class="footer__copy">© 2026 ENRG Protocol. Built on Solana.</p>
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/tweetnacl@1.0.3/nacl.min.js"></script>
+  <script type="module" src="js/dashboard.js"></script>
+</body>
+</html>

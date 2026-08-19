@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Technical Overview — ENRG Protocol | SRC Token</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/docs.css" />
+  <link rel="icon" href="favicon.ico" />
+</head>
+<body class="page--docs">
+
+  <header class="navbar">
+    <a href="/" class="navbar__logo">
+      <img src="assets/logo.svg" alt="ENRG" width="32" height="32" />
+      <span>ENRG</span>
+    </a>
+    <nav class="navbar__links">
+      <a href="whitepaper.html">Whitepaper</a>
+      <a href="technical-overview.html" class="active">Docs</a>
+      <a href="dashboard.html">Dashboard</a>
+    </nav>
+    <button id="wallet-btn" class="btn btn--outline">Connect Wallet</button>
+  </header>
+
+  <div class="docs-layout">
+
+    <aside class="docs-sidebar">
+      <nav class="docs-nav">
+        <span class="docs-nav__group">Technical Reference</span>
+        <a href="#architecture">Architecture</a>
+        <a href="#programs">On-Chain Programs</a>
+        <a href="#instructions">Instructions</a>
+        <a href="#accounts">Account Structure</a>
+        <a href="#device-lifecycle">Device Lifecycle</a>
+        <a href="#oracle-flow">Oracle Flow</a>
+        <a href="#security">Security</a>
+        <a href="#api">Oracle API</a>
+        <a href="#tokenomics">Tokenomics</a>
+      </nav>
+    </aside>
+
+    <main class="docs-content">
+
+      <div class="docs-header">
+        <span class="docs-badge">Technical Reference — v1.0</span>
+        <h1>Technical Overview</h1>
+        <p class="docs-lead">
+          Deep-dive into the ENRG Protocol architecture, on-chain programs,
+          device lifecycle, oracle flow, security model, and API reference.
+        </p>
+      </div>
+
+      <!-- Architecture -->
+      <section id="architecture" class="docs-section">
+        <h2>Architecture</h2>
+        <p>
+          The ENRG Protocol consists of seven independent components, each with a clearly
+          defined responsibility. This separation ensures cryptographic trust, implementation
+          independence, and long-term protocol stability.
+        </p>
+
+        <div class="docs-arch">
+          <div class="arch-layer">
+            <span class="arch-layer__label">1. Device Layer</span>
+            <p>IoT devices (ESP32 + PZEM-004T, industrial Modbus/RS485 meters) measuring energy and signing data with Ed25519. Private key stored in Secure Element (ATECC608).</p>
+          </div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-layer">
+            <span class="arch-layer__label">2. Provisioning Service</span>
+            <p>Registers and provisions devices. Delivers signed Device Manifest with configuration parameters (heartbeat interval, proof threshold, trust level).</p>
+          </div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-layer">
+            <span class="arch-layer__label">3. Device Registry</span>
+            <p>Authoritative source of device state. Stores identity, ownership, lifecycle state, manifest version, capabilities, and audit metadata.</p>
+          </div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-layer">
+            <span class="arch-layer__label">4. Policy Engine</span>
+            <p>Evaluates protocol rules. Determines device eligibility, applies protocol policies, and produces deterministic policy decisions.</p>
+          </div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-layer">
+            <span class="arch-layer__label">5. Oracle Network</span>
+            <p>Performs cryptographic verification of Ed25519 signatures, validates nonces and timestamps, aggregates data into pools, and submits verified operations for execution.</p>
+          </div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-layer arch-layer--highlight">
+            <span class="arch-layer__label">6. Smart Contract (Solana)</span>
+            <p>Two programs: enrg-mvp (core protocol) and enrg-profile (energy profiles). Communicates via CPI using <code>declare_program!</code>. Executes immutable state transitions.</p>
+          </div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-layer">
+            <span class="arch-layer__label">7. DAO Governance</span>
+            <p>Governs protocol evolution. Parameter updates, protocol upgrades, treasury management through decentralized voting.</p>
+          </div>
+        </div>
+
+        <div class="docs-callout">
+          <strong>Key Principle:</strong> The protocol is blockchain-independent. The Solana implementation is the first reference implementation. Each component is replaceable without architectural changes to unrelated components.
+        </div>
+      </section>
+
+      <!-- On-Chain Programs -->
+      <section id="programs" class="docs-section">
+        <h2>On-Chain Programs</h2>
+
+        <h3>enrg-mvp — Core Protocol</h3>
+        <p>Core program responsible for:</p>
+        <ul class="docs-list">
+          <li>Verifying oracle Ed25519 signatures via <code>solana_instructions_sysvar::get_instruction_relative</code></li>
+          <li>Minting SRC tokens via CPI to SPL Token program</li>
+          <li>Managing the Energy Vault (buyback, staking, DAO, emergency funds)</li>
+          <li>Device lifecycle management (8 states per ADR-0005)</li>
+          <li>Enforcing mint constraints (max supply, nonce, timestamp, power limits)</li>
+          <li>Staking, unstaking, and reward distribution</li>
+          <li>Founder vesting and buyback & burn</li>
+        </ul>
+        <div class="docs-code">
+          <span class="docs-code__label">Program ID (devnet)</span>
+          <code>HkuC3FTGAf9ryPqH7fi3RbUHwP4TKFMg5WgHNWm6Vaxb</code>
+        </div>
+
+        <h3>enrg-profile — Energy Profile</h3>
+        <p>Manages energy producer profiles:</p>
+        <ul class="docs-list">
+          <li>Participant profiles (PDA per wallet)</li>
+          <li>Device registration and metadata</li>
+          <li>30-day rolling energy window (<code>update_energy_window_u128</code>)</li>
+          <li>Rated power configuration (determines max energy per mint)</li>
+        </ul>
+        <p>
+          enrg-mvp calls <code>enrg_profile::cpi::record_production</code> during each mint
+          via <code>declare_program!</code> to update the producer's energy profile.
+          The profile's <code>rated_power</code> determines the maximum energy per mint.
+        </p>
+        <div class="docs-code">
+          <span class="docs-code__label">Program ID (devnet)</span>
+          <code>78FUdpHn7pWPjnDhA8RWCsXxZq6r4wVPtCcsEKBBvhUt</code>
+        </div>
+      </section>
+
+      <!-- Instructions -->
+      <section id="instructions" class="docs-section">
+        <h2>Instructions</h2>
+        <table class="docs-table">
+          <thead>
+            <tr><th>Instruction</th><th>Program</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>initialize_profile</code></td>
+              <td>enrg-profile</td>
+              <td>Initialize participant profile PDA</td>
+            </tr>
+            <tr>
+              <td><code>update_metadata</code></td>
+              <td>enrg-profile</td>
+              <td>Update profile metadata (name, country, rated power)</td>
+            </tr>
+            <tr>
+              <td><code>record_production</code></td>
+              <td>enrg-profile</td>
+              <td>Record energy production in 30-day rolling window (called via CPI from enrg-mvp)</td>
+            </tr>
+            <tr>
+              <td><code>read_profile</code></td>
+              <td>enrg-profile</td>
+              <td>Read energy profile data</td>
+            </tr>
+            <tr>
+              <td><code>mint_energy</code></td>
+              <td>enrg-mvp</td>
+              <td>Verify oracle signature + mint SRC tokens. 85% to producer, 15% fee distributed to vault funds</td>
+            </tr>
+            <tr>
+              <td><code>create_producer</code></td>
+              <td>enrg-mvp</td>
+              <td>Register a new energy producer</td>
+            </tr>
+            <tr>
+              <td><code>stake</code> / <code>unstake</code></td>
+              <td>enrg-mvp</td>
+              <td>Stake and withdraw SRC tokens</td>
+            </tr>
+            <tr>
+              <td><code>claim_rewards</code></td>
+              <td>enrg-mvp</td>
+              <td>Claim staking rewards</td>
+            </tr>
+            <tr>
+              <td><code>buyback_and_burn</code></td>
+              <td>enrg-mvp</td>
+              <td>Burn tokens from the buyback fund</td>
+            </tr>
+            <tr>
+              <td><code>register_device</code></td>
+              <td>enrg-mvp</td>
+              <td>Register device in lifecycle (UNREGISTERED → REGISTERED)</td>
+            </tr>
+            <tr>
+              <td><code>claim_device</code></td>
+              <td>enrg-mvp</td>
+              <td>Claim device ownership (REGISTERED → CLAIMED)</td>
+            </tr>
+            <tr>
+              <td><code>provision_device</code></td>
+              <td>enrg-mvp</td>
+              <td>Provision device (CLAIMED → PROVISIONED)</td>
+            </tr>
+            <tr>
+              <td><code>activate_device</code></td>
+              <td>enrg-mvp</td>
+              <td>Activate device (PROVISIONED → ACTIVE)</td>
+            </tr>
+            <tr>
+              <td><code>quarantine_device</code></td>
+              <td>enrg-mvp</td>
+              <td>Quarantine device (ACTIVE → QUARANTINE)</td>
+            </tr>
+            <tr>
+              <td><code>release_from_quarantine</code></td>
+              <td>enrg-mvp</td>
+              <td>Release from quarantine (QUARANTINE → ACTIVE)</td>
+            </tr>
+            <tr>
+              <td><code>revoke_device</code></td>
+              <td>enrg-mvp</td>
+              <td>Revoke device (ACTIVE → REVOKED)</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Account Structure -->
+      <section id="accounts" class="docs-section">
+        <h2>Account Structure</h2>
+
+        <h3>EnergyProducer PDA (enrg-mvp)</h3>
+        <pre class="docs-pre"><code>seeds: ["producer", authority_pubkey]
+
+{
+  authority:      Pubkey,       // device owner
+  device_id:     String (32),  // unique identifier
+  nonce:         u64,          // replay attack protection
+  energy_wh:     u64,          // total accumulated energy
+  timestamp:     i64,          // last confirmation time
+  max_power_w:   u64,          // nameplate power
+  signature:     [u8; 64],     // last signature
+  state:         DeviceState,  // 8-state lifecycle
+  is_initialized: bool,
+}</code></pre>
+
+        <h3>EnergyProfile PDA (enrg-profile)</h3>
+        <pre class="docs-pre"><code>seeds: ["profile", authority_pubkey]
+
+{
+  authority:      Pubkey,
+  rated_power:    u64,         // W
+  device_model:   String (32),
+  manufacturer:   String (32),
+  country:        String (32),
+  energy_window:  [u128; 30],  // 30-day rolling window
+  window_index:   u8,
+  total_energy:   u128,
+  is_initialized: bool,
+}</code></pre>
+
+        <h3>Vault PDA (enrg-mvp)</h3>
+        <pre class="docs-pre"><code>seeds: ["vault"]
+
+{
+  mint:           Pubkey,      // SRC token mint
+  authority:      Pubkey,      // deployer
+  is_initialized: bool,
+}</code></pre>
+
+        <h3>Fund PDAs (enrg-mvp)</h3>
+        <pre class="docs-pre"><code>seeds: ["buyback" | "staking" | "dao" | "emergency", vault_pubkey]
+
+{
+  vault:          Pubkey,
+  total_deposits: u64,
+  is_initialized: bool,
+}</code></pre>
+      </section>
+
+      <!-- Device Lifecycle -->
+      <section id="device-lifecycle" class="docs-section">
+        <h2>Device Lifecycle (ADR-0005)</h2>
+        <p>
+          Every device in the ENRG Protocol follows a cryptographically enforced state machine
+          with 8 states. Each state has clearly defined behavior, and transitions are only
+          possible through authorized instructions.
+        </p>
+
+        <pre class="docs-pre"><code>UNREGISTERED
+    │
+    ▼
+REGISTERED     ← register_device()
+    │
+    ▼
+CLAIMED        ← claim_device()
+    │
+    ▼
+PROVISIONED    ← provision_device()
+    │
+    ▼
+ACTIVE         ← activate_device()
+    │
+    ├── (suspicion) → QUARANTINE    ← quarantine_device()
+    │                     │
+    │                     └── → ACTIVE  ← release_from_quarantine()
+    │
+    ├── (maintenance) → MAINTENANCE
+    │
+    └── (removal) → REVOKED         ← revoke_device()</code></pre>
+
+        <table class="docs-table">
+          <thead>
+            <tr><th>State</th><th>Description</th><th>Can Mint?</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>UNREGISTERED</td><td>Device unknown to the system</td><td>No</td></tr>
+            <tr><td>REGISTERED</td><td>Cryptographic identity created, not bound to owner</td><td>No</td></tr>
+            <tr><td>CLAIMED</td><td>Bound to owner, not yet configured</td><td>No</td></tr>
+            <tr><td>PROVISIONED</td><td>Configured, manifest received, time synced</td><td>No</td></tr>
+            <tr><td>ACTIVE</td><td>Producing and sending Proofs</td><td>Yes</td></tr>
+            <tr><td>QUARANTINE</td><td>Under suspicion, Proofs not minted</td><td>No</td></tr>
+            <tr><td>MAINTENANCE</td><td>Service mode, no Proofs sent</td><td>No</td></tr>
+            <tr><td>REVOKED</td><td>Permanently removed from the protocol</td><td>No</td></tr>
+          </tbody>
+        </table>
+
+        <p>
+          <strong>Source:</strong> <a href="https://github.com/AntonGrid/enrg/blob/main/docs/architecture/adr/ADR-0005-device-states.md" target="_blank">ADR-0005: Device States</a>
+        </p>
+      </section>
+
+      <!-- Oracle Flow -->
+      <section id="oracle-flow" class="docs-section">
+        <h2>Oracle Flow</h2>
+        <ol class="docs-list">
+          <li><strong>Device measures</strong> energy every 10 minutes using PZEM-004T or industrial Modbus/RS485 meter</li>
+          <li><strong>Device signs</strong> data packet <code>{device_id, timestamp, energy_wh, nonce}</code> with Ed25519 private key (stored in ATECC608 Secure Element)</li>
+          <li><strong>Device sends</strong> signed packet to Oracle API (<code>POST /api/v1/proof/submit</code>)</li>
+          <li><strong>Oracle verifies</strong> Ed25519 signature via <code>solana_instructions_sysvar::get_instruction_relative</code></li>
+          <li><strong>Oracle validates</strong> monotonic nonce (replay protection) and timestamp (MAX_PROOF_AGE = 1 hour)</li>
+          <li><strong>Oracle checks</strong> device status in Device Registry (must be ACTIVE)</li>
+          <li><strong>Oracle aggregates</strong> verified readings into a pool. When pool reaches 1 MWh threshold, initiates minting</li>
+          <li><strong>Oracle calls</strong> <code>mint_energy</code> on enrg-mvp program with signed OracleReport</li>
+          <li><strong>Smart contract verifies</strong> oracle signature, validates producer PDA, calculates <code>max_energy_wh = max_power_w * 10 / 60</code></li>
+          <li><strong>SRC tokens minted</strong> via CPI to SPL Token program: 85% to producer, 15% distributed to vault funds</li>
+          <li><strong>enrg-profile updated</strong> via CPI: <code>record_production</code> updates 30-day rolling energy window</li>
+        </ol>
+
+        <div class="docs-callout">
+          <strong>OracleReport structure:</strong>
+          <code>{device_id: [u8; 32], timestamp: i64, energy_wh: u64, nonce: u64, signature: [u8; 64]}</code>
+        </div>
+      </section>
+
+      <!-- Security -->
+      <section id="security" class="docs-section">
+        <h2>Security</h2>
+
+        <h3>Ed25519 Verification</h3>
+        <p>
+          All device and oracle signatures are verified on-chain via
+          <code>solana_instructions_sysvar::get_instruction_relative</code>.
+          This reads the serialized Ed25519 instruction from the transaction's
+          instruction sysvar and verifies the public key, message, and signature
+          without trusting any off-chain component.
+        </p>
+        <div class="docs-code">
+          <span class="docs-code__label">Source</span>
+          <code>programs/enrg-mvp/src/security/ed25519.rs</code>
+        </div>
+
+        <h3>Replay Protection</h3>
+        <ul class="docs-list">
+          <li><strong>Monotonic nonce</strong> — each device has an incrementing counter. Duplicate nonces are rejected.</li>
+          <li><strong>Timestamp validation</strong> — <code>MAX_PROOF_AGE = 1 hour</code>. Proofs older than 1 hour are rejected.</li>
+          <li><strong>Rate limiting</strong> — Oracle API: 200 req/min general, 100 req/min proof submission, 20 req/min device registration.</li>
+        </ul>
+
+        <h3>STRIDE Threat Model</h3>
+        <table class="docs-table">
+          <thead>
+            <tr><th>Threat</th><th>Mitigation</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Spoofing</td><td>Ed25519 cryptographic identity, ATECC608 Secure Element</td></tr>
+            <tr><td>Tampering</td><td>Signed data packets, on-chain verification</td></tr>
+            <tr><td>Repudiation</td><td>Monotonic nonce + timestamp audit trail</td></tr>
+            <tr><td>Information Disclosure</td><td>Public blockchain, no private data on-chain</td></tr>
+            <tr><td>Denial of Service</td><td>Gas limits, rate limiting, PDA architecture</td></tr>
+            <tr><td>Elevation of Privilege</td><td>PDA ownership checks, separation of concerns</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Device Trust Levels</h3>
+        <table class="docs-table">
+          <thead>
+            <tr><th>Level</th><th>Equipment</th><th>Mining Limit</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Basic</td><td>ESP32 + PZEM-004T</td><td>Up to 100 kWh/month</td></tr>
+            <tr><td>Verified</td><td>Certified household meter</td><td>Up to 10 MWh/month</td></tr>
+            <tr><td>Industrial</td><td>Siemens, ABB, Schneider</td><td>Unlimited</td></tr>
+            <tr><td>Institutional</td><td>Energy company with audit</td><td>Unlimited</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Energy Reputation Score (ERS)</h3>
+        <p>
+          Each producer accumulates a reputation score based on:
+        </p>
+        <ul class="docs-list">
+          <li>Duration of flawless operation</li>
+          <li>Volume of verified energy</li>
+          <li>Absence of anomalies in the generation profile</li>
+        </ul>
+        <p>
+          High ERS provides advantages in pool reward distribution and access to
+          premium ENRG Market features. Sudden spikes, night-time generation, and
+          profile anomalies trigger automatic quarantine.
+        </p>
+      </section>
+
+      <!-- Oracle API -->
+      <section id="api" class="docs-section">
+        <h2>Oracle API</h2>
+        <p>Base URL: <code>http://localhost:3000/api/v1</code></p>
+        <table class="docs-table">
+          <thead>
+            <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>GET</td><td><code>/stats</code></td><td>Protocol-wide statistics (total_energy_mwh, active_producers, total_supply)</td></tr>
+            <tr><td>POST</td><td><code>/device/register</code></td><td>Register a new device (<code>{device_id, public_key, wallet_address}</code>)</td></tr>
+            <tr><td>POST</td><td><code>/proof/submit</code></td><td>Submit signed proof of production</td></tr>
+            <tr><td>GET</td><td><code>/device/:id/status</code></td><td>Get device status and accumulated energy</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Tokenomics -->
+      <section id="tokenomics" class="docs-section">
+        <h2>Tokenomics</h2>
+
+        <table class="docs-table">
+          <thead>
+            <tr><th>Property</th><th>Value</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Ticker</td><td>SRC (Source)</td></tr>
+            <tr><td>Max Supply</td><td>1,000,000,000 SRC (fixed cap)</td></tr>
+            <tr><td>Decimals</td><td>9</td></tr>
+            <tr><td>Peg</td><td>1 SRC = 1 MWh verified energy</td></tr>
+            <tr><td>Protocol Fee</td><td>15% (85% to producer)</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Fee Distribution (15% of Every Mint)</h3>
+        <ul class="docs-list">
+          <li><strong>20% Buyback & Burn</strong> — constant deflationary pressure via <code>buyback_and_burn</code> instruction</li>
+          <li><strong>40% Staking Rewards</strong> — distributed to SRC stakers proportionally to their share</li>
+          <li><strong>30% DAO Reserve</strong> — governed by token holder voting</li>
+          <li><strong>10% Emergency Fund</strong> — protocol insurance for unforeseen events</li>
+        </ul>
+
+        <h3>Source Multipliers</h3>
+        <table class="docs-table">
+          <thead>
+            <tr><th>Energy Source</th><th>Multiplier</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Solar / Wind / Hydro</td><td>100%</td></tr>
+            <tr><td>Biogas</td><td>80%</td></tr>
+            <tr><td>Fossil</td><td>50%</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Mint Energy Formula</h3>
+        <pre class="docs-pre"><code>max_energy_wh = producer.max_power_w * 10 / 60
+total_mint    = energy_wh * 10^9  // convert to base units with 9 decimals
+producer_share = total_mint * 85 / 100
+fee            = total_mint * 15 / 100
+
+// Fee distribution:
+buyback   = fee * 20 / 100
+staking   = fee * 40 / 100
+dao       = fee * 30 / 100
+emergency = fee * 10 / 100</code></pre>
+      </section>
+
+    </main>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
