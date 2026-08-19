@@ -5,23 +5,24 @@
 - (перечислить ключевые файлы)
 
 ## Как тестировать (чек‑лист)
-- [ ] Открыть dashboard.html с подключённым Phantom: pubkey виден, кнопка ↻ Refresh работает, stat‑карточки обновляются.
-- [ ] Остановить локальный оракл: увидеть toast «retrying in Ns» и рост backoff (2s→4s→8s→16s→32s→60s).
-- [ ] Перезапустить оракл: убедиться в сбросе backoff и восстановлении обновлений.
-- [ ] Проверить SRC balance: без токенов → 0; с тестовыми токенами → корректное значение.
-- [ ] Проверить docs: нет секретов, docker-compose валиден.
-- [ ] Выполнен curl health-check на окружении (prod/dev): /api/v1/stats возвращает корректный JSON.
-
-## Безопасность
-- [ ] Убедился(ась), что в коммите/PR нет реальных секретов (FOUNDER_KEY не в репо)
-- [ ] Если требуется — секреты добавлены в окружение хоста/Render вручную
+- [ ] `npm run build` в `enrg-landing` проходит без ошибок.
+- [ ] Кнопка «Подключить устройство» ведёт на `https://antongrid.github.io/Axis-connect/` в новом табе.
+- [ ] Меню HOME · DASHBOARD · MINTING · HISTORY · SETTINGS работает (якоря / внешние ссылки).
+- [ ] Статистика: при живом оракуле `https://enrg-oracle.onrender.com/api/v1/stats` — бейдж LIVE; при недоступности — DEMO-заглушки с анимацией SYNC.
+- [ ] Секции лендинга отображаются на десктопе, планшете и телефоне.
+- [ ] Legacy-страницы `/legacy/whitepaper.html` и `/legacy/technical-overview.html` открываются.
 
 ## Деплой (коротко)
-- Render: branch=main, root='.', build=`npm install --omit=dev`, start=`node server.js`, health=`/api/v1/stats`
-- Добавить FOUNDER_KEY как Secret в Render → Environment → Add Secret Variable
+- GitHub Pages через Actions (`.github/workflows/deploy.yml`): push в `main`.
+- CNAME `enrg.network` копируется из `public/` в `dist/`.
+- В настройках репозитория → Pages источник должен быть «GitHub Actions».
+
+## Безопасность
+- [ ] В коммите нет реальных секретов.
+- [ ] Внешние ссылки используют `rel="noopener noreferrer"`.
 
 ## PR Checklist (для мёрджа)
-- [ ] Smoke-test пройден
-- [ ] Secrets проверены
-- [ ] Health check на проде OK
+- [ ] Smoke-test пройден (`npm run build`)
+- [ ] Ссылки проверены
 - [ ] Release notes обновлены
+
