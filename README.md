@@ -1,77 +1,70 @@
-# ENRG — Токенизация энергии будущего
+# ENRG — Tokenization of Future Energy
 
-Футуристический лендинг-портал экосистемы **Axis/ENRG**: тёмный фон, неон,
-голограммы и частицы. Главная цель лендинга — провести пользователя в PWA
-**Axis Connect** («Подключить устройство») и показать живую статистику
-экосистемы.
+Futuristic landing portal for the **Axis/ENRG** ecosystem: dark theme, neon,
+holograms, and particles. The main goal of the landing is to guide users to the
+**Axis Connect** PWA ("Connect Device") and display live ecosystem statistics.
 
-## Стек
+## Tech Stack
 
 - **React 19 + TypeScript + Vite 8**
 - **Tailwind CSS v4** (`@tailwindcss/vite`)
-- **Framer Motion** — появление секций, анимированные счётчики
-- **Canvas-частицы** — фоновая сеть (без Three.js, лёгкий вес)
-- **Шрифты**: Space Grotesk + JetBrains Mono (локальные, через `@fontsource`)
+- **Framer Motion** — section animations, animated counters
+- **Canvas Particles** — background network (no Three.js, lightweight)
+- **Fonts**: Space Grotesk + JetBrains Mono (local, via `@fontsource`)
 
-## Структура
-
-```
+## Structure
 src/
-  main.tsx, App.tsx            — точка входа, сборка секций
-  config.ts                    — ссылки (Axis Connect, оракул, docs) и параметры SRC
-  index.css, effects.css       — Tailwind-тема, неон/голограмма/кнопки
-  lib/
-    stats.ts                   — fetch статистики с оракула + fallback (demo) + таймаут
-    useAnimatedNumber.ts       — анимированные числа и форматирование
-  components/
-    Particles.tsx              — фон-частицы (canvas)
-    Navbar.tsx                 — меню HOME·DASHBOARD·MINTING·HISTORY·SETTINGS
-    Hero.tsx                   — голографический логотип + живая панель энергии
-    Stats.tsx                  — статистика экосистемы (кВт·ч / устройства / SRC)
-    HowItWorks.tsx             — 3 шага: Подключи → Докажи → Зарабатывай
-    Tokenomics.tsx             — экономика SRC, распределение, множители
-    Partners.tsx               — Solana, ESP32, Rust, TypeScript
-    Cta.tsx                    — «Начать» / «Скачать приложение» → Axis Connect
-    Footer.tsx
-  ui.tsx                       — SectionHeading, HoloCard, StatusChip, Logo…
+main.tsx, App.tsx — entry point, section assembly
+config.ts — links (Axis Connect, oracle, docs) and SRC params
+index.css, effects.css — Tailwind theme, neon/hologram/buttons
+lib/
+stats.ts — fetch stats from oracle + fallback (demo) + timeout
+useAnimatedNumber.ts — animated numbers and formatting
+components/
+Particles.tsx — background particles (canvas)
+Navbar.tsx — menu HOME·DASHBOARD·MINTING·HISTORY·SETTINGS
+Hero.tsx — holographic logo + live energy panel
+Stats.tsx — ecosystem stats (kWh / devices / SRC)
+HowItWorks.tsx — 3 steps: Connect → Prove → Earn
+Tokenomics.tsx — SRC economics, distribution, multipliers
+Partners.tsx — Solana, ESP32, Rust, TypeScript
+Cta.tsx — "Start" / "Download App" → Axis Connect
+Footer.tsx
+ui.tsx — SectionHeading, HoloCard, StatusChip, Logo…
 public/
-  logo.svg, CNAME              — Pages-фавикон и домен enrg.network
-  legacy/                      — старые статические страницы (whitepaper, docs, dashboard)
-```
+logo.svg, CNAME — Pages favicon and enrg.network domain
+legacy/ — legacy static pages (whitepaper, docs, dashboard)
 
-## Связка с Axis-connect
+text
 
-- Кнопки **«Подключить устройство»**, **«Скачать приложение»**, **«Начать»** и
-  пункты меню **DASHBOARD / SETTINGS** открывают PWA в новом табе:
+## Axis-connect Integration
+
+- Buttons **"Connect Device"**, **"Download App"**, **"Start"** and
+  menu items **DASHBOARD / SETTINGS** open the PWA in a new tab:
   `https://antongrid.github.io/Axis-connect/`.
-- **Axis Connect** остаётся самостоятельным PWA — лендинг не содержит его кода.
+- **Axis Connect** remains an independent PWA — the landing does not include its code.
 
-## Статистика экосистемы
+## Ecosystem Statistics
 
-- Эндпоинт: `GET https://enrg-oracle.onrender.com/api/v1/stats`
-  (CORS разрешён для `enrg.network` и `localhost`).
-- Ответ: `{ total_energy_mwh, active_producers, total_supply }`.
-- Лендинг показывает: сгенерировано энергии (кВт·ч), активных устройств,
-  начислено SRC. Обновление — раз в 60 с, таймаут запроса — 12 с.
-- Если API недоступен — отображаются **заглушки** с пометкой `DEMO` и
-  анимацией «SYNC · загрузка данных» (см. `src/lib/stats.ts`).
+- Endpoint: `GET https://enrg-oracle.onrender.com/api/v1/stats`
+  (CORS allowed for `enrg.network` and `localhost`).
+- Response: `{ total_energy_mwh, active_producers, total_supply }`.
+- Landing shows: energy generated (kWh), active devices, SRC minted.
+  Updates every 60s, request timeout 12s.
+- If API is unavailable — **fallback** with `DEMO` badge and
+  "SYNC · loading data" animation (see `src/lib/stats.ts`).
 
-## Запуск
+## Run Locally
 
 ```bash
 npm install
-npm run dev       # dev-сервер Vite
-npm run build     # typecheck + production-сборка в dist/
-npm run preview   # превью сборки
-```
+npm run dev       # Vite dev server
+npm run build     # typecheck + production build to dist/
+npm run preview   # preview the build
+Deployment
+GitHub Pages via Actions (.github/workflows/deploy.yml): npm ci →
+npm run build → upload dist/ → deploy-pages. CNAME (enrg.network)
+is copied from public/. For Pages deployment to work, repository settings
+must have "GitHub Actions" as the source.
 
-## Деплой
-
-GitHub Pages через Actions (`.github/workflows/deploy.yml`): `npm ci` →
-`npm run build` → upload `dist/` → `deploy-pages`. CNAME (`enrg.network`)
-копируется из `public/`. Для работы Pages-деплоя в настройках репозитория
-должен быть включён источник «GitHub Actions».
-
----
-
-**© 2026 ENRG Protocol.** The protocol is governed. The protocol is not owned.
+© 2026 ENRG Protocol. The protocol is governed. The protocol is not owned.
