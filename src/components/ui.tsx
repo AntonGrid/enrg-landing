@@ -1,4 +1,5 @@
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useSpring } from "framer-motion";
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 
 /** Заголовок секции с неоновой линией. */
@@ -19,31 +20,66 @@ export function SectionHeading({
       transition={{ duration: 0.6, ease: "easeOut" }}
       className="mx-auto mb-14 max-w-3xl text-center"
     >
-      <span className="badge-neon mb-4">{kicker}</span>
-      <h2 className="mt-4 font-display text-3xl font-bold uppercase tracking-tight text-slate-100 sm:text-4xl lg:text-5xl">
+      <span className="badge-neon mb-4 animate-flicker">{kicker}</span>
+      <h2 className="heading-scan title-glow mt-4 font-display text-3xl font-bold uppercase tracking-tight text-slate-100 sm:text-4xl lg:text-5xl">
         {title} {accent ? <span className="holo-text">{accent}</span> : null}
       </h2>
-      <div className="mx-auto mt-6 h-px w-40 bg-gradient-to-r from-transparent via-neon/70 to-transparent" />
+      <div className="neon-divider mx-auto mt-6 w-40" />
     </motion.div>
   );
 }
 
-/** Неоновая панель-карточка с угловыми рамками. */
+/** Неоновая панель-карточка: свечение + бегущая рамка на hover + опциональный 3D-tilt. */
 export function HoloCard({
   children,
   className = "",
   glow = false,
+  tilt = false,
+  tiltMax = 5,
 }: {
   children: ReactNode;
   className?: string;
   glow?: boolean;
+  tilt?: boolean;
+  tiltMax?: number;
 }) {
-  return (
+  const card = (
     <div
-      className={`corner-frame relative holo-panel rounded-lg ${glow ? "holo-panel--glow" : ""} ${className}`}
+      className={`border-flow corner-frame relative holo-panel rounded-lg transition-transform duration-300 hover:-translate-y-1.5 ${glow ? "holo-panel--glow" : ""} ${className}`}
     >
       {children}
     </div>
+  );
+  if (!tilt) return card;
+  return (
+    <TiltCard max={tiltMax} className="h-full">
+      {card}
+    </TiltCard>
+  );
+}
+
+/** Неоновая кнопка-ссылка (основной/ghost вариант). */
+export function NeonLink({
+  href,
+  children,
+  variant = "neon",
+  className = "",
+}: {
+  href: string;
+  children: ReactNode;
+  variant?: "neon" | "ghost";
+  className?: string;
+}) {
+  const isExternal = href.startsWith("http");
+  return (
+    <a
+      href={href}
+      target={isExternal ? "_blank" : undefined}
+      rel={isExternal ? "noopener noreferrer" : undefined}
+      className={`${variant === "neon" ? "btn-neon" : "btn-ghost"} ${className}`}
+    >
+      {children}
+    </a>
   );
 }
 
@@ -112,13 +148,64 @@ export function ExternalIcon({ className = "" }: { className?: string }) {
   );
 }
 
-/** Логотип ENRG (голографический текст). */
+/** 3D-наклон за курсором (desktop + no-reduced-motion). */
+export function TiltCard({
+  children,
+  className = "",
+  max = 8,
+  scale = 1.02,
+}: {
+  children: ReactNode;
+  className?: string;
+  max?: number;
+  scale?: number;
+}) {
+  const [enabled, setEnabled] = useState(false);
+  const rx = useMotionValue(0);
+  const ry = useMotionValue(0);
+  const s = useSpring(1, { stiffness: 220, damping: 18 });
+
+  useEffect(() => {
+    const fine = window.matchMedia("(pointer: fine)").matches;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    setEnabled(fine && !reduce);
+  }, []);
+
+  const onMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!enabled) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width - 0.5;
+    const py = (e.clientY - rect.top) / rect.height - 0.5;
+    ry.set(px * max * 2);
+    rx.set(-py * max * 2);
+    s.set(scale);
+  };
+
+  const onLeave = () => {
+    rx.set(0);
+    ry.set(0);
+    s.set(1);
+  };
+
+  return (
+    <motion.div
+      onMouseMove={onMove}
+      onMouseLeave={onLeave}
+      style={{ rotateX: rx, rotateY: ry, scale: s, transformPerspective: 1000 }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/** Логотип ENRG (голографический текст + RGB-глитч). */
 export function Logo({ size = "md" }: { size?: "sm" | "md" | "xl" }) {
   const textSize =
     size === "xl" ? "text-7xl sm:text-8xl lg:text-9xl" : size === "md" ? "text-3xl" : "text-xl";
   return (
     <span
-      className={`holo-text font-display font-bold uppercase tracking-[0.18em] ${textSize} ${size === "xl" ? "animate-flicker" : ""}`}
+      className={`holo-text font-display font-bold uppercase tracking-[0.18em] ${textSize} ${size === "xl" ? "rgb-split" : ""}`}
     >
       ENRG
     </span>

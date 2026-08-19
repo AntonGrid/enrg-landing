@@ -1,0 +1,77 @@
+/** Энергетическое ядро-реактор позади логотипа ENRG. */
+export default function EnergyCore() {
+  return (
+    <div
+      className="pointer-events-none absolute left-1/2 top-[32%] h-[560px] w-[560px] -translate-x-1/2 -translate-y-1/2 sm:h-[680px] sm:w-[680px]"
+      aria-hidden="true"
+    >
+      {/* Пульсирующее ядро */}
+      <div
+        className="absolute left-1/2 top-1/2 h-28 w-28"
+        style={{
+          transform: "translate(-50%, -50%)",
+          borderRadius: "9999px",
+          background:
+            "radial-gradient(circle, rgba(103,232,249,0.95), rgba(34,211,238,0.35) 45%, transparent 70%)",
+          boxShadow:
+            "0 0 50px 12px rgba(34,211,238,0.4), 0 0 120px 40px rgba(124,58,237,0.22)",
+          animation: "core-pulse 3s ease-in-out infinite",
+        }}
+      />
+
+      {/* Внешнее свечение conic */}
+      <div
+        className="absolute left-1/2 top-1/2 h-[420px] w-[420px] sm:h-[520px] sm:w-[520px]"
+        style={{
+          transform: "translate(-50%, -50%)",
+          borderRadius: "9999px",
+          background:
+            "conic-gradient(from 0deg, transparent, rgba(34,211,238,0.32), transparent 28%)",
+          animation: "spin-slow 8s linear infinite",
+          filter: "blur(5px)",
+          WebkitMaskImage: "radial-gradient(circle, transparent 42%, black 64%)",
+          maskImage: "radial-gradient(circle, transparent 42%, black 64%)",
+        }}
+      />
+
+      {/* Орбита 1: спутник на кольце */}
+      <div
+        className="absolute left-1/2 top-1/2 h-[340px] w-[340px] sm:h-[420px] sm:w-[420px]"
+        style={{
+          transform: "translate(-50%, -50%)",
+          borderRadius: "9999px",
+          border: "1px solid rgba(103,232,249,0.28)",
+          animation: "spin-slow 12s linear infinite",
+        }}
+      >
+        <span className="absolute -top-1 left-1/2 h-2 w-2 -translate-x-1/2 rounded-full bg-neon-soft shadow-[0_0_14px_rgba(103,232,249,1)]" />
+      </div>
+
+      {/* Орбита 2: пунктирная, реверс */}
+      <div
+        className="absolute left-1/2 top-1/2 h-[250px] w-[250px] sm:h-[300px] sm:w-[300px]"
+        style={{
+          transform: "translate(-50%, -50%)",
+          borderRadius: "9999px",
+          border: "1.5px dashed rgba(167,139,250,0.45)",
+          animation: "spin-slow 18s linear infinite reverse",
+        }}
+      >
+        <span className="absolute right-0 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-cyber shadow-[0_0_14px_rgba(167,139,250,1)]" />
+      </div>
+
+      {/* Крошечные орбитальные спутники */}
+      <div
+        className="absolute left-1/2 top-1/2 h-[480px] w-[480px] sm:h-[600px] sm:w-[600px]"
+        style={{
+          transform: "translate(-50%, -50%)",
+          borderRadius: "9999px",
+          animation: "spin-slow 26s linear infinite",
+        }}
+      >
+        <span className="absolute left-1/2 top-0 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-lime/90 shadow-[0_0_10px_rgba(163,230,53,0.9)]" />
+        <span className="absolute bottom-8 left-3 h-1 w-1 rounded-full bg-neon-soft/80" />
+      </div>
+    </div>
+  );
+}

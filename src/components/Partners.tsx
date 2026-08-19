@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import type { ReactNode } from "react";
-import { SectionHeading } from "./ui";
+import { SectionHeading, TiltCard } from "./ui";
 
 function SolanaLogo() {
   return (
@@ -43,19 +43,22 @@ export default function Partners() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
               transition={{ duration: 0.55, delay: i * 0.1, ease: "easeOut" }}
-              className="group flex items-center gap-4 rounded-lg border border-line bg-panel/60 p-5 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-neon/40 hover:shadow-[0_0_24px_rgba(34,211,238,0.15)]"
             >
-              <span className="text-neon-soft transition-transform duration-300 group-hover:scale-110">
-                {partner.icon}
-              </span>
-              <span>
-                <span className="block font-display text-lg font-bold uppercase tracking-wider text-slate-100">
-                  {partner.name}
-                </span>
-                <span className="block font-mono text-[10px] uppercase tracking-widest text-slate-500">
-                  {partner.tag}
-                </span>
-              </span>
+              <TiltCard max={8} className="h-full">
+                <div className="group flex h-full items-center gap-4 rounded-lg border border-line bg-panel/60 p-5 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-neon/40 hover:shadow-[0_0_24px_rgba(34,211,238,0.15)]">
+                  <span className="text-neon-soft transition-transform duration-300 group-hover:scale-110">
+                    {partner.icon}
+                  </span>
+                  <span>
+                    <span className="block font-display text-lg font-bold uppercase tracking-wider text-slate-100">
+                      {partner.name}
+                    </span>
+                    <span className="block font-mono text-[10px] uppercase tracking-widest text-slate-500">
+                      {partner.tag}
+                    </span>
+                  </span>
+                </div>
+              </TiltCard>
             </motion.div>
           ))}
         </div>

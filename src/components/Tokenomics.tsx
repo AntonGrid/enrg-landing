@@ -23,7 +23,7 @@ export default function Tokenomics() {
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
-            <HoloCard className="h-full p-7" glow>
+            <HoloCard className="h-full p-7" glow tilt tiltMax={5}>
               <div className="flex items-baseline gap-3">
                 <span className="holo-text font-mono text-6xl font-bold">{TOKENOMICS.ticker}</span>
               </div>
@@ -43,7 +43,7 @@ export default function Tokenomics() {
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
           >
-            <HoloCard className="h-full p-7">
+            <HoloCard className="h-full p-7" tilt tiltMax={5}>
               <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-slate-500">
                 Максимальное предложение
               </div>
@@ -89,7 +89,7 @@ export default function Tokenomics() {
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
           >
-            <HoloCard className="h-full p-7">
+            <HoloCard className="h-full p-7" tilt tiltMax={5}>
               <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-slate-500">
                 Распределение начислений
               </div>

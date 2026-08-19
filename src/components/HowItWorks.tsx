@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { LINKS } from "../config";
-import { ExternalIcon, HoloCard, SectionHeading } from "./ui";
+import { ExternalIcon, HoloCard, SectionHeading, TiltCard } from "./ui";
 
 const STEPS = [
   {
@@ -41,30 +41,32 @@ export default function HowItWorks() {
               viewport={{ once: true, margin: "-60px" }}
               transition={{ duration: 0.6, delay: i * 0.14, ease: "easeOut" }}
             >
-              <HoloCard className="group h-full p-7 transition-transform duration-300 hover:-translate-y-1">
-                <div className="flex items-center justify-between">
-                  <span className={`font-mono text-4xl font-bold tracking-tight ${step.color} [text-shadow:0_0_18px_rgba(103,232,249,0.35)]`}>
-                    {step.num}
-                  </span>
-                  <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-slate-600">
-                    STEP
-                  </span>
-                </div>
-                <h3 className="mt-6 font-display text-xl font-bold uppercase tracking-wider text-slate-100">
-                  {step.title}
-                </h3>
-                <p className="mt-3 text-sm leading-relaxed text-slate-400">{step.desc}</p>
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {step.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded border border-neon/20 bg-neon/5 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-neon-soft"
-                    >
-                      {tag}
+              <TiltCard max={6} className="h-full">
+                <HoloCard className="group h-full p-7">
+                  <div className="flex items-center justify-between">
+                    <span className={`font-mono text-4xl font-bold tracking-tight ${step.color} [text-shadow:0_0_18px_rgba(103,232,249,0.35)]`}>
+                      {step.num}
                     </span>
-                  ))}
-                </div>
-              </HoloCard>
+                    <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-slate-600">
+                      STEP
+                    </span>
+                  </div>
+                  <h3 className="mt-6 font-display text-xl font-bold uppercase tracking-wider text-slate-100">
+                    {step.title}
+                  </h3>
+                  <p className="mt-3 text-sm leading-relaxed text-slate-400">{step.desc}</p>
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    {step.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="rounded border border-neon/20 bg-neon/5 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-neon-soft"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </HoloCard>
+              </TiltCard>
             </motion.div>
           ))}
         </div>

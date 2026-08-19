@@ -15,7 +15,13 @@ function NavLink({
   onClick?: () => void;
 }) {
   const classes =
-    "font-mono text-[12px] uppercase tracking-[0.22em] text-slate-400 transition-colors duration-300 hover:text-neon-soft hover:[text-shadow:0_0_12px_rgba(103,232,249,0.6)]";
+    "group relative font-mono text-[12px] uppercase tracking-[0.22em] text-slate-400 transition-colors duration-300 hover:text-neon-soft hover:[text-shadow:0_0_12px_rgba(103,232,249,0.6)]";
+  const underline = (
+    <span
+      aria-hidden="true"
+      className="absolute -bottom-1.5 left-0 h-px w-0 bg-gradient-to-r from-neon via-cyber to-neon bg-[length:200%_100%] transition-all duration-300 group-hover:w-full"
+    />
+  );
   if (external) {
     return (
       <a
@@ -27,12 +33,14 @@ function NavLink({
       >
         {label}
         <ExternalIcon className="ml-1 inline h-3 w-3 opacity-60" />
+        {underline}
       </a>
     );
   }
   return (
     <a href={href} className={classes} onClick={onClick}>
       {label}
+      {underline}
     </a>
   );
 }

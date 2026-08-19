@@ -18,7 +18,7 @@ export default function Cta() {
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.7, ease: "easeOut" }}
-          className="corner-frame holo-panel relative overflow-hidden rounded-xl px-6 py-14 text-center sm:px-12 sm:py-16"
+          className="border-flow corner-frame holo-panel relative overflow-hidden rounded-xl px-6 py-14 text-center sm:px-12 sm:py-16"
         >
           <Particles density={0.5} />
           <div className="grid-backdrop" />

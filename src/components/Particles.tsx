@@ -29,6 +29,8 @@ export default function Particles({ density = 1 }: { density?: number }) {
     let particles: Particle[] = [];
     let width = 0;
     let height = 0;
+    let mouseX = -9999;
+    let mouseY = -9999;
 
     const colors = ["34,211,238", "167,139,250", "163,230,53"];
 
@@ -62,6 +64,18 @@ export default function Particles({ density = 1 }: { density?: number }) {
       for (const p of particles) {
         p.x += p.vx;
         p.y += p.vy;
+
+        // Курсор: лёгкое отталкивание при приближении
+        const mdx = p.x - mouseX;
+        const mdy = p.y - mouseY;
+        const md2 = mdx * mdx + mdy * mdy;
+        if (md2 < 3600 && md2 > 0.01) {
+          const dist = Math.sqrt(md2);
+          const force = (60 - dist) / 60;
+          p.x += (mdx / dist) * force * 1.6;
+          p.y += (mdy / dist) * force * 1.6;
+        }
+
         if (p.x < -20) p.x = width + 20;
         if (p.x > width + 20) p.x = -20;
         if (p.y < -20) p.y = height + 20;
@@ -86,6 +100,23 @@ export default function Particles({ density = 1 }: { density?: number }) {
             ctx.lineTo(b.x, b.y);
             ctx.stroke();
           }
+        }
+      }
+
+      // Линии к курсору
+      const mouseLink = 170;
+      for (const p of particles) {
+        const dx = p.x - mouseX;
+        const dy = p.y - mouseY;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < mouseLink * mouseLink) {
+          const alpha = (1 - Math.sqrt(d2) / mouseLink) * 0.2;
+          ctx.strokeStyle = `rgba(167,139,250,${alpha})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(mouseX, mouseY);
+          ctx.stroke();
         }
       }
 
@@ -117,6 +148,17 @@ export default function Particles({ density = 1 }: { density?: number }) {
       }
     };
 
+    const onMouseMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      mouseX = e.clientX - rect.left;
+      mouseY = e.clientY - rect.top;
+    };
+
+    const onMouseLeave = () => {
+      mouseX = -9999;
+      mouseY = -9999;
+    };
+
     build();
     if (reduceMotion) {
       onResize();
@@ -125,9 +167,13 @@ export default function Particles({ density = 1 }: { density?: number }) {
     }
 
     window.addEventListener("resize", onResize);
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseleave", onMouseLeave);
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", onResize);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseleave", onMouseLeave);
     };
   }, [density]);
 

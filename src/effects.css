@@ -111,7 +111,7 @@
 
   /* --- Кнопки --- */
   .btn-neon {
-    @apply relative inline-flex items-center justify-center gap-2 font-mono font-medium uppercase tracking-widest text-sm px-6 py-3 rounded-md transition-all duration-300 cursor-pointer select-none;
+    @apply relative inline-flex items-center justify-center gap-2 font-mono font-medium uppercase tracking-widest text-sm px-6 py-3 rounded-md transition-all duration-300 cursor-pointer select-none overflow-hidden;
     color: #ecfeff;
     background: linear-gradient(135deg, rgba(34, 211, 238, 0.18), rgba(124, 58, 237, 0.18));
     border: 1px solid rgba(103, 232, 249, 0.45);

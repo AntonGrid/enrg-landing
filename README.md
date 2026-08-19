@@ -9,8 +9,30 @@ holograms, and particles. The main goal of the landing is to guide users to the
 - **React 19 + TypeScript + Vite 8**
 - **Tailwind CSS v4** (`@tailwindcss/vite`)
 - **Framer Motion** — section animations, animated counters
-- **Canvas Particles** — background network (no Three.js, lightweight)
+- **Canvas Particles** — background network reacting to cursor (no Three.js)
 - **Fonts**: Space Grotesk + JetBrains Mono (local, via `@fontsource`)
+
+## "Energy of the Future" — visual effects
+
+- **Holographic boot screen** — "INITIALIZING ENRG CORE…" sequence on load
+- **Energy core** — pulsing reactor with 3 orbiting rings behind the logo
+- **Aurora background** — drifting neon clouds + film grain across the page
+- **CRT scanlines** — subtle holographic texture over the whole site
+- **Cursor glow** — neon halo following the mouse (desktop only)
+- **Scroll progress** — neon bar at the top of the page
+- **3D tilt** — hero panel and cards lean toward the cursor
+- **Hero parallax** — content and panel move at different speeds on scroll
+- **Terminal HUD ticker** — live status line in the hero
+- **RGB glitch** — periodic RGB-split on the logo
+- **Moving grid** — animated holographic grid in the Hero
+- **Neon marquee** — infinite scrolling protocol-terms ribbon
+- **Flowing borders** — conic-gradient card borders on hover
+- **Shimmer buttons** — light sweep across primary CTAs
+- **Floating HUD chips** and **blinking panel corners**
+- **Particles** link to the cursor and are repelled by it
+
+All effects live in `src/animations.css` and `src/effects.css`; with
+`prefers-reduced-motion` they are disabled automatically.
 
 ## Structure
 src/
