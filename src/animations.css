@@ -1,8 +1,8 @@
 /* ============================================================
-   ENRG — «энергия будущего»: живые фоны, ореолы, глитчи
+   ENRG — energy of the future: living backdrops, halos, glitches
    ============================================================ */
 
-/* --- Aurora: дрейфующие неоновые облака за всей страницей --- */
+/* --- Aurora: drifting neon clouds behind the whole page --- */
 .aurora {
   position: fixed;
   inset: 0;
@@ -71,7 +71,7 @@
   }
 }
 
-/* --- Движущаяся голо-сетка --- */
+/* --- Moving holo-grid --- */
 .grid-backdrop--move {
   animation: grid-move 3.2s linear infinite;
 }
@@ -85,7 +85,7 @@
   }
 }
 
-/* --- Вращающийся энергетический ореол --- */
+/* --- Rotating energy halo --- */
 .holo-ring {
   position: absolute;
   border-radius: 9999px;
@@ -125,7 +125,7 @@
   }
 }
 
-/* --- CRT-сканлайны поверх всего сайта --- */
+/* --- CRT scanlines over the whole site --- */
 .scanlines {
   position: fixed;
   inset: 0;
@@ -139,7 +139,7 @@
   opacity: 0.7;
 }
 
-/* --- RGB-сплит (глитч) для больших надписей --- */
+/* --- RGB-split glitch for large text --- */
 .rgb-split {
   animation: rgb-split 5.5s steps(1) infinite;
 }
@@ -161,7 +161,7 @@
   }
 }
 
-/* --- Плавающие элементы --- */
+/* --- Floating elements --- */
 .floaty {
   animation: floaty 6s ease-in-out infinite;
 }
@@ -180,7 +180,7 @@
   }
 }
 
-/* --- Бегущая неоновая рамка (hover) --- */
+/* --- Flowing neon border on hover --- */
 @property --angle {
   syntax: "<angle>";
   initial-value: 0deg;
@@ -231,7 +231,7 @@
   }
 }
 
-/* --- Shimmer-блик на кнопках --- */
+/* --- Shimmer sweep on buttons --- */
 .btn-neon::after {
   content: "";
   position: absolute;
@@ -245,7 +245,7 @@
 .btn-neon:hover::after {
   transform: translateX(130%) skewX(-12deg);
 }
-/* --- Marquee: бегущая строка терминов протокола --- */
+/* --- Marquee: scrolling protocol terms --- */
 .marquee {
   overflow: hidden;
   mask-image: linear-gradient(90deg, transparent, black 12%, black 88%, transparent);
@@ -271,7 +271,7 @@
   }
 }
 
-/* --- Пульсирующее свечение заголовков --- */
+/* --- Pulsing heading glow --- */
 .title-glow {
   animation: title-glow 4.5s ease-in-out infinite;
 }
@@ -288,7 +288,7 @@
   }
 }
 
-/* --- Мигающий курсор печати --- */
+/* --- Blinking typing caret --- */
 .typing-caret::after {
   content: "▍";
   margin-left: 4px;
@@ -307,7 +307,7 @@
   }
 }
 
-/* --- Пульсирующая точка статуса --- */
+/* --- Pulsing status dot --- */
 .pulse-dot {
   position: relative;
   display: inline-block;
@@ -323,7 +323,7 @@
   opacity: 0;
 }
 
-/* --- Пульсация энергетического ядра --- */
+/* --- Energy core pulse --- */
 @keyframes core-pulse {
   0%,
   100% {
@@ -336,7 +336,7 @@
   }
 }
 
-/* --- Скан-луч по заголовку секции --- */
+/* --- Scan beam across section heading --- */
 @keyframes heading-scan {
   0% {
     transform: translateX(-100%);
@@ -362,7 +362,7 @@
   animation: heading-scan 3.8s ease-in-out infinite;
 }
 
-/* --- Появление заголовка по буквам (ослепительный focus) --- */
+/* --- Letter-by-letter heading entrance --- */
 @keyframes letter-in {
   from {
     opacity: 0;
@@ -387,7 +387,7 @@
   }
 }
 
-/* --- HUD-рамка панелей --- */
+/* --- HUD frame for panels --- */
 .hud-frame {
   position: relative;
 }
@@ -407,7 +407,7 @@
   pointer-events: none;
 }
 
-/* --- Анимированная градиентная полоска-разделитель --- */
+/* --- Animated gradient divider strip --- */
 .neon-divider {
   position: relative;
   height: 1px;
@@ -426,7 +426,7 @@
   }
 }
 
-/* --- Плавное появление фона секций --- */
+/* --- Smooth section backdrop entrance --- */
 @keyframes rise-fade {
   from {
     opacity: 0;
@@ -438,7 +438,7 @@
   }
 }
 
-/* --- Мерцание угловых маркеров HUD --- */
+/* --- Blinking HUD corner markers --- */
 .hud-corner {
   position: absolute;
   width: 14px;

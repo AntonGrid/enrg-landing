@@ -73,7 +73,7 @@ export default function Navbar() {
         </a>
 
         {/* Desktop menu */}
-        <nav className="hidden items-center gap-7 lg:flex" aria-label="Основная навигация">
+        <nav className="hidden items-center gap-7 lg:flex" aria-label="Primary navigation">
           {NAV_ITEMS.map((item) => (
             <NavLink key={item.label} {...item} />
           ))}
@@ -86,7 +86,7 @@ export default function Navbar() {
             rel="noopener noreferrer"
             className="btn-neon !px-5 !py-2 !text-[12px]"
           >
-            Подключить устройство
+            Connect Device
             <ExternalIcon className="h-3.5 w-3.5" />
           </a>
         </div>
@@ -94,7 +94,7 @@ export default function Navbar() {
         {/* Mobile burger */}
         <button
           type="button"
-          aria-label={open ? "Закрыть меню" : "Открыть меню"}
+          aria-label={open ? "Close menu" : "Open menu"}
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
           className="flex h-10 w-10 items-center justify-center rounded-md border border-neon/25 text-neon-soft lg:hidden"
@@ -117,7 +117,7 @@ export default function Navbar() {
           exit={{ opacity: 0, height: 0 }}
           transition={{ duration: 0.25 }}
           className="border-t border-neon/15 bg-void/95 backdrop-blur-xl lg:hidden"
-          aria-label="Мобильная навигация"
+          aria-label="Mobile navigation"
         >
           <div className="flex flex-col gap-1 px-4 py-4">
             {NAV_ITEMS.map((item) => (
@@ -130,7 +130,7 @@ export default function Navbar() {
               className="btn-neon mt-3 w-full"
               onClick={() => setOpen(false)}
             >
-              Подключить устройство
+              Connect Device
               <ExternalIcon className="h-4 w-4" />
             </a>
           </div>

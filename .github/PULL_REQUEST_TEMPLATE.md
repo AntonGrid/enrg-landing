@@ -1,28 +1,28 @@
-## Описание изменений
-Кратко опишите, что сделано и зачем.
+## Description
+Briefly describe what was changed and why.
 
-## Изменённые файлы (ключевые)
-- (перечислить ключевые файлы)
+## Key changed files
+- (list key files)
 
-## Как тестировать (чек‑лист)
-- [ ] `npm run build` в `enrg-landing` проходит без ошибок.
-- [ ] Кнопка «Подключить устройство» ведёт на `https://antongrid.github.io/Axis-connect/` в новом табе.
-- [ ] Меню HOME · DASHBOARD · MINTING · HISTORY · SETTINGS работает (якоря / внешние ссылки).
-- [ ] Статистика: при живом оракуле `https://enrg-oracle.onrender.com/api/v1/stats` — бейдж LIVE; при недоступности — DEMO-заглушки с анимацией SYNC.
-- [ ] Секции лендинга отображаются на десктопе, планшете и телефоне.
-- [ ] Legacy-страницы `/legacy/whitepaper.html` и `/legacy/technical-overview.html` открываются.
+## How to test (checklist)
+- [ ] `npm run build` in `enrg-landing` passes without errors.
+- [ ] The "Connect Device" button opens `https://antongrid.github.io/Axis-connect/` in a new tab.
+- [ ] Menu HOME · DASHBOARD · MINTING · HISTORY · SETTINGS works (anchors / external links).
+- [ ] Stats: with a live oracle `https://enrg-oracle.onrender.com/api/v1/stats` — LIVE badge; when unavailable — DEMO fallback with SYNC animation.
+- [ ] Landing sections render on desktop, tablet and phone.
+- [ ] Legacy pages `/legacy/whitepaper.html` and `/legacy/technical-overview.html` open.
 
-## Деплой (коротко)
-- GitHub Pages через Actions (`.github/workflows/deploy.yml`): push в `main`.
-- CNAME `enrg.network` копируется из `public/` в `dist/`.
-- В настройках репозитория → Pages источник должен быть «GitHub Actions».
+## Deployment (short)
+- GitHub Pages via Actions (`.github/workflows/deploy.yml`): push to `main`.
+- CNAME `enrg.network` is copied from `public/` into `dist/`.
+- Repository Settings → Pages source must be "GitHub Actions".
 
-## Безопасность
-- [ ] В коммите нет реальных секретов.
-- [ ] Внешние ссылки используют `rel="noopener noreferrer"`.
+## Security
+- [ ] No real secrets are committed.
+- [ ] External links use `rel="noopener noreferrer"`.
 
-## PR Checklist (для мёрджа)
-- [ ] Smoke-test пройден (`npm run build`)
-- [ ] Ссылки проверены
-- [ ] Release notes обновлены
+## PR Checklist (for merge)
+- [ ] Smoke test passed (`npm run build`)
+- [ ] Links verified
+- [ ] Release notes updated
 

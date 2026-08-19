@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * Анимированное число: при изменении `value` плавно «добегает» до цели.
- * Поддерживает целые и дробные значения.
+ * Animated number: smoothly "catches up" to `value` when it changes.
+ * Supports integer and fractional values.
  */
 export function useAnimatedNumber(value: number, durationMs = 1200): number {
   const [display, setDisplay] = useState(value);
@@ -35,7 +35,7 @@ export function useAnimatedNumber(value: number, durationMs = 1200): number {
   return display;
 }
 
-/** Форматирование целого числа с разделителями (1 234 567). */
+/** Format an integer with thousand separators (1 234 567). */
 export function formatInt(n: number): string {
   return Math.round(n).toLocaleString("ru-RU");
 }

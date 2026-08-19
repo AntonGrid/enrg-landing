@@ -32,17 +32,17 @@ function StatDigit({
 const METRICS = [
   {
     key: "energy",
-    label: "Сгенерировано энергии",
-    hint: "верифицированная выработка экосистемы",
+    label: "Energy Generated",
+    hint: "verified ecosystem generation",
     prefix: "",
-    suffix: " кВт·ч",
+    suffix: " kWh",
     decimals: 0,
     accent: "text-neon-glow",
   },
   {
     key: "devices",
-    label: "Активных устройств",
-    hint: "подключено и производит энергию",
+    label: "Active Devices",
+    hint: "online and producing energy",
     prefix: "",
     suffix: "",
     decimals: 0,
@@ -50,8 +50,8 @@ const METRICS = [
   },
   {
     key: "src",
-    label: "Начислено SRC",
-    hint: "токены за доказанную энергию · 1 SRC = 1 МВт·ч",
+    label: "SRC Earned",
+    hint: "tokens for proven energy · 1 SRC = 1 MWh",
     prefix: "",
     suffix: " SRC",
     decimals: 0,
@@ -72,9 +72,9 @@ export default function Stats() {
     <section id="stats" className="relative scroll-mt-20 py-24 sm:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading
-          kicker="// Протокол в цифрах"
-          title="История"
-          accent="экосистемы"
+          kicker="// Protocol by numbers"
+          title="Ecosystem"
+          accent="History"
         />
 
         <div className="mb-6 flex justify-center">
@@ -82,10 +82,10 @@ export default function Stats() {
             tone={status === "live" ? "live" : status === "demo" ? "demo" : "sync"}
             label={
               status === "live"
-                ? "LIVE · данные оракула"
+                ? "LIVE · oracle data"
                 : status === "demo"
-                  ? "DEMO · оракул временно недоступен"
-                  : "SYNC · загрузка данных…"
+                  ? "DEMO · oracle temporarily unavailable"
+                  : "SYNC · loading data…"
             }
           />
         </div>

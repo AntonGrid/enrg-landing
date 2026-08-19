@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { LINKS, STATS } from "../config";
 
-/** Живая статистика экосистемы Axis/ENRG (оракул) или заглушка (demo). */
+/** Live Axis/ENRG ecosystem stats (oracle) or demo fallback. */
 export interface EcosystemStats {
-  /** Сгенерировано энергии, кВт·ч. */
+  /** Total generated energy, kWh. */
   totalEnergyKwh: number;
-  /** Количество активных устройств. */
+  /** Number of active devices. */
   activeDevices: number;
-  /** Начислено SRC (Supply). */
+  /** SRC earned (supply). */
   srcEarned: number;
 }
 
@@ -16,18 +16,18 @@ export type StatsStatus = "loading" | "live" | "demo";
 export interface StatsResult {
   status: StatsStatus;
   stats: EcosystemStats;
-  /** Форматированная метка источника данных. */
+  /** Human-readable data source label. */
   sourceLabel: string;
 }
 
 const EMPTY: EcosystemStats = { totalEnergyKwh: 0, activeDevices: 0, srcEarned: 0 };
 
-/** Заглушки, когда публичный API недоступен. */
+/** Fallback values used when the public API is unavailable. */
 function demoStats(): StatsResult {
   return {
     status: "demo",
     stats: { ...STATS.demo },
-    sourceLabel: "DEMO · оракул недоступен",
+    sourceLabel: "DEMO · oracle unavailable",
   };
 }
 
@@ -67,15 +67,15 @@ async function fetchOracle(signal: AbortSignal): Promise<StatsResult> {
 }
 
 /**
- * Подписка на статистику экосистемы.
- * Возвращает fallback-заглушки с флагом `demo`, если API недоступен,
- * и периодически обновляет данные (STATS.refreshMs).
+ * Subscription to ecosystem stats.
+ * Returns demo fallback values with the `demo` flag if the API is unavailable,
+ * and periodically refreshes data (STATS.refreshMs).
  */
 export function useEcosystemStats(): StatsResult {
   const [result, setResult] = useState<StatsResult>({
     status: "loading",
     stats: EMPTY,
-    sourceLabel: "SYNC · загрузка данных",
+    sourceLabel: "SYNC · loading data",
   });
 
   const load = useCallback(async () => {
@@ -84,7 +84,7 @@ export function useEcosystemStats(): StatsResult {
       const next = await fetchOracle(controller.signal);
       setResult(next);
     } catch {
-      // Оракул недоступен (offline / спящий free-tier): заглушки + анимация загрузки.
+      // Oracle unavailable (offline / sleeping free tier): demo values + loading animation.
       setResult((prev) => (prev.status === "loading" ? demoStats() : prev));
     }
     return () => controller.abort();
@@ -114,7 +114,7 @@ export function useEcosystemStats(): StatsResult {
   return result;
 }
 
-/** Одиночный запрос (для hero-панели): 1 запрос, не трогает глобальный цикл. */
+/** One-shot request (for the hero panel): 1 request, does not touch the global loop. */
 export async function fetchEcosystemStatsOnce(): Promise<StatsResult> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), STATS.timeoutMs);

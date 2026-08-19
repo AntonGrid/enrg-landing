@@ -5,22 +5,22 @@ import { ExternalIcon, HoloCard, SectionHeading, TiltCard } from "./ui";
 const STEPS = [
   {
     num: "01",
-    title: "Подключи",
-    desc: "Отсканируй QR энерго-устройства в Axis Connect. Некастодиальный кошелёк создаётся локально за 10 секунд — ничего не нужно устанавливать.",
+    title: "Connect",
+    desc: "Scan the energy device QR in Axis Connect. A non-custodial wallet is created locally in 10 seconds — nothing to install.",
     tags: ["QR", "PWA", "Ed25519"],
     color: "text-neon-soft",
   },
   {
     num: "02",
-    title: "Докажи",
-    desc: "Прошивка ESP32 подписывает показания энергии каждые N минут. Доказательства проверяются on-chain через публичный реестр устройств.",
+    title: "Prove",
+    desc: "The ESP32 firmware signs energy readings every N minutes. Proofs are verified on-chain through a public device registry.",
     tags: ["PoP", "ESP32", "Anchor"],
     color: "text-cyber",
   },
   {
     num: "03",
-    title: "Зарабатывай",
-    desc: "Верифицированная выработка накапливается и конвертируется в SRC по курсу 1 SRC = 1 МВт·ч. 85% — тебе, 15% — в протокол.",
+    title: "Earn",
+    desc: "Verified output accumulates and converts into SRC at 1 SRC = 1 MWh. 85% goes to you, 15% to the protocol.",
     tags: ["SRC", "85%", "Staking"],
     color: "text-lime",
   },
@@ -30,7 +30,7 @@ export default function HowItWorks() {
   return (
     <section id="how" className="relative scroll-mt-20 border-t border-line py-24 sm:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <SectionHeading kicker="// Протокол" title="Как это" accent="работает" />
+        <SectionHeading kicker="// Protocol" title="How it" accent="works" />
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {STEPS.map((step, i) => (
@@ -84,7 +84,7 @@ export default function HowItWorks() {
             rel="noopener noreferrer"
             className="btn-neon"
           >
-            Начать с первого шага
+            Start with step one
             <ExternalIcon className="h-4 w-4" />
           </a>
         </motion.div>

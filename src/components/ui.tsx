@@ -2,7 +2,7 @@ import { motion, useMotionValue, useSpring } from "framer-motion";
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 
-/** Заголовок секции с неоновой линией. */
+/** Section heading with a neon divider line. */
 export function SectionHeading({
   kicker,
   title,
@@ -29,7 +29,7 @@ export function SectionHeading({
   );
 }
 
-/** Неоновая панель-карточка: свечение + бегущая рамка на hover + опциональный 3D-tilt. */
+/** Neon panel card: glow + flowing border on hover + optional 3D tilt. */
 export function HoloCard({
   children,
   className = "",
@@ -58,7 +58,7 @@ export function HoloCard({
   );
 }
 
-/** Неоновая кнопка-ссылка (основной/ghost вариант). */
+/** Neon link button (primary / ghost variant). */
 export function NeonLink({
   href,
   children,
@@ -83,7 +83,7 @@ export function NeonLink({
   );
 }
 
-/** Мерцающий индикатор статуса (LIVE / DEMO / SYNC). */
+/** Flickering status indicator (LIVE / DEMO / SYNC). */
 export function StatusChip({
   tone,
   label,
@@ -111,7 +111,7 @@ export function StatusChip({
   );
 }
 
-/** Ссылка «в новый таб». */
+/** Link that opens in a new tab. */
 export function ExternalLink({
   href,
   children,
@@ -128,7 +128,7 @@ export function ExternalLink({
   );
 }
 
-/** Иконка «внешняя ссылка». */
+/** External link icon. */
 export function ExternalIcon({ className = "" }: { className?: string }) {
   return (
     <svg
@@ -148,7 +148,7 @@ export function ExternalIcon({ className = "" }: { className?: string }) {
   );
 }
 
-/** 3D-наклон за курсором (desktop + no-reduced-motion). */
+/** 3D tilt that follows the cursor (desktop + no reduced motion). */
 export function TiltCard({
   children,
   className = "",
@@ -199,7 +199,7 @@ export function TiltCard({
   );
 }
 
-/** Логотип ENRG (голографический текст + RGB-глитч). */
+/** ENRG logo (holographic text + RGB glitch). */
 export function Logo({ size = "md" }: { size?: "sm" | "md" | "xl" }) {
   const textSize =
     size === "xl" ? "text-7xl sm:text-8xl lg:text-9xl" : size === "md" ? "text-3xl" : "text-xl";

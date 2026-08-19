@@ -1,37 +1,37 @@
-# Docker для ENRG Oracle
+# Docker for ENRG Oracle
 
-> Цель: локальный или продовый запуск oracle-сервера (`server.js`) в контейнере.
-> ВАЖНО: этот репозиторий (`enrg-landing`) содержит только документацию/примеры.
-> Код оракла живёт в отдельном репозитории (далее — «репозиторий оракла»,
-> корень: `package.json` + `server.js`). Docker-контекст сборки = корень репозитория оракла.
+> Goal: local or production run of the oracle server (`server.js`) in a container.
+> IMPORTANT: this repository (`enrg-landing`) contains only docs/examples.
+> The oracle code lives in a separate repository (referred to as "oracle repo",
+> root: `package.json` + `server.js`). The Docker build context is the oracle repo root.
 
-## Факты об оракла (для конфигурации)
+## Oracle facts (for configuration)
 
-| Параметр | Значение |
+| Parameter | Value |
 |---|---|
-| Порт | `3000` (переопределяется env `PORT`) |
+| Port | `3000` (overridable via env `PORT`) |
 | Healthcheck | `GET /api/v1/stats` → `{"total_energy_mwh":...,"active_producers":...}` |
-| Хранилище | SQLite `./enrg.db` (создаётся автоматически рядом с `server.js`) |
-| Нативные модули | `better-sqlite3` — требует компиляцию в Alpine (python3/make/g++) |
-| Секреты | `FOUNDER_KEY` — JSON-массив (64 числа) приватного ключа founder-кошелька. Передаётся ТОЛЬКО через env/secret. **НИКОГДА не коммитить и не логировать.** |
+| Storage | SQLite `./enrg.db` (auto-created next to `server.js`) |
+| Native modules | `better-sqlite3` — requires compilation on Alpine (python3/make/g++) |
+| Secrets | `FOUNDER_KEY` — JSON array (64 numbers) of the founder wallet private key. Passed ONLY via env/secret. **NEVER commit or log it.** |
 
-## Пример Dockerfile
+## Example Dockerfile
 
-Поместите в корень репозитория оракла как `Dockerfile`:
+Place in the oracle repo root as `Dockerfile`:
 
 ```dockerfile
 FROM node:18-alpine
 
-# build-инструменты для нативного модуля better-sqlite3
+# build tools for the native better-sqlite3 module
 RUN apk add --no-cache python3 make g++
 
 WORKDIR /app
 
-# Сначала зависимости — слой кэшируется при пересборке
+# Dependencies first — layer is cached on rebuilds
 COPY package.json package-lock.json ./
 RUN npm install --omit=dev
 
-# Исходники оракла
+# Oracle sources
 COPY server.js ./
 
 ENV PORT=3000
@@ -44,21 +44,21 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=15s --retries=3 \
 CMD ["node", "server.js"]
 ```
 
-### Сборка
+### Build
 
 ```bash
-# из корня репозитория оракла
+# from the oracle repo root
 docker build -t enrg-oracle:latest .
 ```
 
-### Запуск (docker run) с FOUNDER_KEY как env
+### Run (docker run) with FOUNDER_KEY as env
 
-`FOUNDER_KEY` — приватный ключ founder-кошелька. Передайте его **только** через переменную
-окружения. Ниже показан способ передачи, но НЕ сам ключ:
+`FOUNDER_KEY` — the founder wallet private key. Pass it **only** via an environment
+variable. The command below shows the passing mechanism, NOT the key itself:
 
 ```bash
-# Секрет берётся из окружения запускающей машины (например, уже задан в CI/Render).
-# НЕ вставляйте реальное значение прямо в команду.
+# The secret comes from the launching machine env (e.g. already set in CI/Render).
+# Do NOT paste the real value directly into the command.
 docker run -d --name enrg-oracle \
   -p 3000:3000 \
   -e PORT=3000 \
@@ -71,33 +71,34 @@ docker run -d --name enrg-oracle \
   enrg-oracle:latest
 ```
 
-Проверка:
+Verify:
 
 ```bash
 curl http://localhost:3000/api/v1/stats
-# ожидается: {"total_energy_mwh":0,"active_producers":0,"total_supply":0}
-docker logs enrg-oracle   # ищем: "🚀 Oracle server listening on port 3000"
+# expected: {"total_energy_mwh":0,"active_producers":0,"total_supply":0}
+docker logs enrg-oracle   # look for: "🚀 Oracle server listening on port 3000"
 ```
 
-## Персистентность SQLite
+## SQLite persistence
 
-`server.js` создаёт БД как `./enrg.db` (относительно рабочего каталога `/app`).
-Для сохранения данных между перезапусками смонтируйте том:
+`server.js` creates the DB as `./enrg.db` (relative to the working dir `/app`).
+To keep data across restarts, mount a volume:
 
 ```bash
-# варианты:
-# 1) файловый маунт (файл должен существовать):
+# options:
+# 1) file mount (the file must exist):
 #    docker run ... -v $(pwd)/enrg.db:/app/enrg.db ...
-# 2) named volume на каталог /app (перезапишет node_modules — потребуется
-#    повторный npm install внутри контейнера):
+# 2) named volume on /app (will overwrite node_modules — a re-run of
+#    npm install inside the container will be required):
 #    docker run ... -v oracle-data:/app ...
 ```
 
-Для локальной разработки удобнее docker-compose — см. `docker-compose-example.yaml`.
+For local development docker-compose is more convenient — see `docker-compose-example.yaml`.
 
-## Безопасность
+## Security
 
-- `FOUNDER_KEY` — секрет. Никогда не помещайте его в Dockerfile, compose-файл или git.
-- Если оракул запущен без `FOUNDER_KEY`, он предупреждает и работает в ограниченном режиме
-  (on-chain mint будет недоступен).
-- Способ добавить секрет на Render — в `render-deploy.md`.
+- `FOUNDER_KEY` is a secret. Never put it in the Dockerfile, compose file or git.
+- If the oracle runs without `FOUNDER_KEY`, it warns and runs in a restricted mode
+  (on-chain mint will be unavailable).
+- How to add the secret on Render — in `render-deploy.md`.
+

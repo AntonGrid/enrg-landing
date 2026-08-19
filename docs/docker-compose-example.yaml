@@ -1,22 +1,22 @@
-# Локальный дев-пример: ENRG Oracle через docker compose
+# Local dev example: ENRG Oracle via docker compose
 #
-# ВАЖНО:
-#   * .env.local НЕ коммитить в git! Добавьте его в .gitignore (см. ниже).
-#   * FOUNDER_KEY передаётся ТОЛЬКО через .env.local (или переменные окружения).
+# IMPORTANT:
+#   * Do NOT commit .env.local to git! Add it to .gitignore (see below).
+#   * FOUNDER_KEY is passed ONLY via .env.local (or environment variables).
 #
-# Пример .env.local (создать вручную рядом с этим файлом):
+# Example .env.local (create manually next to this file):
 #   PORT=3000
-#   FOUNDER_KEY=[1,2,3,...,64]   # <- НЕ вставляйте реальный ключ!
+#   FOUNDER_KEY=[1,2,3,...,64]   # <- Do NOT paste a real key!
 #
-# .gitignore (добавьте в корне проекта):
+# .gitignore (add at the project root):
 #   .env.local
 
 services:
   oracle:
     build:
-      # Контекст = корень репозитория оракла (package.json + server.js)
+      # Context = oracle repository root (package.json + server.js)
       context: ../../ENRG
-      # Пример Dockerfile — в docs/docker-oracle.md
+      # Example Dockerfile — in docs/docker-oracle.md
       dockerfile: Dockerfile
     container_name: enrg-oracle
     ports:
@@ -26,9 +26,9 @@ services:
     environment:
       PORT: 3000
     volumes:
-      # Mount исходников для hot-reload при разработке
+      # Mount sources for hot-reload during development
       - ../../ENRG:/app
-      # Сохранить node_modules из образа (не перезаписывать хост-каталогом)
+      # Keep node_modules from the image (do not overwrite with the host dir)
       - /app/node_modules
     restart: unless-stopped
     healthcheck:

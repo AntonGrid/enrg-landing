@@ -1,19 +1,18 @@
 /**
- * Единая конфигурация лендинга ENRG.
- * Источник истины по ссылкам и параметрам протокола.
+ * ENRG landing — single source of truth for links and protocol parameters.
  */
 
 export const LINKS = {
-  /** PWA Axis-connect (GitHub Pages) — открывается в новом табе. */
+  /** Axis-connect PWA (GitHub Pages) — opens in a new tab. */
   axisConnect: "https://antongrid.github.io/Axis-connect/",
 
-  /** Публичный оракл ENRG: CORS разрешён только для enrg.network и localhost. */
+  /** Public ENRG oracle: CORS is allowed for enrg.network and localhost only. */
   oracleStats: "https://enrg-oracle.onrender.com/api/v1/stats",
 
-  /** Документация Axis/ENRG Protocol. */
+  /** Axis/ENRG Protocol documentation. */
   docs: "https://github.com/AntonGrid/ENRG",
 
-  /** Легаси-страницы (сохранены в public/legacy). */
+  /** Legacy pages (kept in public/legacy). */
   whitepaper: "/legacy/whitepaper.html",
   technicalOverview: "/legacy/technical-overview.html",
 
@@ -24,36 +23,36 @@ export const LINKS = {
 };
 
 export const STATS = {
-  /** Заглушки, когда публичный API недоступен. */
+  /** Fallback values used when the public API is unavailable. */
   demo: {
     totalEnergyKwh: 65_000,
     activeDevices: 128,
     srcEarned: 8_420,
   },
-  /** Интервал live-обновления статистики (мс). */
+  /** Live stats refresh interval (ms). */
   refreshMs: 60_000,
-  /** Таймаут запроса к оракулу (мс). */
+  /** Oracle request timeout (ms). */
   timeoutMs: 12_000,
 };
 
 export const TOKENOMICS = {
   ticker: "SRC",
-  peg: "1 SRC = 1 MWh верифицированной энергии",
+  peg: "1 SRC = 1 MWh of verified energy",
   maxSupply: 1_000_000_000,
   producerShare: 85, // %
   protocolFee: 15, // %
   feeSplit: [
     { label: "Buyback", value: 20, color: "#22d3ee" },
-    { label: "Стейкинг", value: 40, color: "#a78bfa" },
+    { label: "Staking", value: 40, color: "#a78bfa" },
     { label: "DAO", value: 30, color: "#a3e635" },
     { label: "Emergency", value: 10, color: "#fbbf24" },
   ],
   sourceMultipliers: [
-    { source: "Солнце", key: "solar", value: 1.0 },
-    { source: "Ветер", key: "wind", value: 1.0 },
-    { source: "Гидро", key: "hydro", value: 1.0 },
-    { source: "Биогаз", key: "biogas", value: 0.8 },
-    { source: "Ископаемые", key: "fossil", value: 0.5 },
+    { source: "Solar", key: "solar", value: 1.0 },
+    { source: "Wind", key: "wind", value: 1.0 },
+    { source: "Hydro", key: "hydro", value: 1.0 },
+    { source: "Biogas", key: "biogas", value: 0.8 },
+    { source: "Fossil", key: "fossil", value: 0.5 },
   ],
 };
 
@@ -64,3 +63,4 @@ export const NAV_ITEMS = [
   { label: "HISTORY", href: "#stats", external: false },
   { label: "SETTINGS", href: LINKS.axisConnect, external: true },
 ] as const;
+

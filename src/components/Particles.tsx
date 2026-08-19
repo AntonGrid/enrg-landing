@@ -11,9 +11,9 @@ interface Particle {
 }
 
 /**
- * Фоновая сеть из частиц (canvas).
- * Лёгкая: ~60 частиц на десктоп, связи между соседями, неоновая палитра
- * cyan/violet. Отключается полностью при prefers-reduced-motion.
+ * Background particle network (canvas).
+ * Lightweight: ~60 particles on desktop, links between neighbors, neon palette
+ * cyan/violet. Fully disabled with prefers-reduced-motion.
  */
 export default function Particles({ density = 1 }: { density?: number }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -65,7 +65,7 @@ export default function Particles({ density = 1 }: { density?: number }) {
         p.x += p.vx;
         p.y += p.vy;
 
-        // Курсор: лёгкое отталкивание при приближении
+        // Cursor: gentle repulsion when close
         const mdx = p.x - mouseX;
         const mdy = p.y - mouseY;
         const md2 = mdx * mdx + mdy * mdy;
@@ -82,7 +82,7 @@ export default function Particles({ density = 1 }: { density?: number }) {
         if (p.y > height + 20) p.y = -20;
       }
 
-      // Связи
+      // Links between particles
       const linkDist = 130;
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
@@ -103,7 +103,7 @@ export default function Particles({ density = 1 }: { density?: number }) {
         }
       }
 
-      // Линии к курсору
+      // Links to the cursor
       const mouseLink = 170;
       for (const p of particles) {
         const dx = p.x - mouseX;
@@ -120,7 +120,7 @@ export default function Particles({ density = 1 }: { density?: number }) {
         }
       }
 
-      // Точки
+      // Dots
       for (const p of particles) {
         const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 4);
         glow.addColorStop(0, `rgba(${p.hue},${p.alpha})`);
@@ -137,7 +137,7 @@ export default function Particles({ density = 1 }: { density?: number }) {
     const onResize = () => {
       build();
       if (reduceMotion) {
-        // статичный кадр
+        // static frame
         ctx.clearRect(0, 0, width, height);
         for (const p of particles) {
           ctx.fillStyle = `rgba(${p.hue},${p.alpha})`;

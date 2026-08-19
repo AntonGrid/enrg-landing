@@ -22,7 +22,7 @@ const HUD_LINES = [
   "GRID UPTIME 99.98%",
 ];
 
-/** Терминальный HUD-тикер: строка меняется каждые 2.6 с. */
+/** Terminal HUD ticker: rotates lines every 2.6s. */
 function TerminalHud() {
   const [i, setI] = useState(0);
   useEffect(() => {
@@ -43,7 +43,7 @@ function TerminalHud() {
   );
 }
 
-/** Крупная цифра энергии в hero-панели. */
+/** Big energy counter in the hero panel. */
 function EnergyCounter({ value, loading }: { value: number; loading: boolean }) {
   const animated = useAnimatedNumber(loading ? 0 : value, 1600);
   return (
@@ -57,7 +57,7 @@ export default function Hero() {
   const { status, stats } = useEcosystemStats();
   const loading = status === "loading";
 
-  // Параллакс при скролле: контент уезжает медленнее, панель — быстрее
+  // Scroll parallax: content drifts slower, panel drifts faster
   const { scrollY } = useScroll();
   const yLeft = useTransform(scrollY, [0, 700], [0, -40]);
   const yRight = useTransform(scrollY, [0, 700], [0, 110]);
@@ -79,7 +79,7 @@ export default function Hero() {
       >
         {/* Left: holographic logo + tagline */}
         <div className="relative text-center lg:text-left">
-          {/* Энергетическое ядро позади логотипа */}
+          {/* Energy core behind the logo */}
           <EnergyCore />
 
           <motion.div {...fadeUp(0.05)} className="relative">
@@ -92,11 +92,11 @@ export default function Hero() {
           <motion.h1
             {...fadeUp(0.15)}
             className="relative flex flex-col items-center gap-3 lg:items-start"
-            aria-label="ENRG — токенизация энергии будущего"
+            aria-label="ENRG — tokenizing the energy of the future"
           >
             <Logo size="xl" />
             <span className="typing-caret mt-4 font-display text-2xl font-semibold uppercase tracking-[0.08em] text-slate-100 sm:text-3xl lg:text-4xl">
-              Токенизация <span className="holo-text holo-text--dim">энергии будущего</span>
+              Tokenizing <span className="holo-text holo-text--dim">Future Energy</span>
             </span>
           </motion.h1>
 
@@ -104,9 +104,9 @@ export default function Hero() {
             {...fadeUp(0.28)}
             className="relative mx-auto mt-6 max-w-xl text-base leading-relaxed text-slate-400 sm:text-lg lg:mx-0"
           >
-            Открытый протокол криптографически верифицируемой физической инфраструктуры.
-            Подключите энерго-устройство, докажите выработку — и накапливайте{" "}
-            <span className="text-neon-soft">SRC</span> за каждую верифицированную киловатт-час.
+            An open protocol for cryptographically verifiable physical infrastructure.
+            Connect an energy device, prove your output — and earn{" "}
+            <span className="text-neon-soft">SRC</span> for every verified kilowatt-hour.
           </motion.p>
 
           <motion.div
@@ -120,7 +120,7 @@ export default function Hero() {
               className="btn-neon w-full sm:w-auto"
             >
               <span className="relative z-10 flex items-center gap-2">
-                Подключить устройство
+                Connect Device
                 <ExternalIcon className="h-4 w-4" />
               </span>
             </a>
@@ -130,7 +130,7 @@ export default function Hero() {
               rel="noopener noreferrer"
               className="btn-ghost w-full sm:w-auto"
             >
-              Изучить протокол
+              Explore Protocol
             </a>
           </motion.div>
 
@@ -147,19 +147,19 @@ export default function Hero() {
           >
             <span className="pulse-dot inline-block h-1.5 w-1.5 rounded-full bg-lime text-lime" />
             <span className="text-neon-soft">PWA READY</span>
-            <span className="text-slate-700">·</span> работает офлайн
+            <span className="text-slate-700">·</span> works offline
             <span className="text-slate-700">·</span> Android / iOS / Desktop
           </motion.p>
         </div>
 
         {/* Right: live energy hologram panel */}
         <motion.div style={{ y: yRight }} className="relative">
-          {/* Плавающие HUD-чипы вокруг панели */}
+          {/* Floating HUD chips around the panel */}
           <div className="badge-neon floaty absolute -top-5 -left-4 z-10 hidden sm:inline-flex">
-            <span className="text-lime">▲</span> +0.4 кВт·ч · начислено
+            <span className="text-lime">▲</span> +0.4 kWh · earned
           </div>
           <div className="badge-neon floaty floaty--slow absolute -bottom-5 -right-3 z-10 hidden sm:inline-flex">
-            <span className="text-cyber">PoP</span> верифицировано
+            <span className="text-cyber">PoP</span> verified
           </div>
 
           <TiltCard max={5} scale={1.015} className="[transform-style:preserve-3d]">
@@ -170,7 +170,7 @@ export default function Hero() {
             >
 
           <div className="hud-frame holo-panel holo-panel--glow relative overflow-hidden rounded-xl p-8 sm:p-10">
-            {/* HUD-углы */}
+            {/* HUD corners */}
             <span className="hud-corner hud-corner--tl" aria-hidden="true" />
             <span className="hud-corner hud-corner--tr" aria-hidden="true" />
             <span className="hud-corner hud-corner--bl" aria-hidden="true" />
@@ -179,9 +179,9 @@ export default function Hero() {
 
             <div className="flex items-start justify-between">
               <div className="font-mono text-[11px] uppercase tracking-[0.3em] text-slate-500">
-                Сгенерировано
+                Generated
                 <br />
-                <span className="text-neon-soft">энергии экосистемы</span>
+                <span className="text-neon-soft">ecosystem energy</span>
               </div>
               <StatusChip
                 tone={status === "live" ? "live" : status === "demo" ? "demo" : "sync"}
@@ -193,7 +193,7 @@ export default function Hero() {
               <EnergyCounter value={stats.totalEnergyKwh} loading={loading} />
             </div>
             <div className="mt-2 font-mono text-xs uppercase tracking-[0.35em] text-slate-500">
-              кВт · ч
+              kWh
             </div>
 
             <div className="mt-8 grid grid-cols-2 gap-4 border-t border-neon/15 pt-6">
@@ -206,7 +206,7 @@ export default function Hero() {
                   )}
                 </div>
                 <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.25em] text-slate-500">
-                  активных устройств
+                  active devices
                 </div>
               </div>
               <div>
@@ -218,7 +218,7 @@ export default function Hero() {
                   )}
                 </div>
                 <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.25em] text-slate-500">
-                  начислено SRC
+                  SRC earned
                 </div>
               </div>
             </div>
@@ -226,10 +226,10 @@ export default function Hero() {
             <div className="mt-6 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-slate-600">
               <span className="pulse-dot inline-block h-1.5 w-1.5 rounded-full bg-lime text-lime" />
               {status === "live"
-                ? "Данные обновляются с оракула каждые 60 с"
+                ? "Live sync from the oracle every 60s"
                 : status === "demo"
-                  ? "Оракул временно недоступен · демо-данные"
-                  : "Синхронизация с сетью…"}
+                  ? "Oracle temporarily unavailable · demo data"
+                  : "Syncing with the network…"}
             </div>
             </div>
             </motion.div>

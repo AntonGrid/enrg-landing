@@ -13,7 +13,7 @@ export default function Tokenomics() {
       className="relative scroll-mt-20 border-t border-line py-24 sm:py-28"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <SectionHeading kicker="// Экономика" title="Токеномика" accent="SRC" />
+        <SectionHeading kicker="// Economics" title="SRC" accent="Tokenomics" />
 
         {/* Main facts */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -31,8 +31,8 @@ export default function Tokenomics() {
                 {TOKENOMICS.peg}
               </p>
               <p className="mt-4 text-sm leading-relaxed text-slate-400">
-                Токен — экономическое следствие успешной проверки доказательства. Эмиссия
-                асимптотическая: сложность выпуска растёт с каждым начислением.
+                The token is the economic consequence of a successfully verified proof.
+                Issuance is asymptotic: minting difficulty grows with every reward.
               </p>
             </HoloCard>
           </motion.div>
@@ -45,18 +45,18 @@ export default function Tokenomics() {
           >
             <HoloCard className="h-full p-7" tilt tiltMax={5}>
               <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-slate-500">
-                Максимальное предложение
+                Maximum supply
               </div>
               <div className="mt-3 font-mono text-3xl font-bold text-cyber-glow tabular-nums sm:text-4xl">
                 {supplyShort(TOKENOMICS.maxSupply)}
               </div>
               <div className="mt-1 font-mono text-xs uppercase tracking-[0.25em] text-slate-500">
-                SRC · масштаб 9
+                SRC · scale 9
               </div>
 
               <div className="mt-6 border-t border-neon/15 pt-6">
                 <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
-                  Начисления по типу источника
+                  Rewards by energy source
                 </div>
                 <div className="mt-4 space-y-3">
                   {TOKENOMICS.sourceMultipliers.map((m) => (
@@ -91,7 +91,7 @@ export default function Tokenomics() {
           >
             <HoloCard className="h-full p-7" tilt tiltMax={5}>
               <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-slate-500">
-                Распределение начислений
+                Reward distribution
               </div>
 
               {/* Producer / Protocol split */}
@@ -110,8 +110,8 @@ export default function Tokenomics() {
                 </div>
               </div>
               <div className="mt-2 flex justify-between font-mono text-[10px] uppercase tracking-widest text-slate-500">
-                <span>Производителю</span>
-                <span>Протокол</span>
+                <span>Producer</span>
+                <span>Protocol</span>
               </div>
 
               {/* Fee split */}
@@ -141,7 +141,7 @@ export default function Tokenomics() {
                 ))}
               </div>
               <p className="mt-6 font-mono text-[10px] leading-relaxed uppercase tracking-wider text-slate-600">
-                15% протокольного сбора → Buyback · Стейкинг · DAO · Emergency
+                15% protocol fee → Buyback · Staking · DAO · Emergency
               </p>
             </HoloCard>
           </motion.div>

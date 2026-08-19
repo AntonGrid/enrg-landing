@@ -1,7 +1,7 @@
 @reference "./index.css";
 
 @layer components {
-  /* --- Голографический текст (логотип/заголовки) --- */
+  /* --- Holographic text (logo / headings) --- */
   .holo-text {
     background: linear-gradient(
       100deg,
@@ -23,7 +23,7 @@
     filter: drop-shadow(0 0 8px rgba(103, 232, 249, 0.2));
   }
 
-  /* --- Неоновое свечение текста --- */
+  /* --- Neon text glow --- */
   .text-neon-glow {
     text-shadow:
       0 0 10px rgba(103, 232, 249, 0.8),
@@ -36,7 +36,7 @@
       0 0 32px rgba(124, 58, 237, 0.4);
   }
 
-  /* --- Голографическая панель --- */
+  /* --- Holographic panel --- */
   .holo-panel {
     position: relative;
     border: 1px solid rgba(103, 232, 249, 0.16);
@@ -65,7 +65,7 @@
     animation: var(--animate-pulse-glow);
   }
 
-  /* --- Сетка (голографический фон) --- */
+  /* --- Grid (holographic backdrop) --- */
   .grid-backdrop {
     position: absolute;
     inset: 0;
@@ -78,7 +78,7 @@
     -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 30%, black 30%, transparent 75%);
   }
 
-  /* --- Бегущая линия сканирования (голограмма) --- */
+  /* --- Scanning beam (hologram) --- */
   .scan-beam {
     position: absolute;
     left: 0;
@@ -109,7 +109,7 @@
     border-width: 0 1.5px 1.5px 0;
   }
 
-  /* --- Кнопки --- */
+  /* --- Buttons --- */
   .btn-neon {
     @apply relative inline-flex items-center justify-center gap-2 font-mono font-medium uppercase tracking-widest text-sm px-6 py-3 rounded-md transition-all duration-300 cursor-pointer select-none overflow-hidden;
     color: #ecfeff;
@@ -141,7 +141,7 @@
     transform: translateY(-2px);
   }
 
-  /* --- Мерцающий бейдж --- */
+  /* --- Flickering badge --- */
   .badge-neon {
     @apply inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.25em] px-3 py-1.5 rounded-full;
     color: #67e8f9;
@@ -149,7 +149,7 @@
     background: rgba(34, 211, 238, 0.06);
   }
 
-  /* --- Скелетон загрузки цифр --- */
+  /* --- Digit loading skeleton --- */
   .skeleton-digit {
     @apply inline-block font-mono;
     background: linear-gradient(

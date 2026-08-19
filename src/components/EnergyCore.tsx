@@ -1,11 +1,11 @@
-/** Энергетическое ядро-реактор позади логотипа ENRG. */
+/** Energy core reactor behind the ENRG logo. */
 export default function EnergyCore() {
   return (
     <div
       className="pointer-events-none absolute left-1/2 top-[32%] h-[560px] w-[560px] -translate-x-1/2 -translate-y-1/2 sm:h-[680px] sm:w-[680px]"
       aria-hidden="true"
     >
-      {/* Пульсирующее ядро */}
+      {/* Pulsing core */}
       <div
         className="absolute left-1/2 top-1/2 h-28 w-28"
         style={{
@@ -19,7 +19,7 @@ export default function EnergyCore() {
         }}
       />
 
-      {/* Внешнее свечение conic */}
+      {/* Outer conic glow */}
       <div
         className="absolute left-1/2 top-1/2 h-[420px] w-[420px] sm:h-[520px] sm:w-[520px]"
         style={{
@@ -34,7 +34,7 @@ export default function EnergyCore() {
         }}
       />
 
-      {/* Орбита 1: спутник на кольце */}
+      {/* Orbit 1: satellite on the ring */}
       <div
         className="absolute left-1/2 top-1/2 h-[340px] w-[340px] sm:h-[420px] sm:w-[420px]"
         style={{
@@ -47,7 +47,7 @@ export default function EnergyCore() {
         <span className="absolute -top-1 left-1/2 h-2 w-2 -translate-x-1/2 rounded-full bg-neon-soft shadow-[0_0_14px_rgba(103,232,249,1)]" />
       </div>
 
-      {/* Орбита 2: пунктирная, реверс */}
+      {/* Orbit 2: dashed, reversed */}
       <div
         className="absolute left-1/2 top-1/2 h-[250px] w-[250px] sm:h-[300px] sm:w-[300px]"
         style={{
@@ -60,7 +60,7 @@ export default function EnergyCore() {
         <span className="absolute right-0 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-cyber shadow-[0_0_14px_rgba(167,139,250,1)]" />
       </div>
 
-      {/* Крошечные орбитальные спутники */}
+      {/* Tiny orbital satellites */}
       <div
         className="absolute left-1/2 top-1/2 h-[480px] w-[480px] sm:h-[600px] sm:w-[600px]"
         style={{

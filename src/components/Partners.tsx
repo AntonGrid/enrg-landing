@@ -21,19 +21,19 @@ function ChipIcon({ label }: { label: string }) {
 const PARTNERS: { name: string; tag: string; icon: ReactNode }[] = [
   {
     name: "Solana",
-    tag: "первая референсная реализация",
+    tag: "first reference implementation",
     icon: <SolanaLogo />,
   },
-  { name: "ESP32", tag: "железо · Ed25519 · PZEM-004T", icon: <ChipIcon label="32" /> },
-  { name: "Rust", tag: "смарт-контракты · Anchor", icon: <ChipIcon label="Rs" /> },
-  { name: "TypeScript", tag: "PWA · оракул · SDK", icon: <ChipIcon label="TS" /> },
+  { name: "ESP32", tag: "hardware · Ed25519 · PZEM-004T", icon: <ChipIcon label="32" /> },
+  { name: "Rust", tag: "smart contracts · Anchor", icon: <ChipIcon label="Rs" /> },
+  { name: "TypeScript", tag: "PWA · oracle · SDK", icon: <ChipIcon label="TS" /> },
 ];
 
 export default function Partners() {
   return (
     <section id="partners" className="relative scroll-mt-20 border-t border-line py-24 sm:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <SectionHeading kicker="// Стек" title="Построено на" accent="открытых стандартах" />
+        <SectionHeading kicker="// Stack" title="Built on" accent="open standards" />
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {PARTNERS.map((partner, i) => (
@@ -70,7 +70,7 @@ export default function Partners() {
           transition={{ duration: 0.8, delay: 0.3 }}
           className="mt-10 text-center font-mono text-[11px] uppercase tracking-[0.25em] text-slate-600"
         >
-          Протокол определяет поведение, а не конкретную реализацию
+          The protocol defines behavior, not a specific implementation
         </motion.p>
       </div>
     </section>

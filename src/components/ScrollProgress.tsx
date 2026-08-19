@@ -1,6 +1,6 @@
 import { motion, useScroll } from "framer-motion";
 
-/** Неоновая полоса прогресса скролла поверх шапки. */
+/** Neon scroll progress bar above the header. */
 export default function ScrollProgress() {
   const { scrollYProgress } = useScroll();
   return (

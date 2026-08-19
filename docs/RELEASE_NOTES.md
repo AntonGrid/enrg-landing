@@ -1,59 +1,53 @@
 # ENRG Landing — Release Notes
 
-> Дата: 2026-08-14 · Ветка: `main` · Репозиторий: `enrg-landing`
-> Статус: MVP готов к локальному тестированию и ручному деплою оракла.
+> Date: 2026-08-19 · Branch: `main` · Repository: `enrg-landing`
+> Status: v2.0 — futuristic portal, deployed to GitHub Pages (enrg.network).
 
-## Что сделано
+## v2.0 — Futuristic portal (React + Vite)
 
-Превращение статичного лендинга в рабочий dApp MVP (6 коммитов в `main`):
+Complete rebuild of the static landing into a modern SPA:
 
-| Коммит | Содержимое |
+| Commit | Content |
 |---|---|
-| `wallet: add Phantom connect/disconnect and header UI` | Подключение Phantom (`window.solana`), персистентность pubkey в `localStorage["enrg_pubkey"]`, кнопка Connect/Disconnect, короткий адрес (4…4), ссылка «Install Phantom» → phantom.app |
-| `register: generate device keypair in-browser and register to oracle` | Кнопка «Register device (simulate)»: генерация Ed25519 (tweetnacl) в браузере, сохранение device в localStorage, `POST /api/v1/device/register` |
-| `proof: add simulate-proof flow, sign message in-browser and submit to oracle` | Подпись `msg = device_id\|timestamp\|energyWh\|nonce` на клиенте, `POST /api/v1/proof/submit`, nonce/energy в localStorage, обработка InvalidNonce/invalid signature |
-| `dashboard: improve polling with backoff, add manual refresh and wallet SRC balance` | Live-polling `/stats` с экспоненциальным бэкоффом (2s→60s), кнопка Refresh, throttle статусов устройств (5s), SRC balance через RPC |
-| `ui: add neon/glass theme variables and basic styles for hero and cards` | `--accent/--accent-2/--glass-*`, `.glass-panel`, neon glow кнопок, animated hero gradient |
-| `docs: add docker and Render deployment guides for oracle (no secrets)` | `docs/docker-oracle.md`, `docs/render-deploy.md`, `docs/docker-compose-example.yaml` |
+| `9c46461` | **React + Vite + Tailwind + Framer Motion rebuild.** Neon particle background, animated ecosystem stats (kWh / devices / SRC), tokenomics, 3-step flow, partners, GitHub Actions deploy, legacy pages moved to `/legacy/`. |
+| `a055f33` | **"Site from the future".** Holographic boot screen, energy core reactor, cursor glow, scroll progress, 3D tilt cards, hero parallax, terminal HUD ticker, neon marquee, particles reacting to the cursor. |
+| `fe46095` | **Deploy fix.** Switched GitHub Pages to "GitHub Actions" source; `.nojekyll`; empty-commit trigger. |
+| `92d87ca` | **Full English.** UI, code comments, README, PR template and docs translated to English for the international launch. |
 
-## Ключевые файлы
+## Key files
 
-- `js/wallet.js`, `js/wallet-ui.js` — Phantom-адаптер и header UI
-- `js/device-store.js`, `js/device-proof.js`, `js/simulate-buttons.js` — устройства, подпись proof, кнопки
-- `js/api.js` — `postRegisterDevice`, `postProof`, `getDeviceStatus`, `getWalletTokenBalance`, `fetchProtocolStats`
-- `js/config.js` — конфиг; `oracleUrl` переопределяется через `window.ENRG_ORACLE_URL`
-- `index.html`, `register.html`, `dashboard.html`, `css/style.css`
+- `src/App.tsx` — global layers (aurora, scanlines, cursor glow, scroll progress, boot screen)
+- `src/components/` — Hero, Stats, HowItWorks, Tokenomics, Partners, Cta, Footer, Navbar, Marquee, EnergyCore, Particles, BootScreen
+- `src/lib/stats.ts` — oracle stats with demo fallback + timeout
+- `src/config.ts` — links (Axis Connect, oracle, docs) and SRC tokenomics
+- `.github/workflows/deploy.yml` — GitHub Pages deploy on push to `main`
+- `public/legacy/` — old static pages (whitepaper, docs, dashboard, register)
 
-## Как тестировать
+## How to test
 
-1. Запустить локальный оракл (`node server.js` в репозитории оракла, порт 3000).
-2. `index.html` → «Connect Wallet» (Phantom) → pubkey в шапке.
-3. `register.html` → «Register device (simulate)» → устройство появляется в списке.
-4. «Simulate proof (250 Wh)» → `ok:true, accumulated`, nonce/energy растут.
-5. `dashboard.html` → stats каждые 15s, кнопка Refresh, SRC balance.
-6. Backoff: остановить оракл → toast «retrying in Ns» (2s→…→60s), после перезапуска — сброс.
+1. `npm install && npm run dev`
+2. Verify the holographic boot screen appears and fades out.
+3. Hero: energy core orbits, cursor glow, 3D tilt on the energy panel.
+4. Stats: with a live oracle → LIVE badge; when unavailable → DEMO fallback with SYNC animation.
+5. "Connect Device" opens `https://antongrid.github.io/Axis-connect/` in a new tab.
+6. Check responsiveness on desktop, tablet and phone.
 
-## Чек-лист для ревьюеров
+## Reviewer checklist
 
-- [ ] Phantom connect/disconnect работает, pubkey сохраняется в localStorage и восстанавливается после перезагрузки
-- [ ] Без Phantom кнопка показывает «Install Phantom» и ведёт на phantom.app
-- [ ] Регистрация устройства: ключи генерируются в браузере, секретный ключ не уходит на сервер
-- [ ] Proof: подпись формируется клиентом, `msg` совпадает с серверным форматом (`device_id|timestamp|energyWh|nonce`)
-- [ ] InvalidNonce — автоматический синк nonce с ораклом; invalid signature — nonce не инкрементируется
-- [ ] Dashboard: stats обновляются, кнопка Refresh работает, backoff корректно растёт и сбрасывается
-- [ ] SRC balance: без токенов → 0, с токенами → значение
-- [ ] UI: glass/neon применён без изменения JS-селекторов
-- [ ] Доки: `docs/` не содержат секретов, инструкции по Render полные
-- [ ] В git нет `FOUNDER_KEY` и других секретов (проверка `grep -rniE "founder.?key.?[=:][[:space:]]*\\[" docs/` — пусто)
+- [ ] `npm run build` passes without errors
+- [ ] All texts are in English (UI, docs, comments)
+- [ ] Stats fallback works when the oracle is offline
+- [ ] GitHub Pages source is set to "GitHub Actions"
+- [ ] No secrets committed (`FOUNDER_KEY` is not in the repo)
 
-## Деплой (ручная операция)
+## Oracle deployment (manual)
 
-Прод-деплой оракла выполняется вручную (нужен доступ к Render + секрет `FOUNDER_KEY`):
+Prod oracle deployment is manual (Render access + `FOUNDER_KEY` secret required):
 
-1. Render → New → Web Service → репозиторий оракла, branch `main`, root `.`
+1. Render → New → Web Service → oracle repo, branch `main`, root `.`
 2. Build: `npm install --omit=dev` · Start: `node server.js` · Health: `/api/v1/stats`
-3. Render → Environment → **Add Secret Variable** → `FOUNDER_KEY` = JSON-массив ключа
-4. После деплоя: `curl https://<render-url>/api/v1/stats`
-5. Во фронтенде: `<script>window.ENRG_ORACLE_URL="https://<render-url>/api/v1";</script>` перед подключением модулей
+3. Render → Environment → **Add Secret Variable** → `FOUNDER_KEY` = JSON key array
+4. After deploy: `curl https://<render-url>/api/v1/stats`
+5. In the frontend: `window.ENRG_ORACLE_URL` override before loading modules
 
-Подробнее: `docs/docker-oracle.md`, `docs/render-deploy.md`.
+Details: `docs/docker-oracle.md`, `docs/render-deploy.md`.

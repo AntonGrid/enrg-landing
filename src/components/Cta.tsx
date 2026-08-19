@@ -4,9 +4,9 @@ import Particles from "./Particles";
 import { ExternalIcon } from "./ui";
 
 const INSTALL_STEPS = [
-  "Открой Axis Connect в браузере",
-  "Нажми «Установить приложение» в меню браузера",
-  "Отсканируй QR устройства — всё готово",
+  "Open Axis Connect in your browser",
+  "Tap “Install app” in the browser menu",
+  "Scan the device QR — you're done",
 ];
 
 export default function Cta() {
@@ -25,14 +25,14 @@ export default function Cta() {
           <div className="scan-beam" />
 
           <div className="relative">
-            <span className="badge-neon mb-6">Экосистема Axis · ENRG</span>
+            <span className="badge-neon mb-6">Axis · ENRG ecosystem</span>
             <h2 className="font-display text-3xl font-bold uppercase tracking-tight text-slate-100 sm:text-4xl lg:text-5xl">
-              Готовы <span className="holo-text">производить энергию</span>
-              <br className="hidden sm:block" /> будущего?
+              Ready to <span className="holo-text">produce the energy</span>
+              <br className="hidden sm:block" /> of the future?
             </h2>
             <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-slate-400 sm:text-lg">
-              Подключите первое устройство за 10 секунд. Кошелёк, сканирование QR и
-              on-chain регистрация — в одном PWA, без установки серверов.
+              Connect your first device in 10 seconds. Wallet, QR scanning and
+              on-chain registration — all in one PWA, no servers to set up.
             </p>
 
             <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -42,7 +42,7 @@ export default function Cta() {
                 rel="noopener noreferrer"
                 className="btn-neon w-full sm:w-auto sm:!px-10 sm:!py-4 sm:!text-base"
               >
-                Начать
+                Start
                 <ExternalIcon className="h-5 w-5" />
               </a>
               <a
@@ -51,7 +51,7 @@ export default function Cta() {
                 rel="noopener noreferrer"
                 className="btn-ghost w-full sm:w-auto"
               >
-                Скачать приложение
+                Download the App
                 <ExternalIcon className="h-4 w-4" />
               </a>
             </div>

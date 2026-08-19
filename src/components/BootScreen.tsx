@@ -3,14 +3,14 @@ import { useEffect, useState } from "react";
 import { Logo } from "./ui";
 
 const BOOT_STEPS = [
-  "ИНИЦИАЛИЗАЦИЯ ЯДРА ENRG",
-  "СИНХРОНИЗАЦИЯ RPC · DEVNET",
-  "ЗАГРУЗКА ГОЛОГРАФИЧЕСКОГО ИНТЕРФЕЙСА",
+  "INITIALIZING ENRG CORE",
+  "SYNCING RPC · DEVNET",
+  "LOADING HOLOGRAPHIC INTERFACE",
 ];
 
 const BOOT_MS = 2000;
 
-/** Голографический boot-экран при загрузке. */
+/** Holographic boot screen shown on load. */
 export default function BootScreen({ onDone }: { onDone: () => void }) {
   const [progress, setProgress] = useState(0);
 
@@ -42,9 +42,9 @@ export default function BootScreen({ onDone }: { onDone: () => void }) {
       className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-void"
       exit={{ opacity: 0, scale: 1.06, filter: "blur(6px)" }}
       transition={{ duration: 0.5, ease: "easeInOut" }}
-      aria-label="Загрузка ENRG"
+      aria-label="Loading ENRG"
     >
-      {/* фоновые свечения */}
+      {/* ambient glow */}
       <div className="pointer-events-none absolute left-1/2 top-1/2 h-[70vmin] w-[70vmin] -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyber-deep/20 blur-[100px]" />
       <div className="grid-backdrop grid-backdrop--move" />
 

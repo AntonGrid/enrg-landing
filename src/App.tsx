@@ -16,7 +16,7 @@ import ScrollProgress from "./components/ScrollProgress";
 export default function App() {
   const [booting, setBooting] = useState(true);
 
-  // Страница не должна скроллиться под boot-экраном
+  // Prevent scrolling under the boot screen
   useEffect(() => {
     document.body.style.overflow = booting ? "hidden" : "";
     return () => {
@@ -30,7 +30,7 @@ export default function App() {
         {booting && <BootScreen onDone={() => setBooting(false)} />}
       </AnimatePresence>
 
-      {/* Глобальные слои: дрейфующий aurora-фон + CRT-сканлайны + свечение курсора */}
+      {/* Global layers: drifting aurora background + CRT scanlines + cursor glow */}
       <div className="aurora" aria-hidden="true">
         <span className="aurora__blob aurora__blob--1" />
         <span className="aurora__blob aurora__blob--2" />

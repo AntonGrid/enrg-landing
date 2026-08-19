@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-/** Неоновое свечение, следующее за курсором (только десктоп). */
+/** Neon glow that follows the cursor (desktop only). */
 export default function CursorGlow() {
   const ref = useRef<HTMLDivElement | null>(null);
 

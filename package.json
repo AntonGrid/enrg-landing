@@ -3,7 +3,7 @@
   "private": true,
   "version": "2.0.0",
   "type": "module",
-  "description": "ENRG — футуристический портал токенизации энергии будущего. Ведёт пользователя в PWA Axis-connect.",
+  "description": "ENRG — futuristic portal for tokenizing the energy of the future. Guides users into the Axis-connect PWA.",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",

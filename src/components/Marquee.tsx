@@ -3,7 +3,7 @@ const TERMS = [
   "ESP32",
   "ED25519",
   "SRC",
-  "1 SRC = 1 МВт·ч",
+  "1 SRC = 1 MWH",
   "PROOF OF PRODUCTION",
   "PWA",
   "RUST",
@@ -26,7 +26,7 @@ function Term() {
   );
 }
 
-/** Бесконечная неоновая лента терминов протокола. */
+/** Infinite neon ribbon of protocol terms. */
 export default function Marquee() {
   return (
     <div className="marquee relative border-y border-neon/10 bg-panel/50 py-5 backdrop-blur-sm">

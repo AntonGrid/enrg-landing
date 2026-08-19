@@ -1,73 +1,74 @@
-# Деплой ENRG Oracle на Render (Web Service)
+# Deploy ENRG Oracle on Render (Web Service)
 
-> Пошаговая инструкция для запуска oracle-сервера на Render.com.
-> Все секреты (FOUNDER_KEY) добавляются ТОЛЬКО через UI Render — ручная операция.
-> Никаких ключей в репозитории не храним.
+> Step-by-step guide to run the oracle server on Render.com.
+> All secrets (FOUNDER_KEY) are added ONLY via the Render UI — manual operation.
+> We never store keys in the repository.
 
-## 0. Подготовка
+## 0. Prerequisites
 
-- Репозиторий оракла запушен на GitHub (ветка `main`, в корне `package.json` + `server.js`).
-- Аккаунт на [render.com](https://render.com) и подключённый GitHub.
+- The oracle repo is pushed to GitHub (branch `main`, root contains `package.json` + `server.js`).
+- An account on [render.com](https://render.com) with GitHub connected.
 
-## 1. Создание Web Service
+## 1. Create a Web Service
 
 1. Render Dashboard → **New** → **Web Service**.
-2. Выберите **Connect** у репозитория оракла из списка GitHub.
-3. Заполните настройки:
+2. Click **Connect** next to the oracle repo in the GitHub list.
+3. Fill in the settings:
 
-| Поле | Значение |
+| Field | Value |
 |---|---|
 | Name | `enrg-oracle` |
 | Branch | `main` |
-| Root Directory | `.` (сервер в корне) — если деплоите вложенный сервис, укажите его каталог |
+| Root Directory | `.` (server at root) — if you deploy a nested service, point to its directory |
 | Runtime | `Node` |
 | Build Command | `npm install --omit=dev` |
 | Start Command | `node server.js` |
-| Instance Type | Free / Starter (хватит для dev-оракла) |
+| Instance Type | Free / Starter (enough for a dev oracle) |
 
-4. Нажмите **Create Web Service**.
+4. Click **Create Web Service**.
 
-## 2. Добавление секрета FOUNDER_KEY (ручная операция)
+## 2. Add the FOUNDER_KEY secret (manual operation)
 
-1. Откройте созданный сервис → вкладка **Environment**.
+1. Open the created service → **Environment** tab.
 2. **Add Secret Variable**:
    - Key: `FOUNDER_KEY`
-   - Value: JSON-массив из 64 чисел (приватный ключ founder-кошелька).
-     Значение должно быть в формате, который ожидает `JSON.parse` в `server.js`
-     (например `[1,2,...,64]`). **Реальный ключ в репозиторий не добавлять.**
-3. При необходимости добавьте обычную переменную `PORT=3000`.
-4. Render подставит секрет только как env-переменную; он не отображается в логах.
+   - Value: a JSON array of 64 numbers (founder wallet private key).
+     The value must be in the format expected by `JSON.parse` in `server.js`
+     (e.g. `[1,2,...,64]`). **Do NOT add the real key to the repository.**
+3. Optionally add a regular variable `PORT=3000`.
+4. Render injects the secret only as an env variable; it is not shown in logs.
 
-> После изменения Environment Render предложит **Deploy** — подтвердите.
+> After changing Environment, Render will suggest a **Deploy** — confirm it.
 
 ## 3. Health check
 
-1. Вкладка **Settings** → раздел **Health Check**.
+1. **Settings** tab → **Health Check** section.
 2. Health Check Path: `/api/v1/stats`.
-3. Сохраните.
+3. Save.
 
-## 4. Деплой из GitHub
+## 4. Deploy from GitHub
 
-- Пуш в `main` автоматически запускает новый деплой (если включён
-  **Auto-Deploy** — по умолчанию включён).
-- Ручной деплой: кнопка **Manual Deploy** → **Deploy latest commit**.
+- A push to `main` automatically triggers a new deploy (if **Auto-Deploy**
+  is enabled — enabled by default).
+- Manual deploy: **Manual Deploy** → **Deploy latest commit**.
 
-## 5. Проверка
+## 5. Verify
 
 ```bash
-# URL вида https://enrg-oracle.onrender.com
+# URL like https://enrg-oracle.onrender.com
 curl https://enrg-oracle.onrender.com/api/v1/stats
-# ожидается: {"total_energy_mwh":0,"active_producers":0,"total_supply":0}
+# expected: {"total_energy_mwh":0,"active_producers":0,"total_supply":0}
 ```
 
-В логах сервиса должна появиться строка `🚀 Oracle server listening on port 3000`.
+The service logs should show `🚀 Oracle server listening on port 3000`.
 
-## Важно / безопасность
+## Important / security
 
-- `FOUNDER_KEY` — секрет: только через **Add Secret Variable** в Render. Не в коде,
-  не в git, не в логах.
-- Если ключ не задан — оракул работает без founder-кошелька (on-chain mint недоступен,
-  в логах появится предупреждение).
-- Фронтенд `enrg-landing` указывает на `http://localhost:3000/api/v1` в `js/config.js`.
-  Для работы с удалённым оракулом поменяйте `CONFIG.oracleUrl` на URL Render-сервиса
-  (или используйте reverse-proxy с корректным CORS).
+- `FOUNDER_KEY` is a secret: use **Add Secret Variable** in Render only. Not in code,
+  not in git, not in logs.
+- If the key is not set — the oracle runs without the founder wallet (on-chain mint is
+  unavailable, a warning appears in the logs).
+- The `enrg-landing` frontend points to `http://localhost:3000/api/v1` in `js/config.js`.
+  To work with a remote oracle, change `CONFIG.oracleUrl` to the Render service URL
+  (or use a reverse proxy with correct CORS).
+

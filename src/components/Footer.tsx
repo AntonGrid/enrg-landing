@@ -3,27 +3,27 @@ import { ExternalIcon, Logo } from "./ui";
 
 const FOOTER_COLUMNS = [
   {
-    title: "Протокол",
+    title: "Protocol",
     links: [
       { label: "Whitepaper", href: LINKS.whitepaper, external: false },
-      { label: "Техническая документация", href: LINKS.technicalOverview, external: false },
+      { label: "Technical Docs", href: LINKS.technicalOverview, external: false },
       { label: "GitHub · ENRG", href: LINKS.docs, external: true },
-      { label: "Explorer Solana", href: LINKS.explorer, external: true },
+      { label: "Solana Explorer", href: LINKS.explorer, external: true },
     ],
   },
   {
-    title: "Продукт",
+    title: "Product",
     links: [
       { label: "Axis Connect PWA", href: LINKS.axisConnect, external: true },
-      { label: "Скачать приложение", href: LINKS.axisConnect, external: true },
+      { label: "Download App", href: LINKS.axisConnect, external: true },
     ],
   },
   {
-    title: "Сообщество",
+    title: "Community",
     links: [
       { label: "X (Twitter)", href: LINKS.x, external: true },
       { label: "Telegram", href: LINKS.telegram, external: true },
-      { label: "Связаться", href: LINKS.contact, external: false },
+      { label: "Contact", href: LINKS.contact, external: false },
     ],
   },
 ];
@@ -36,8 +36,8 @@ export default function Footer() {
           <div className="col-span-2 md:col-span-1">
             <Logo size="sm" />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-slate-500">
-              Открытый стандарт доверия между физическим и цифровым миром. Первая
-              референсная реализация — на Solana.
+              An open standard of trust between the physical and digital world.
+              First reference implementation — on Solana.
             </p>
             <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.25em] text-slate-600">
               The protocol is governed.
