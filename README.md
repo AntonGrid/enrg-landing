@@ -84,9 +84,24 @@ npm run dev       # Vite dev server
 npm run build     # typecheck + production build to dist/
 npm run preview   # preview the build
 Deployment
-GitHub Pages via Actions (.github/workflows/deploy.yml): npm ci →
-npm run build → upload dist/ → deploy-pages. CNAME (enrg.network)
-is copied from public/. For Pages deployment to work, repository settings
-must have "GitHub Actions" as the source.
+GitHub Pages, two working options (pick one in Settings → Pages → Source):
+
+Option A — GitHub Actions (recommended). Source = "GitHub Actions".
+.github/workflows/deploy.yml builds and publishes dist/ on every push to main.
+
+Option B — gh-pages branch. Source = "Deploy from a branch: gh-pages / root".
+The built site lives at the root of the gh-pages branch. Update manually:
+npm run build
+git checkout gh-pages
+git rm -rf . && cp -r dist/. . && rm -rf dist
+git add -A && git commit -m "deploy: build" && git push origin gh-pages
+git checkout main
+
+> ⚠️ Important: Pages must NOT be set to "Deploy from a branch: main / root".
+> main contains Vite sources (index.html with src="/src/main.tsx"); GitHub Pages
+> would serve them as static files: .tsx is served as application/octet-stream and
+> the browser shows "Failed to load module script". That is what broke the site.
+
+CNAME (enrg.network) is copied from public/ into dist/.
 
 © 2026 ENRG Protocol. The protocol is governed. The protocol is not owned.
