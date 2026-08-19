@@ -6,7 +6,8 @@ It is an **open, implementation-agnostic protocol** for cryptographically verifi
 We are not building an energy application.  
 We are building a **standard** by which physical events (energy production, cargo movement, equipment operation) can be cryptographically proven and verified in any digital system.
 
-Solana is the first reference implementation, not the protocol itself.
+**ENRG** is the first reference implementation of Axis Protocol.  
+**Solana** is the blockchain on which ENRG is deployed — not the protocol itself.
 
 ---
 
