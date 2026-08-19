@@ -12,6 +12,7 @@ import Footer from "./components/Footer";
 import BootScreen from "./components/BootScreen";
 import CursorGlow from "./components/CursorGlow";
 import ScrollProgress from "./components/ScrollProgress";
+import UniverseBackground from "./components/UniverseBackground";
 
 export default function App() {
   const [booting, setBooting] = useState(true);
@@ -30,12 +31,8 @@ export default function App() {
         {booting && <BootScreen onDone={() => setBooting(false)} />}
       </AnimatePresence>
 
-      {/* Global layers: drifting aurora background + CRT scanlines + cursor glow */}
-      <div className="aurora" aria-hidden="true">
-        <span className="aurora__blob aurora__blob--1" />
-        <span className="aurora__blob aurora__blob--2" />
-        <span className="aurora__blob aurora__blob--3" />
-      </div>
+      {/* Global layers: moving neon universe + CRT scanlines + cursor glow */}
+      <UniverseBackground />
       <div className="scanlines" aria-hidden="true" />
       <CursorGlow />
       <ScrollProgress />
