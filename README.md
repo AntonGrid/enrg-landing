@@ -1,76 +1,84 @@
-# ENRG — Открытый стандарт доверия между физическим и цифровым миром
+# Axis Protocol — Open Standard of Trust Between the Physical and Digital Worlds
 
-ENRG — это не блокчейн-проект и не криптовалюта.  
-Это **открытый, реализационно-независимый протокол** для криптографически верифицируемой физической инфраструктуры.
+**Axis Protocol** is not a blockchain project or a cryptocurrency.  
+It is an **open, implementation-agnostic protocol** for cryptographically verifiable physical infrastructure.
 
-Мы не строим энергетическое приложение.  
-Мы строим стандарт, по которому физические события (производство энергии, перемещение грузов, работа оборудования) могут быть криптографически доказаны и проверены в любой цифровой системе.
+We are not building an energy application.  
+We are building a **standard** by which physical events (energy production, cargo movement, equipment operation) can be cryptographically proven and verified in any digital system.
 
-Solana — первая референсная реализация, а не сам протокол.
-
----
-
-## 🌍 Что делает ENRG?
-
-Протокол определяет, как:
-
-- физические события преобразуются в криптографические доказательства;
-- эти доказательства проверяются без доверия к посредникам;
-- проверенные события становятся основой для экономических расчётов (токены, смарт-контракты, DAO).
-
-Токен SRC (Source) — это **экономическое следствие** успешной проверки доказательства. Он не является целью протокола. Он лишь одна из возможных реализаций.
+Solana is the first reference implementation, not the protocol itself.
 
 ---
 
-## 🧱 Архитектура протокола
+## 🌍 What Does Axis Protocol Do?
 
-Протокол состоит из независимых слоёв:
+The protocol defines how:
 
-1. **Физический слой** (устройства, сенсоры, датчики)
-2. **Сетевой слой** (оракулы, агрегаторы, верификаторы)
-3. **Протокольный слой** (логика проверки и выпуска токенов)
-4. **Экономический слой** (токеномика, рынки, стимулы)
+- physical events are transformed into cryptographic proofs;
+- these proofs are verified without trust in intermediaries;
+- verified events become the basis for economic calculations (tokens, smart contracts, DAOs).
 
-Каждый слой может быть реализован независимо.  
-Протокол определяет **поведение**, а не конкретную реализацию.
+**The SRC (Source) token** is the **economic consequence** of successful proof verification in the ENRG implementation. It is not the goal of the protocol. It is merely one possible implementation.
 
 ---
 
-## ⚡ Первая референсная реализация
+## 🧱 Protocol Architecture
 
-- **Блокчейн**: Solana (Agave 3.1.14)
-- **Смарт-контракты**: Rust / Anchor
-- **Железо**: ESP32 + PZEM-004T, Ed25519, ATECC608
-- **Оракул**: Node.js (MVP), планы на Switchboard
+The protocol consists of independent layers:
 
----
+1. **Physical Layer** (devices, sensors, meters)
+2. **Network Layer** (oracles, aggregators, verifiers)
+3. **Protocol Layer** (verification logic and token issuance)
+4. **Economic Layer** (tokenomics, markets, incentives)
 
-## 💰 Токен SRC (Source)
-
-- **Тикер**: `SRC`
-- **Эмиссия**: асимптотическая (сложность растёт с каждым выпуском)
-- **Максимальное предложение**: 1 000 000 000 SRC
-- **Масштаб**: 1 SRC = 1 MWh верифицированной энергии (на старте)
-- **Протокольный сбор**: 15% (→ 20% Buyback, 40% Стейкинг, 30% DAO, 10% Emergency)
+Each layer can be implemented independently.  
+The protocol defines **behavior**, not a specific implementation.
 
 ---
 
-## 📌 Важно
+## ⚡ First Reference Implementation: ENRG
 
-ENRG — это не «проект на Solana».  
-Solana — лишь одна из возможных реализаций.
+**ENRG** is the first implementation of Axis Protocol for the energy sector.
 
-ENRG — это **стандарт**, который может быть развёрнут на любом блокчейне, с любыми устройствами, с любыми оракулами.
+- **Blockchain**: Solana (Agave 3.1.14)
+- **Smart Contracts**: Rust / Anchor
+- **Hardware**: ESP32 + PZEM-004T, Ed25519, ATECC608
+- **Oracle**: Node.js (MVP), plans for Switchboard
+- **Application**: Axis-connect (PWA for device management and tokens)
+
+ENRG is a **proof of concept**, demonstrating how Axis Protocol works in the real world.
 
 ---
 
-## 🔗 Ссылки
+## 💰 SRC Token (Source) — in the ENRG Implementation
 
-- **Сайт**: [enrg.network](https://enrg.network)
-- **Белая книга**: [ссылка]
-- **Техническая документация**: [ссылка]
-- **Репозиторий**: [github.com/AntonGrid/ENRG](https://github.com/AntonGrid/ENRG)
-- **Контакты**: anton@enrg.network
+- **Ticker**: `SRC`
+- **Emission**: asymptotic (difficulty increases with each issuance)
+- **Maximum Supply**: 1,000,000,000 SRC
+- **Scale**: 1 SRC = 1 MWh of verified energy (at launch)
+- **Protocol Fee**: 15% (→ 20% Buyback, 40% Staking, 30% DAO, 10% Emergency)
+
+---
+
+## 📌 Important
+
+**Axis Protocol** is the standard.  
+**ENRG** is the first implementation of this standard.
+
+Axis Protocol can be deployed on any blockchain, with any devices, with any oracles.  
+ENRG is proof that the standard works.
+
+---
+
+## 🔗 Links
+
+- **Website**: [enrg.network](https://enrg.network)
+- **Whitepaper**: [link]
+- **Technical Documentation**: [link]
+- **ENRG Repository**: [github.com/AntonGrid/ENRG](https://github.com/AntonGrid/ENRG)
+- **Axis Protocol Repository**: [github.com/AntonGrid/Axis-protocol](https://github.com/AntonGrid/Axis-protocol)
+- **Axis-connect Repository**: [github.com/AntonGrid/Axis-connect](https://github.com/AntonGrid/Axis-connect)
+- **Contacts**: anton@enrg.network
 
 ---
 
