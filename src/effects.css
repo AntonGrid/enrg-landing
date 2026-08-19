@@ -5,49 +5,49 @@
   .holo-text {
     background: linear-gradient(
       100deg,
-      #67e8f9 0%,
-      #a78bfa 25%,
-      #22d3ee 50%,
-      #a3e635 75%,
-      #67e8f9 100%
+      #9ffbff 0%,
+      #c9b8ff 25%,
+      #00e5ff 50%,
+      #c6ff7a 75%,
+      #9ffbff 100%
     );
     background-size: 220% auto;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
     animation: var(--animate-holo-shift);
-    filter: drop-shadow(0 0 18px rgba(103, 232, 249, 0.35));
+    filter: drop-shadow(0 0 22px rgba(150, 247, 255, 0.6));
   }
 
   .holo-text--dim {
-    filter: drop-shadow(0 0 8px rgba(103, 232, 249, 0.2));
+    filter: drop-shadow(0 0 12px rgba(150, 247, 255, 0.4));
   }
 
   /* --- Neon text glow --- */
   .text-neon-glow {
     text-shadow:
-      0 0 10px rgba(103, 232, 249, 0.8),
-      0 0 32px rgba(34, 211, 238, 0.4);
+      0 0 12px rgba(150, 247, 255, 0.95),
+      0 0 42px rgba(0, 229, 255, 0.6);
   }
 
   .text-cyber-glow {
     text-shadow:
-      0 0 10px rgba(167, 139, 250, 0.8),
-      0 0 32px rgba(124, 58, 237, 0.4);
+      0 0 12px rgba(196, 176, 255, 0.95),
+      0 0 42px rgba(139, 92, 246, 0.6);
   }
 
   /* --- Holographic panel --- */
   .holo-panel {
     position: relative;
-    border: 1px solid rgba(103, 232, 249, 0.16);
+    border: 1px solid rgba(150, 247, 255, 0.32);
     background:
-      linear-gradient(160deg, rgba(17, 17, 27, 0.85), rgba(10, 10, 15, 0.6)),
-      radial-gradient(ellipse at 30% 0%, rgba(34, 211, 238, 0.12), transparent 55%),
-      radial-gradient(ellipse at 80% 100%, rgba(124, 58, 237, 0.14), transparent 55%);
+      linear-gradient(160deg, rgba(19, 19, 32, 0.9), rgba(10, 10, 15, 0.65)),
+      radial-gradient(ellipse at 30% 0%, rgba(0, 229, 255, 0.22), transparent 55%),
+      radial-gradient(ellipse at 80% 100%, rgba(139, 92, 246, 0.28), transparent 55%);
     backdrop-filter: blur(14px);
     box-shadow:
-      0 0 30px rgba(34, 211, 238, 0.08),
-      inset 0 0 30px rgba(103, 232, 249, 0.04);
+      0 0 40px rgba(0, 229, 255, 0.18),
+      inset 0 0 40px rgba(150, 247, 255, 0.08);
   }
 
   .holo-panel::before {
@@ -56,7 +56,7 @@
     inset: 0;
     pointer-events: none;
     background:
-      linear-gradient(115deg, transparent 20%, rgba(103, 232, 249, 0.06) 38%, transparent 55%);
+      linear-gradient(115deg, transparent 20%, rgba(150, 247, 255, 0.12) 38%, transparent 55%);
     background-size: 250% auto;
     animation: holo-shift 9s linear infinite;
   }
@@ -71,8 +71,8 @@
     inset: 0;
     pointer-events: none;
     background-image:
-      linear-gradient(rgba(103, 232, 249, 0.05) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(103, 232, 249, 0.05) 1px, transparent 1px);
+      linear-gradient(rgba(150, 247, 255, 0.1) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(150, 247, 255, 0.1) 1px, transparent 1px);
     background-size: 44px 44px;
     mask-image: radial-gradient(ellipse 90% 70% at 50% 30%, black 30%, transparent 75%);
     -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 30%, black 30%, transparent 75%);
@@ -84,7 +84,7 @@
     left: 0;
     right: 0;
     height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(103, 232, 249, 0.55), transparent);
+    background: linear-gradient(90deg, transparent, rgba(150, 247, 255, 0.85), transparent);
     animation: scan 6s linear infinite;
   }
 
@@ -94,7 +94,7 @@
     position: absolute;
     width: 22px;
     height: 22px;
-    border-color: rgba(103, 232, 249, 0.55);
+    border-color: rgba(150, 247, 255, 0.9);
     border-style: solid;
     pointer-events: none;
   }
@@ -113,40 +113,40 @@
   .btn-neon {
     @apply relative inline-flex items-center justify-center gap-2 font-mono font-medium uppercase tracking-widest text-sm px-6 py-3 rounded-md transition-all duration-300 cursor-pointer select-none overflow-hidden;
     color: #ecfeff;
-    background: linear-gradient(135deg, rgba(34, 211, 238, 0.18), rgba(124, 58, 237, 0.18));
-    border: 1px solid rgba(103, 232, 249, 0.45);
+    background: linear-gradient(135deg, rgba(0, 229, 255, 0.32), rgba(139, 92, 246, 0.32));
+    border: 1px solid rgba(150, 247, 255, 0.8);
     box-shadow:
-      0 0 18px rgba(34, 211, 238, 0.22),
-      inset 0 0 14px rgba(103, 232, 249, 0.06);
+      0 0 26px rgba(0, 229, 255, 0.4),
+      inset 0 0 18px rgba(150, 247, 255, 0.12);
   }
   .btn-neon:hover {
-    border-color: rgba(167, 139, 250, 0.8);
+    border-color: rgba(196, 176, 255, 1);
     box-shadow:
-      0 0 32px rgba(167, 139, 250, 0.45),
-      inset 0 0 22px rgba(167, 139, 250, 0.12);
+      0 0 40px rgba(196, 176, 255, 0.6),
+      inset 0 0 26px rgba(196, 176, 255, 0.18);
     transform: translateY(-2px);
   }
 
   .btn-ghost {
     @apply relative inline-flex items-center justify-center gap-2 font-mono font-medium uppercase tracking-widest text-sm px-6 py-3 rounded-md transition-all duration-300 cursor-pointer select-none;
-    color: #94a3b8;
-    border: 1px solid rgba(148, 163, 184, 0.25);
-    background: rgba(17, 17, 27, 0.5);
+    color: #cbd5e1;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    background: rgba(18, 18, 30, 0.6);
     backdrop-filter: blur(8px);
   }
   .btn-ghost:hover {
-    color: #67e8f9;
-    border-color: rgba(103, 232, 249, 0.5);
-    box-shadow: 0 0 22px rgba(34, 211, 238, 0.2);
+    color: #96f7ff;
+    border-color: rgba(150, 247, 255, 0.8);
+    box-shadow: 0 0 26px rgba(0, 229, 255, 0.35);
     transform: translateY(-2px);
   }
 
   /* --- Flickering badge --- */
   .badge-neon {
     @apply inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.25em] px-3 py-1.5 rounded-full;
-    color: #67e8f9;
-    border: 1px solid rgba(103, 232, 249, 0.3);
-    background: rgba(34, 211, 238, 0.06);
+    color: #96f7ff;
+    border: 1px solid rgba(150, 247, 255, 0.55);
+    background: rgba(0, 229, 255, 0.12);
   }
 
   /* --- Digit loading skeleton --- */
@@ -154,9 +154,9 @@
     @apply inline-block font-mono;
     background: linear-gradient(
       90deg,
-      rgba(103, 232, 249, 0.08),
-      rgba(167, 139, 250, 0.14),
-      rgba(103, 232, 249, 0.08)
+      rgba(150, 247, 255, 0.12),
+      rgba(196, 176, 255, 0.22),
+      rgba(150, 247, 255, 0.12)
     );
     background-size: 200% 100%;
     animation: holo-shift 1.4s linear infinite;

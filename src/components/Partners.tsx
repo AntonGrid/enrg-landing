@@ -45,7 +45,7 @@ export default function Partners() {
               transition={{ duration: 0.55, delay: i * 0.1, ease: "easeOut" }}
             >
               <TiltCard max={8} className="h-full">
-                <div className="group flex h-full items-center gap-4 rounded-lg border border-line bg-panel/60 p-5 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-neon/40 hover:shadow-[0_0_24px_rgba(34,211,238,0.15)]">
+                <div className="group flex h-full items-center gap-4 rounded-lg border border-line bg-panel/60 p-5 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-neon/40 hover:shadow-[0_0_24px_rgba(0,229,255,0.3)]">
                   <span className="text-neon-soft transition-transform duration-300 group-hover:scale-110">
                     {partner.icon}
                   </span>

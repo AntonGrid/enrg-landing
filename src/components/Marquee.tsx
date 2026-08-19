@@ -16,7 +16,7 @@ function Term() {
     <>
       {TERMS.map((term) => (
         <span key={term} className="flex items-center gap-14">
-          <span className="whitespace-nowrap font-mono text-sm uppercase tracking-[0.35em] text-neon-soft/60 transition-colors hover:text-neon-soft">
+          <span className="whitespace-nowrap font-mono text-sm uppercase tracking-[0.35em] text-neon-soft/90 transition-colors hover:text-neon-soft">
             {term}
           </span>
           <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-cyber/70 animate-pulse" />

@@ -44,7 +44,7 @@ export default function HowItWorks() {
               <TiltCard max={6} className="h-full">
                 <HoloCard className="group h-full p-7">
                   <div className="flex items-center justify-between">
-                    <span className={`font-mono text-4xl font-bold tracking-tight ${step.color} [text-shadow:0_0_18px_rgba(103,232,249,0.35)]`}>
+                    <span className={`font-mono text-4xl font-bold tracking-tight ${step.color} [text-shadow:0_0_18px_rgba(150,247,255,0.6)]`}>
                       {step.num}
                     </span>
                     <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-slate-600">

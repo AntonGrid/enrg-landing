@@ -53,7 +53,7 @@ export default function BootScreen({ onDone }: { onDone: () => void }) {
           <div
             className="absolute left-1/2 top-1/2 h-[220px] w-[220px] -translate-x-1/2 -translate-y-1/2 rounded-full"
             style={{
-              background: "conic-gradient(from 0deg, transparent, rgba(34,211,238,0.4), transparent 30%)",
+              background: "conic-gradient(from 0deg, transparent, rgba(0,229,255,0.55), transparent 30%)",
               animation: "spin-slow 2.4s linear infinite",
             }}
           />

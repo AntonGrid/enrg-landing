@@ -42,10 +42,10 @@ export const TOKENOMICS = {
   producerShare: 85, // %
   protocolFee: 15, // %
   feeSplit: [
-    { label: "Buyback", value: 20, color: "#22d3ee" },
-    { label: "Staking", value: 40, color: "#a78bfa" },
-    { label: "DAO", value: 30, color: "#a3e635" },
-    { label: "Emergency", value: 10, color: "#fbbf24" },
+    { label: "Buyback", value: 20, color: "#00e5ff" },
+    { label: "Staking", value: 40, color: "#c4b0ff" },
+    { label: "DAO", value: 30, color: "#b7f354" },
+    { label: "Emergency", value: 10, color: "#fcd34d" },
   ],
   sourceMultipliers: [
     { source: "Solar", key: "solar", value: 1.0 },

@@ -32,7 +32,7 @@ export default function Particles({ density = 1 }: { density?: number }) {
     let mouseX = -9999;
     let mouseY = -9999;
 
-    const colors = ["34,211,238", "167,139,250", "163,230,53"];
+    const colors = ["0,229,255", "196,176,255", "183,243,84"];
 
     const build = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -93,7 +93,7 @@ export default function Particles({ density = 1 }: { density?: number }) {
           const d2 = dx * dx + dy * dy;
           if (d2 < linkDist * linkDist) {
             const alpha = (1 - Math.sqrt(d2) / linkDist) * 0.14;
-            ctx.strokeStyle = `rgba(103,232,249,${alpha})`;
+            ctx.strokeStyle = `rgba(150,247,255,${alpha})`;
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(a.x, a.y);
@@ -111,7 +111,7 @@ export default function Particles({ density = 1 }: { density?: number }) {
         const d2 = dx * dx + dy * dy;
         if (d2 < mouseLink * mouseLink) {
           const alpha = (1 - Math.sqrt(d2) / mouseLink) * 0.2;
-          ctx.strokeStyle = `rgba(167,139,250,${alpha})`;
+          ctx.strokeStyle = `rgba(196,176,255,${alpha})`;
           ctx.lineWidth = 1;
           ctx.beginPath();
           ctx.moveTo(p.x, p.y);

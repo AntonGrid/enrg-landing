@@ -12,9 +12,9 @@ export default function EnergyCore() {
           transform: "translate(-50%, -50%)",
           borderRadius: "9999px",
           background:
-            "radial-gradient(circle, rgba(103,232,249,0.95), rgba(34,211,238,0.35) 45%, transparent 70%)",
+            "radial-gradient(circle, rgba(150,247,255,0.95), rgba(0,229,255,0.5) 45%, transparent 70%)",
           boxShadow:
-            "0 0 50px 12px rgba(34,211,238,0.4), 0 0 120px 40px rgba(124,58,237,0.22)",
+            "0 0 50px 12px rgba(0,229,255,0.55), 0 0 120px 40px rgba(139,92,246,0.3)",
           animation: "core-pulse 3s ease-in-out infinite",
         }}
       />
@@ -26,7 +26,7 @@ export default function EnergyCore() {
           transform: "translate(-50%, -50%)",
           borderRadius: "9999px",
           background:
-            "conic-gradient(from 0deg, transparent, rgba(34,211,238,0.32), transparent 28%)",
+            "conic-gradient(from 0deg, transparent, rgba(0,229,255,0.55), transparent 28%)",
           animation: "spin-slow 8s linear infinite",
           filter: "blur(5px)",
           WebkitMaskImage: "radial-gradient(circle, transparent 42%, black 64%)",
@@ -40,11 +40,11 @@ export default function EnergyCore() {
         style={{
           transform: "translate(-50%, -50%)",
           borderRadius: "9999px",
-          border: "1px solid rgba(103,232,249,0.28)",
+          border: "1px solid rgba(150,247,255,0.5)",
           animation: "spin-slow 12s linear infinite",
         }}
       >
-        <span className="absolute -top-1 left-1/2 h-2 w-2 -translate-x-1/2 rounded-full bg-neon-soft shadow-[0_0_14px_rgba(103,232,249,1)]" />
+        <span className="absolute -top-1 left-1/2 h-2 w-2 -translate-x-1/2 rounded-full bg-neon-soft shadow-[0_0_14px_rgba(150,247,255,1)]" />
       </div>
 
       {/* Orbit 2: dashed, reversed */}
@@ -53,11 +53,11 @@ export default function EnergyCore() {
         style={{
           transform: "translate(-50%, -50%)",
           borderRadius: "9999px",
-          border: "1.5px dashed rgba(167,139,250,0.45)",
+          border: "1.5px dashed rgba(196,176,255,0.65)",
           animation: "spin-slow 18s linear infinite reverse",
         }}
       >
-        <span className="absolute right-0 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-cyber shadow-[0_0_14px_rgba(167,139,250,1)]" />
+        <span className="absolute right-0 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-cyber shadow-[0_0_14px_rgba(196,176,255,1)]" />
       </div>
 
       {/* Tiny orbital satellites */}
@@ -69,7 +69,7 @@ export default function EnergyCore() {
           animation: "spin-slow 26s linear infinite",
         }}
       >
-        <span className="absolute left-1/2 top-0 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-lime/90 shadow-[0_0_10px_rgba(163,230,53,0.9)]" />
+        <span className="absolute left-1/2 top-0 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-lime/90 shadow-[0_0_10px_rgba(183,243,84,0.95)]" />
         <span className="absolute bottom-8 left-3 h-1 w-1 rounded-full bg-neon-soft/80" />
       </div>
     </div>

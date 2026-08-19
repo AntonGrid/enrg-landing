@@ -15,7 +15,7 @@ function NavLink({
   onClick?: () => void;
 }) {
   const classes =
-    "group relative font-mono text-[12px] uppercase tracking-[0.22em] text-slate-400 transition-colors duration-300 hover:text-neon-soft hover:[text-shadow:0_0_12px_rgba(103,232,249,0.6)]";
+    "group relative font-mono text-[12px] uppercase tracking-[0.22em] text-slate-400 transition-colors duration-300 hover:text-neon-soft hover:[text-shadow:0_0_12px_rgba(150,247,255,0.8)]";
   const underline = (
     <span
       aria-hidden="true"
@@ -63,7 +63,7 @@ export default function Navbar() {
       transition={{ duration: 0.6, ease: "easeOut" }}
       className={`fixed inset-x-0 top-0 z-50 border-b transition-all duration-300 ${
         scrolled
-          ? "border-neon/15 bg-void/80 backdrop-blur-xl shadow-[0_4px_30px_rgba(34,211,238,0.06)]"
+          ? "border-neon/15 bg-void/80 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,229,255,0.12)]"
           : "border-transparent bg-transparent"
       }`}
     >

@@ -9,7 +9,7 @@ export default function ScrollProgress() {
       className="fixed inset-x-0 top-0 z-[70] h-[2px] origin-left bg-gradient-to-r from-neon via-cyber to-lime"
       style={{
         scaleX: scrollYProgress,
-        boxShadow: "0 0 12px rgba(103,232,249,0.7)",
+        boxShadow: "0 0 12px rgba(150,247,255,0.9)",
       }}
     />
   );
