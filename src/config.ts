@@ -19,7 +19,7 @@ export const LINKS = {
   x: "https://x.com/ENRG_Protocol",
   telegram: "https://t.me/enrg_protocol",
   explorer: "https://explorer.solana.com",
-  contact: "mailto:anton@enrg.network",
+  contact: "mailto:enrg.project@gmail.com",
 };
 
 export const STATS = {

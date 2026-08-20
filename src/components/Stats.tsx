@@ -84,7 +84,7 @@ export default function Stats() {
               status === "live"
                 ? "LIVE · oracle data"
                 : status === "demo"
-                  ? "DEMO · oracle temporarily unavailable"
+                  ? "DEMO · projected data"
                   : "SYNC · loading data…"
             }
           />

@@ -27,7 +27,7 @@ function demoStats(): StatsResult {
   return {
     status: "demo",
     stats: { ...STATS.demo },
-    sourceLabel: "DEMO · oracle unavailable",
+    sourceLabel: "DEMO · projected data",
   };
 }
 

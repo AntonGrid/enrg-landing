@@ -228,7 +228,7 @@ export default function Hero() {
               {status === "live"
                 ? "Live sync from the oracle every 60s"
                 : status === "demo"
-                  ? "Oracle temporarily unavailable · demo data"
+                  ? "Oracle temporarily unavailable · projected demo data"
                   : "Syncing with the network…"}
             </div>
             </div>
