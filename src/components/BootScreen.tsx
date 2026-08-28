@@ -8,7 +8,7 @@ const BOOT_STEPS = [
   "LOADING HOLOGRAPHIC INTERFACE",
 ];
 
-const BOOT_MS = 2000;
+const BOOT_MS = 1300;
 
 /** Holographic boot screen shown on load. */
 export default function BootScreen({ onDone }: { onDone: () => void }) {

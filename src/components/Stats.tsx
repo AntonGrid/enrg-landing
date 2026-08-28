@@ -1,27 +1,28 @@
 import { motion } from "framer-motion";
-import { useEcosystemStats } from "../lib/stats";
+import { useEcosystemStats, formatEnergy } from "../lib/stats";
 import { useAnimatedNumber, formatInt } from "../lib/useAnimatedNumber";
 import { HoloCard, SectionHeading, StatusChip } from "./ui";
 
 function StatDigit({
   value,
-  loading,
   prefix = "",
   suffix = "",
   decimals = 0,
+  energy = false,
   accent = "text-neon-glow",
 }: {
   value: number;
-  loading: boolean;
   prefix?: string;
   suffix?: string;
   decimals?: number;
+  /** Format in Wh/kWh/MWh (auto unit) instead of an integer. */
+  energy?: boolean;
   accent?: string;
 }) {
-  const animated = useAnimatedNumber(loading ? 0 : value, 1400);
-  const formatted = decimals > 0 ? animated.toFixed(decimals) : formatInt(animated);
+  const animated = useAnimatedNumber(value, 1400);
+  const formatted = energy ? formatEnergy(animated) : decimals > 0 ? animated.toFixed(decimals) : formatInt(animated);
   return (
-    <span className={loading ? "skeleton-digit" : `tabular-nums ${accent}`}>
+    <span className={`tabular-nums ${accent}`}>
       {prefix}
       {formatted}
       {suffix}
@@ -33,39 +34,32 @@ const METRICS = [
   {
     key: "energy",
     label: "Energy Generated",
-    hint: "verified ecosystem generation",
-    prefix: "",
-    suffix: " kWh",
-    decimals: 0,
+    hint: "verified ecosystem generation · Wh/kWh/MWh",
+    energy: true,
     accent: "text-neon-glow",
+  },
+  {
+    key: "proofs",
+    label: "Proofs Minted",
+    hint: "mint_energy transactions on devnet",
+    energy: false,
+    accent: "text-cyber-glow",
   },
   {
     key: "devices",
     label: "Active Devices",
     hint: "online and producing energy",
-    prefix: "",
-    suffix: "",
-    decimals: 0,
-    accent: "text-cyber-glow",
-  },
-  {
-    key: "src",
-    label: "SRC Earned",
-    hint: "tokens for proven energy · 1 SRC = 1 MWh",
-    prefix: "",
-    suffix: " SRC",
-    decimals: 0,
+    energy: false,
     accent: "text-amber [text-shadow:0_0_14px_rgba(251,191,36,0.5)]",
   },
 ] as const;
 
 export default function Stats() {
   const { status, stats } = useEcosystemStats();
-  const loading = status === "loading";
   const values: Record<(typeof METRICS)[number]["key"], number> = {
-    energy: stats.totalEnergyKwh,
+    energy: stats.totalEnergyWh,
+    proofs: stats.mintedProofs,
     devices: stats.activeDevices,
-    src: stats.srcEarned,
   };
 
   return (
@@ -79,13 +73,11 @@ export default function Stats() {
 
         <div className="mb-6 flex justify-center">
           <StatusChip
-            tone={status === "live" ? "live" : status === "demo" ? "demo" : "sync"}
+            tone={status}
             label={
               status === "live"
                 ? "LIVE · oracle data"
-                : status === "demo"
-                  ? "DEMO · projected data"
-                  : "SYNC · loading data…"
+                : "DEMO · projected pilot data"
             }
           />
         </div>
@@ -109,10 +101,7 @@ export default function Stats() {
                 <div className="mt-6 text-4xl font-bold sm:text-5xl">
                   <StatDigit
                     value={values[metric.key]}
-                    loading={loading}
-                    prefix={metric.prefix}
-                    suffix={metric.suffix}
-                    decimals={metric.decimals}
+                    energy={metric.energy}
                     accent={metric.accent}
                   />
                 </div>

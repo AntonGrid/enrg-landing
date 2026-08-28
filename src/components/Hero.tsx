@@ -2,7 +2,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { useEffect, useState } from "react";
 import { LINKS } from "../config";
 import { useAnimatedNumber, formatInt } from "../lib/useAnimatedNumber";
-import { useEcosystemStats } from "../lib/stats";
+import { useEcosystemStats, formatEnergy, formatAgo } from "../lib/stats";
 import Particles from "./Particles";
 import EnergyCore from "./EnergyCore";
 import { ExternalIcon, Logo, StatusChip, TiltCard } from "./ui";
@@ -44,18 +44,17 @@ function TerminalHud() {
 }
 
 /** Big energy counter in the hero panel. */
-function EnergyCounter({ value, loading }: { value: number; loading: boolean }) {
-  const animated = useAnimatedNumber(loading ? 0 : value, 1600);
+function EnergyCounter({ value }: { value: number }) {
+  const animated = useAnimatedNumber(value, 1600);
   return (
-    <span className={`font-mono font-bold tabular-nums ${loading ? "skeleton-digit" : "text-neon-glow"}`}>
-      {formatInt(animated)}
+    <span className="font-mono font-bold tabular-nums text-neon-glow">
+      {formatEnergy(animated)}
     </span>
   );
 }
 
 export default function Hero() {
   const { status, stats } = useEcosystemStats();
-  const loading = status === "loading";
 
   // Scroll parallax: content drifts slower, panel drifts faster
   const { scrollY } = useScroll();
@@ -184,41 +183,33 @@ export default function Hero() {
                 <span className="text-neon-soft">ecosystem energy</span>
               </div>
               <StatusChip
-                tone={status === "live" ? "live" : status === "demo" ? "demo" : "sync"}
-                label={status === "live" ? "LIVE" : status === "demo" ? "DEMO" : "SYNC"}
+                tone={status}
+                label={status === "live" ? "LIVE" : "DEMO"}
               />
             </div>
 
             <div className="mt-8 text-5xl leading-none sm:text-6xl lg:text-7xl">
-              <EnergyCounter value={stats.totalEnergyKwh} loading={loading} />
+              <EnergyCounter value={stats.totalEnergyWh} />
             </div>
             <div className="mt-2 font-mono text-xs uppercase tracking-[0.35em] text-slate-500">
-              kWh
+              verified on-chain
             </div>
 
             <div className="mt-8 grid grid-cols-2 gap-4 border-t border-neon/15 pt-6">
               <div>
                 <div className="text-2xl font-mono font-semibold text-cyber-glow tabular-nums sm:text-3xl">
-                  {loading ? (
-                    <span className="skeleton-digit inline-block w-16">000</span>
-                  ) : (
-                    formatInt(stats.activeDevices)
-                  )}
+                  {formatInt(stats.mintedProofs)}
                 </div>
                 <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.25em] text-slate-500">
-                  active devices
+                  proofs minted
                 </div>
               </div>
               <div>
                 <div className="text-2xl font-mono font-semibold text-cyber-glow tabular-nums sm:text-3xl">
-                  {loading ? (
-                    <span className="skeleton-digit inline-block w-16">000</span>
-                  ) : (
-                    formatInt(stats.srcEarned)
-                  )}
+                  {formatInt(stats.activeDevices)}
                 </div>
                 <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.25em] text-slate-500">
-                  SRC earned
+                  active devices
                 </div>
               </div>
             </div>
@@ -226,10 +217,8 @@ export default function Hero() {
             <div className="mt-6 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-slate-600">
               <span className="pulse-dot inline-block h-1.5 w-1.5 rounded-full bg-lime text-lime" />
               {status === "live"
-                ? "Live sync from the oracle every 60s"
-                : status === "demo"
-                  ? "Oracle temporarily unavailable · projected demo data"
-                  : "Syncing with the network…"}
+                ? `Live sync · last proof ${formatAgo(stats.lastProofTs)}`
+                : "Oracle temporarily unavailable · projected demo data"}
             </div>
             </div>
             </motion.div>

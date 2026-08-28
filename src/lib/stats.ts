@@ -3,15 +3,19 @@ import { LINKS, STATS } from "../config";
 
 /** Live Axis/ENRG ecosystem stats (oracle) or demo fallback. */
 export interface EcosystemStats {
-  /** Total generated energy, kWh. */
-  totalEnergyKwh: number;
-  /** Number of active devices. */
+  /** Verified energy (proofs table), Wh. */
+  totalEnergyWh: number;
+  /** Proofs minted on-chain (mint_status = minted). */
+  mintedProofs: number;
+  /** Distinct producing devices. */
   activeDevices: number;
-  /** SRC earned (supply). */
+  /** SRC supply from verified energy (1 SRC = 1 MWh). */
   srcEarned: number;
+  /** Unix seconds of the last proof. */
+  lastProofTs: number;
 }
 
-export type StatsStatus = "loading" | "live" | "demo";
+export type StatsStatus = "live" | "demo";
 
 export interface StatsResult {
   status: StatsStatus;
@@ -20,14 +24,38 @@ export interface StatsResult {
   sourceLabel: string;
 }
 
-const EMPTY: EcosystemStats = { totalEnergyKwh: 0, activeDevices: 0, srcEarned: 0 };
+/**
+ * Format verified energy in a human-friendly unit:
+ * 11 → "11 Wh", 1 540 → "1.5 kWh", 2 300 000 → "2.3 MWh".
+ * The DePIN pilot runs in Wh, so MWh-only formatting would show "0".
+ */
+export function formatEnergy(wh: number): string {
+  const n = Math.max(0, wh);
+  if (n >= 1_000_000) {
+    return `${(n / 1_000_000).toLocaleString("ru-RU", { maximumFractionDigits: 2 })} MWh`;
+  }
+  if (n >= 1_000) {
+    return `${(n / 1_000).toLocaleString("ru-RU", { maximumFractionDigits: 1 })} kWh`;
+  }
+  return `${Math.round(n)} Wh`;
+}
 
-/** Fallback values used when the public API is unavailable. */
+/** Relative "last proof" time: "just now", "4 min ago", "2 h ago". */
+export function formatAgo(ts: number): string {
+  if (!ts) return "—";
+  const sec = Math.floor(Date.now() / 1000) - ts;
+  if (sec < 60) return "just now";
+  if (sec < 3600) return `${Math.floor(sec / 60)} min ago`;
+  if (sec < 86400) return `${Math.floor(sec / 3600)} h ago`;
+  return `${Math.floor(sec / 86400)} d ago`;
+}
+
+/** Fallback values used while the public API is unavailable (pilot scale). */
 function demoStats(): StatsResult {
   return {
     status: "demo",
     stats: { ...STATS.demo },
-    sourceLabel: "DEMO · projected data",
+    sourceLabel: "DEMO · projected pilot data",
   };
 }
 
@@ -47,17 +75,19 @@ async function fetchOracle(signal: AbortSignal): Promise<StatsResult> {
     if (typeof data !== "object" || data === null) throw new Error("bad payload");
 
     const d = data as Record<string, unknown>;
-    const totalEnergyMwh = Number(d.total_energy_mwh ?? 0);
-    const activeProducers = Number(d.active_producers ?? 0);
-    const totalSupply = Number(d.total_supply ?? 0);
+    // New fields (proofs table, ADR-0010) with backward-compatible fallbacks.
+    const totalEnergyWh = Math.max(
+      0,
+      Math.round(Number(d.total_energy_wh ?? Math.round(Number(d.total_energy_mwh ?? 0) * 1e6))),
+    );
+    const mintedProofs = Math.max(0, Math.round(Number(d.minted_proofs ?? 0)));
+    const activeDevices = Math.max(0, Math.round(Number(d.active_producers ?? 0)));
+    const srcEarned = Math.max(0, Number(d.total_supply ?? 0));
+    const lastProofTs = Math.max(0, Math.round(Number(d.last_proof_ts ?? 0)));
 
     return {
       status: "live",
-      stats: {
-        totalEnergyKwh: Math.max(0, Math.round(totalEnergyMwh * 1000)),
-        activeDevices: Math.max(0, Math.round(activeProducers)),
-        srcEarned: Math.max(0, Math.round(totalSupply)),
-      },
+      stats: { totalEnergyWh, mintedProofs, activeDevices, srcEarned, lastProofTs },
       sourceLabel: "LIVE · enrg-oracle",
     };
   } finally {
@@ -68,15 +98,11 @@ async function fetchOracle(signal: AbortSignal): Promise<StatsResult> {
 
 /**
  * Subscription to ecosystem stats.
- * Returns demo fallback values with the `demo` flag if the API is unavailable,
- * and periodically refreshes data (STATS.refreshMs).
+ * Starts with demo values immediately (never a blank/zero hero), then swaps
+ * to live oracle data as soon as it arrives. Refreshes every STATS.refreshMs.
  */
 export function useEcosystemStats(): StatsResult {
-  const [result, setResult] = useState<StatsResult>({
-    status: "loading",
-    stats: EMPTY,
-    sourceLabel: "SYNC · loading data",
-  });
+  const [result, setResult] = useState<StatsResult>(demoStats);
 
   const load = useCallback(async () => {
     const controller = new AbortController();
@@ -84,8 +110,9 @@ export function useEcosystemStats(): StatsResult {
       const next = await fetchOracle(controller.signal);
       setResult(next);
     } catch {
-      // Oracle unavailable (offline / sleeping free tier): demo values + loading animation.
-      setResult((prev) => (prev.status === "loading" ? demoStats() : prev));
+      // Oracle unavailable (offline / sleeping free tier): keep the last known
+      // state — demo values were already shown on mount, so the page never
+      // flashes zeros.
     }
     return () => controller.abort();
   }, []);

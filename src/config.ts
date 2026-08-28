@@ -23,16 +23,19 @@ export const LINKS = {
 };
 
 export const STATS = {
-  /** Fallback values used when the public API is unavailable. */
+  /** Fallback values used when the public API is unavailable (pilot scale,
+   *  clearly marked as DEMO in the UI — never show a blank/zero hero). */
   demo: {
-    totalEnergyKwh: 65_000,
-    activeDevices: 128,
-    srcEarned: 8_420,
+    totalEnergyWh: 240,
+    activeDevices: 3,
+    srcEarned: 0.00024,
+    mintedProofs: 180,
+    lastProofTs: 0,
   },
   /** Live stats refresh interval (ms). */
-  refreshMs: 60_000,
-  /** Oracle request timeout (ms). */
-  timeoutMs: 12_000,
+  refreshMs: 45_000,
+  /** Oracle request timeout (ms) — Render free tier cold-starts, so keep it short. */
+  timeoutMs: 5_000,
 };
 
 export const TOKENOMICS = {
