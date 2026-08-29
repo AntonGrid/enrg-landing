@@ -5,6 +5,7 @@ import Hero from "./components/Hero";
 import Marquee from "./components/Marquee";
 import Stats from "./components/Stats";
 import AIOracle from "./components/AIOracle";
+import Network from "./components/Network";
 import HowItWorks from "./components/HowItWorks";
 import Tokenomics from "./components/Tokenomics";
 import Partners from "./components/Partners";
@@ -44,6 +45,7 @@ export default function App() {
         <Marquee />
         <Stats />
         <AIOracle />
+        <Network />
         <HowItWorks />
         <Tokenomics />
         <Partners />
