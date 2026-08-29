@@ -9,6 +9,9 @@ export const LINKS = {
   /** Public ENRG oracle: CORS is allowed for enrg.network and localhost only. */
   oracleStats: "https://enrg-oracle.onrender.com/api/v1/stats",
 
+  /** Signed AI-oracle attestation published by ENRG-AI (GitHub Pages). */
+  aiAssessments: "https://antongrid.github.io/ENRG-AI/ai/assessments.json",
+
   /** Axis/ENRG Protocol documentation. */
   docs: "https://github.com/AntonGrid/ENRG",
 
@@ -36,6 +39,20 @@ export const STATS = {
   refreshMs: 45_000,
   /** Oracle request timeout (ms) — Render free tier cold-starts, so keep it short. */
   timeoutMs: 5_000,
+};
+
+/** AI Oracle attestation widget (Sovereign AI signals). */
+export const AI_ORACLE = {
+  /** Demo generation used while the published attestation is unreachable. */
+  demo: {
+    bucketMinutes: 15,
+    horizonSteps: 8,
+    observedWh: 86, // demo daily production (Wh)
+  },
+  /** Attestation refresh interval (ms). */
+  refreshMs: 300_000,
+  /** Attestation request timeout (ms). */
+  timeoutMs: 6_000,
 };
 
 export const TOKENOMICS = {
