@@ -4,6 +4,22 @@ Futuristic landing portal for the **Axis/ENRG** ecosystem: dark theme, neon,
 holograms, and particles. The main goal of the landing is to guide users to the
 **Axis Connect** PWA ("Connect Device") and display live ecosystem statistics.
 
+## Ecosystem
+
+enrg-landing is **Layer 4** of the Axis ecosystem — the public interface that
+makes the trust standard and its first living domain (energy) visible.
+One map of all layers: [**Ecosystem map**](https://github.com/AntonGrid/Axis-protocol/blob/main/docs/ECOSYSTEM.md) ·
+[**Constitution**](https://github.com/AntonGrid/Axis-protocol/blob/main/docs/CONSTITUTION.md) ·
+[**Glossary**](https://github.com/AntonGrid/Axis-protocol/blob/main/docs/GLOSSARY.md).
+
+| Layer | Repo |
+|---|---|
+| L0 Standard | [Axis-protocol](https://github.com/AntonGrid/Axis-protocol) |
+| L1 Reference implementation | [Axis-core](https://github.com/AntonGrid/Axis-core) |
+| L2 Domain profile (energy) | [ENRG](https://github.com/AntonGrid/ENRG) |
+| L3 Intelligence | [ENRG-AI](https://github.com/AntonGrid/ENRG-AI) |
+| **L4 Interfaces** | **enrg-landing (this repo)** · [Axis-connect](https://github.com/AntonGrid/Axis-connect) |
+
 ## Tech Stack
 
 - **React 19 + TypeScript + Vite 8**
