@@ -3,8 +3,8 @@
  */
 
 export const LINKS = {
-  /** Axis-connect PWA (GitHub Pages) — opens in a new tab. */
-  axisConnect: "https://antongrid.github.io/Axis-connect/",
+  /** Axis-connect PWA (Render) — opens in a new tab. */
+  axisConnect: "https://axis-connect.onrender.com",
 
   /** Public ENRG oracle: CORS is allowed for enrg.network and localhost only. */
   oracleStats: "https://enrg-oracle.onrender.com/api/v1/stats",

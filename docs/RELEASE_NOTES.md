@@ -29,7 +29,7 @@ Complete rebuild of the static landing into a modern SPA:
 2. Verify the holographic boot screen appears and fades out.
 3. Hero: energy core orbits, cursor glow, 3D tilt on the energy panel.
 4. Stats: with a live oracle → LIVE badge; when unavailable → DEMO fallback with SYNC animation.
-5. "Connect Device" opens `https://antongrid.github.io/Axis-connect/` in a new tab.
+5. "Connect Device" opens `https://axis-connect.onrender.com` in a new tab.
 6. Check responsiveness on desktop, tablet and phone.
 
 ## Reviewer checklist

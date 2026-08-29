@@ -79,7 +79,7 @@ text
 
 - Buttons **"Connect Device"**, **"Download App"**, **"Start"** and
   menu items **DASHBOARD / SETTINGS** open the PWA in a new tab:
-  `https://antongrid.github.io/Axis-connect/`.
+  `https://axis-connect.onrender.com`.
 - **Axis Connect** remains an independent PWA — the landing does not include its code.
 
 ## Ecosystem Statistics

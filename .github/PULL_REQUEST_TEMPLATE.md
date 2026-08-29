@@ -6,7 +6,7 @@ Briefly describe what was changed and why.
 
 ## How to test (checklist)
 - [ ] `npm run build` in `enrg-landing` passes without errors.
-- [ ] The "Connect Device" button opens `https://antongrid.github.io/Axis-connect/` in a new tab.
+- [ ] The "Connect Device" button opens `https://axis-connect.onrender.com` in a new tab.
 - [ ] Menu HOME · DASHBOARD · MINTING · HISTORY · SETTINGS works (anchors / external links).
 - [ ] Stats: with a live oracle `https://enrg-oracle.onrender.com/api/v1/stats` — LIVE badge; when unavailable — DEMO fallback with SYNC animation.
 - [ ] Landing sections render on desktop, tablet and phone.
