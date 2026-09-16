@@ -57,7 +57,11 @@ export const AI_ORACLE = {
 
 export const TOKENOMICS = {
   ticker: "SRC",
-  peg: "1 SRC = 1 MWh of verified energy",
+  // The peg holds AT GENESIS: the deployed emission curve requires
+  // E(S) = 1 MWh x 10^S of verified energy per SRC, where S is the mined share
+  // (programs/enrg-mvp/src/math.rs::energy_per_src). Stated precisely so the
+  // landing cannot be read as a constant 1:1 backing.
+  peg: "1 SRC = 1 MWh at genesis · E(S) = 1 MWh × 10^S as supply grows",
   maxSupply: 1_000_000_000,
   producerShare: 85, // %
   protocolFee: 15, // %
@@ -67,13 +71,24 @@ export const TOKENOMICS = {
     { label: "DAO", value: 30, color: "#b7f354" },
     { label: "Emergency", value: 10, color: "#fcd34d" },
   ],
-  sourceMultipliers: [
+  /**
+   * Source-dependent reward multipliers — **PLANNED, not enforced on-chain**.
+   *
+   * The deployed program rewards verified energy only: the reward comes from
+   * `calculate_reward_dynamic()` (energy, emission difficulty, per-device 30-day
+   * share) and `mint_energy` has no notion of the energy source
+   * (grep for a source multiplier in programs/enrg-mvp — there is none).
+   * Rendered with an explicit "planned" label so the landing is not misleading.
+   */
+  sourceMultipliersPlanned: [
     { source: "Solar", key: "solar", value: 1.0 },
     { source: "Wind", key: "wind", value: 1.0 },
     { source: "Hydro", key: "hydro", value: 1.0 },
     { source: "Biogas", key: "biogas", value: 0.8 },
     { source: "Fossil", key: "fossil", value: 0.5 },
   ],
+  sourceMultipliersNote:
+    "Planned, not enforced on-chain yet: today the contract rewards verified energy only.",
 };
 
 export const NAV_ITEMS = [

@@ -188,6 +188,13 @@
         <p><strong>85%</strong> of each mint goes directly to the energy producer.</p>
 
         <h3>Source Multipliers</h3>
+        <div class="docs-callout">
+          <strong>Status: planned — not enforced on-chain.</strong> The deployed program
+          rewards verified energy only (<code>calculate_reward_dynamic</code>): the reward
+          depends on the energy, the emission difficulty and the device's 30-day share, and
+          <code>mint_energy</code> has no notion of the energy source. Treat this table as a
+          design target, not as a live parameter.
+        </div>
         <table class="docs-table">
           <thead>
             <tr><th>Energy Source</th><th>Multiplier</th></tr>

@@ -55,11 +55,14 @@ export default function Tokenomics() {
               </div>
 
               <div className="mt-6 border-t border-neon/15 pt-6">
-                <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+                <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-slate-500">
                   Rewards by energy source
+                  <span className="rounded-sm border border-amber/40 px-1.5 py-0.5 text-[9px] tracking-[0.2em] text-amber">
+                    PLANNED
+                  </span>
                 </div>
                 <div className="mt-4 space-y-3">
-                  {TOKENOMICS.sourceMultipliers.map((m) => (
+                  {TOKENOMICS.sourceMultipliersPlanned.map((m) => (
                     <div key={m.key} className="flex items-center gap-3">
                       <span className="w-24 shrink-0 font-mono text-[11px] uppercase tracking-wider text-slate-400">
                         {m.source}
@@ -79,6 +82,9 @@ export default function Tokenomics() {
                     </div>
                   ))}
                 </div>
+                <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
+                  {TOKENOMICS.sourceMultipliersNote}
+                </p>
               </div>
             </HoloCard>
           </motion.div>
